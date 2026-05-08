@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belladonna Category Grimoire</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6B2A;
+    --ink: #0E0C0A;
+    --parchment: #1A1610;
+    --surface: #201C16;
+    --surface2: #2A2418;
+    --surface3: #332C1E;
+    --border: rgba(201,168,76,0.2);
+    --border-strong: rgba(201,168,76,0.45);
+    --text: #E8DFC8;
+    --text-muted: #9E8E6A;
+    --text-dim: #6A5E42;
+    --skull: #3D3428;
+    --danger: #8B3A2A;
+    --success: #2A6B3A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    font-size: 17px;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.03) 0%, transparent 60%);
+  }
+
+  /* HEADER */
+  .site-header {
+    border-bottom: 1px solid var(--border-strong);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(14,12,10,0.8);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-skull {
+    width: 36px;
+    height: 36px;
+    opacity: 0.9;
+  }
+  .logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+  .logo-sub {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    font-weight: 400;
+  }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .nav-tab {
+    padding: 0.5rem 1.1rem;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .nav-tab:hover { color: var(--gold-light); border-color: var(--border); }
+  .nav-tab.active {
+    color: var(--gold);
+    border-color: var(--border-strong);
+    background: rgba(201,168,76,0.07);
+  }
+
+  /* LAYOUT */
+  .main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ORNAMENT DIVIDER */
+  .ornament {
+    text-align: center;
+    color: var(--gold-dim);
+    font-size: 1rem;
+    margin: 1.5rem 0;
+    letter-spacing: 0.3em;
+    opacity: 0.7;
+  }
+
+  /* SECTION HEADING */
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+  }
+  .card-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
+  }
+
+  /* INPUTS */
+  input[type="text"], input[type="search"], textarea, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input[type="text"]:focus,
+  input[type="search"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--gold-dim);
+  }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 0.55rem 1.3rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-strong);
+    background: rgba(201,168,76,0.1);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover {
+    background: rgba(201,168,76,0.18);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: none;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface3); }
+  .btn-danger { border-color: rgba(139,58,42,0.5); color: #C0654F; background: rgba(139,58,42,0.1); }
+  .btn-danger:hover { background: rgba(139,58,42,0.2); border-color: #8B3A2A; }
+  .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.65rem; }
+
+  /* FILE UPLOAD */
+  .file-drop {
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .file-drop:hover, .file-drop.drag-over {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+  .file-drop input { display: none; }
+  .file-drop-icon { font-size: 2rem; margin-bottom: 0.75rem; color: var(--gold-dim); }
+  .file-drop p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .file-drop small { color: var(--text-dim); font-size: 0.8rem; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-type { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+  .badge-theme { background: rgba(90,60,120,0.2); color: #B89ED4; border: 1px solid rgba(150,100,200,0.2); }
+  .badge-match { background: rgba(42,107,58,0.2); color: #7DC996; border: 1px solid rgba(42,107,58,0.3); }
+
+  /* SEARCH BAR */
+  .search-bar {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .search-bar input { font-size: 18px; padding: 0.7rem 1rem; }
+  .search-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--text-dim);
+    pointer-events: none;
+    font-size: 1rem;
+  }
+  .search-bar input { padding-left: 2.4rem; }
+
+  /* FILTER ROW */
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .filter-row select { width: auto; min-width: 160px; font-size: 15px; }
+  .filter-chip {
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Crimson Text', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip:hover { border-color: var(--border-strong); color: var(--text); }
+  .filter-chip.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.1); }
+
+  /* CATEGORY CARDS GRID */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+  }
+  .category-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .category-card:hover { border-color: var(--border-strong); }
+  .category-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0.6rem;
+  }
+  .category-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.92rem;
+    color: var(--gold-light);
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .category-card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .category-shows {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .show-tag {
+    display: inline;
+  }
+  .show-tag.highlight {
+    color: var(--gold-light);
+    font-weight: 600;
+  }
+  .category-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 0.9rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* SEARCH RESULTS COUNT */
+  .results-meta {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  /* THEMED NIGHTS */
+  .nights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .night-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .night-card:hover { border-color: var(--border-strong); }
+  .night-banner {
+    height: 100px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .night-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .night-banner-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    text-align: center;
+    padding: 0 1rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    position: absolute;
+    width: 100%;
+  }
+  .night-card-body { padding: 1rem 1.2rem; }
+  .night-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    color: var(--gold-light);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  .night-cat-count { font-size: 0.85rem; color: var(--text-muted); }
+  .night-card-footer {
+    display: flex;
+    gap: 6px;
+    padding: 0.75rem 1.2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* MODAL */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0.2rem;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 1.5rem; }
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* FORM GRID */
+  .form-grid { display: grid; gap: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: grid; gap: 6px; }
+  .form-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* CATEGORY SELECTOR (for nights) */
+  .cat-selector {
+    display: grid;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .cat-select-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+  }
+  .cat-select-item:hover { border-color: var(--border-strong); }
+  .cat-select-item.selected { border-color: var(--gold-dim); background: rgba(201,168,76,0.08); }
+  .cat-select-item input[type="checkbox"] { accent-color: var(--gold); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .cat-select-name { font-size: 0.9rem; color: var(--text); flex: 1; line-height: 1.3; }
+
+  /* NIGHT DETAIL VIEW */
+  .night-detail-banner {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .night-detail-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .night-detail-banner-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5));
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--gold); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.75rem 1.2rem;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    font-weight: 700;
+    display: block;
+  }
+  .stat-label { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+  }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--surface3);
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.9rem;
+    color: var(--text);
+    animation: slideIn 0.3s ease;
+    max-width: 320px;
+  }
+  .toast.success { border-color: rgba(42,107,58,0.5); color: #7DC996; }
+  .toast.error { border-color: rgba(139,58,42,0.5); color: #C0654F; }
+  @keyframes slideIn { from { transform: translateX(2rem); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .site-header { flex-direction: column; gap: 1rem; padding: 1rem; }
+    .main { padding: 1rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .category-grid, .nights-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <svg class="logo-skull" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="16" r="11" fill="none" stroke="#C9A84C" stroke-width="1.2"/>
+      <circle cx="14" cy="15" r="3" fill="#C9A84C" opacity="0.8"/>
+      <circle cx="22" cy="15" r="3" fill="#C9A84C" opacity="0.8"/>
+      <rect x="14" y="22" width="3" height="4" rx="1" fill="#C9A84C" opacity="0.6"/>
+      <rect x="19" y="22" width="3" height="4" rx="1" fill="#C9A84C" opacity="0.6"/>
+      <path d="M12 22 Q18 26 24 22" stroke="#C9A84C" stroke-width="1" fill="none" opacity="0.5"/>
+      <path d="M10 9 Q18 2 26 9" stroke="#C9A84C" stroke-width="0.8" fill="none" opacity="0.3"/>
+    </svg>
+    <div class="logo-text">
+      Category Grimoire
+      <span class="logo-sub">Belladonna Audio Alchemies</span>
+    </div>
+  </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('library')">Library</button>
+    <button class="nav-tab" onclick="switchView('search')">Search</button>
+    <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchView('import')">Import</button>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- ═══ LIBRARY VIEW ═══ -->
+  <div class="view active" id="view-library">
+    <div class="filter-row">
+      <select id="lib-filter-type" onchange="renderLibrary()">
+        <option value="">All Types</option>
+      </select>
+      <select id="lib-filter-theme" onchange="renderLibrary()">
+        <option value="">All Themes</option>
+      </select>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
+      </div>
+    </div>
+    <div id="lib-results-meta" class="results-meta"></div>
+    <div id="category-grid" class="category-grid"></div>
+    <div id="lib-empty" class="empty-state" style="display:none">
+      <div class="empty-state-icon">📚</div>
+      <h3>No Categories Yet</h3>
+      <p>Import a CSV or add categories manually to begin.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SEARCH VIEW ═══ -->
+  <div class="view" id="view-search">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="search-input" placeholder="Search for a show, artist, or title…" oninput="runSearch()" autofocus>
+    </div>
+    <div id="search-results-meta" class="results-meta"></div>
+    <div id="search-results" class="category-grid"></div>
+    <div id="search-empty" class="empty-state">
+      <div class="empty-state-icon">✦</div>
+      <h3>Begin Your Search</h3>
+      <p>Type a show name to find every category containing it.</p>
+    </div>
+  </div>
+
+  <!-- ═══ THEMED NIGHTS VIEW ═══ -->
+  <div class="view" id="view-nights">
+    <div id="nights-list-view">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:1.5rem;">
+        <button class="btn" onclick="openNewNightModal()">+ New Themed Night</button>
+      </div>
+      <div id="nights-grid" class="nights-grid"></div>
+      <div id="nights-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">🌙</div>
+        <h3>No Themed Nights Yet</h3>
+        <p>Create your first themed night to start building event lineups.</p>
+      </div>
+    </div>
+    <div id="night-detail-view" style="display:none"></div>
+  </div>
+
+  <!-- ═══ IMPORT VIEW ═══ -->
+  <div class="view" id="view-import">
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title">CSV Format Guide</div>
+      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">Your CSV should have the following columns. The <strong style="color:var(--gold)">Name</strong> and <strong style="color:var(--gold)">Shows</strong> columns are required.</p>
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:1rem; font-family:monospace; font-size:0.82rem; color:var(--text-muted); overflow-x:auto;">
+        Name, Type, Theme, Shows<br>
+        "Monsters Magic & Melodrama Trivia", "Trivia", "Spooky / Gothic", "Vampire Diaries | Buffy | The Originals | True Blood"<br>
+        "Teen Shows Trivia", "Trivia", "Youth TV", "Vampire Diaries | Gilmore Girls | Dawsons Creek"<br>
+        "Witchcore Trivia", "Trivia", "Witches & Magic", "Sabrina | Charmed | Vampire Diaries | The Craft"
+      </div>
+      <p style="color:var(--text-dim); font-size:0.82rem; margin-top:0.75rem;">Separate multiple shows with a pipe <code style="color:var(--gold)">|</code> character. Theme is optional but recommended for filtering.</p>
+    </div>
+
+    <div class="section-title">Upload CSV File</div>
+    <div class="file-drop" id="file-drop" onclick="document.getElementById('csv-file-input').click()">
+      <input type="file" id="csv-file-input" accept=".csv" onchange="handleFileUpload(event)">
+      <div class="file-drop-icon">📄</div>
+      <p>Drop your CSV here or click to browse</p>
+      <small>Accepts .csv files</small>
+    </div>
+
+    <div id="import-preview" style="display:none; margin-top:1.5rem;">
+      <div class="section-title">Import Preview</div>
+      <div id="import-preview-content"></div>
+      <div style="display:flex; gap:8px; margin-top:1rem;">
+        <button class="btn" id="confirm-import-btn" onclick="confirmImport()">Import All</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('import-preview').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+    <div class="ornament" style="margin: 2rem 0;">✦ ✦ ✦</div>
+
+    <div class="section-title">Export Data</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn" onclick="exportCSV()">Export Library as CSV</button>
+      <button class="btn btn-ghost" onclick="exportJSON()">Export as JSON</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ ADD/EDIT CATEGORY MODAL ═══ -->
+<div class="modal-backdrop" id="cat-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="cat-modal-title">Add Category</span>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category Name *</label>
+            <input type="text" id="cat-name" placeholder="e.g. Witchcore Trivia">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist">
+            <datalist id="type-datalist"></datalist>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Theme / Tags</label>
+          <input type="text" id="cat-theme" placeholder="e.g. Witches & Magic, Gothic, Teen TV…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shows / Titles (one per line or pipe-separated)</label>
+          <textarea id="cat-shows" rows="5" placeholder="Vampire Diaries&#10;Charmed&#10;Sabrina the Teenage Witch&#10;The Craft"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" id="cat-notes" placeholder="Any extra info about this category">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCatModal()">Cancel</button>
+      <button class="btn" onclick="saveCategoryFromModal()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NEW/EDIT NIGHT MODAL ═══ -->
+<div class="modal-backdrop" id="night-modal">
+  <div class="modal" style="max-width:800px;">
+    <div class="modal-header">
+      <span class="modal-title" id="night-modal-title">New Themed Night</span>
+      <button class="modal-close" onclick="closeNightModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Night Name *</label>
+          <input type="text" id="night-name" placeholder="e.g. Coven Night, Spooky Season Spectacular…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banner / Header Image</label>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" onclick="document.getElementById('night-banner-file').click()">Upload Image</button>
+            <input type="file" id="night-banner-file" accept="image/*" style="display:none" onchange="handleBannerUpload(event)">
+            <span style="color:var(--text-dim); font-size:0.85rem;">— or —</span>
+            <input type="text" id="night-banner-color" placeholder="Background color (e.g. #2D1B4E)" style="width:200px;">
+          </div>
+          <div id="banner-preview" style="display:none; margin-top:0.75rem; height:100px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative;">
+            <div id="banner-preview-inner" style="width:100%; height:100%; background:var(--surface2); display:flex; align-items:center; justify-content:center;">
+              <span id="banner-preview-label" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; text-align:center; padding:0 1rem;"></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Categories for This Night</label>
+          <input type="search" id="night-cat-search" placeholder="Filter categories…" oninput="filterNightCatSelector()" style="margin-bottom:0.5rem;">
+          <div class="cat-selector" id="night-cat-selector"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeNightModal()">Cancel</button>
+      <button class="btn" onclick="saveNight()">Save Night</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:rgba(14,12,10,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:spin 2s linear infinite;">
+    <circle cx="24" cy="24" r="20" stroke="rgba(201,168,76,0.2)" stroke-width="2"/>
+    <path d="M24 4 A20 20 0 0 1 44 24" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <p style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.2em;color:#9E8E6A;text-transform:uppercase;">Awakening the Grimoire…</p>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc,
+  getDocs, setDoc, deleteDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ═══════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAQUq6wKgBHIfaVCjxOXa7fpsJ0qmTocqI",
+  authDomain: "belladonnabrainstormtool.firebaseapp.com",
+  projectId: "belladonnabrainstormtool",
+  storageBucket: "belladonnabrainstormtool.firebasestorage.app",
+  messagingSenderId: "981934324501",
+  appId: "1:981934324501:web:9ba85ffde67d2d2b95c71c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const catsCol = collection(db, 'categories');
+const nightsCol = collection(db, 'nights');
+
+// ═══════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════
+let categories = [];
+let nights = [];
+let editingCatIndex = -1;
+let editingNightIndex = -1;
+let pendingImport = [];
+let nightBannerData = null;
+
+// Slug a name into a safe Firestore doc ID
+function toId(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
+    + '-' + Math.abs(name.split('').reduce((a,c) => (a<<5)-a+c.charCodeAt(0)|0, 0)).toString(36);
+}
+
+async function loadData() {
+  try {
+    const [cSnap, nSnap] = await Promise.all([getDocs(catsCol), getDocs(nightsCol)]);
+    categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  } catch(e) {
+    console.error('Firebase load error:', e);
+    toast('Could not connect to database', 'error');
+    categories = []; nights = [];
+  }
+  document.getElementById('loading-overlay').style.display = 'none';
+  renderLibrary();
+}
+
+async function saveCat(cat) {
+  if (!cat._id) cat._id = toId(cat.name);
+  const { _id, ...data } = cat;
+  await setDoc(doc(db, 'categories', _id), data);
+  cat._id = _id;
+}
+
+async function deleteCat(cat) {
+  if (cat._id) await deleteDoc(doc(db, 'categories', cat._id));
+}
+
+async function saveNightDoc(night) {
+  if (!night._id) night._id = toId(night.name);
+  const { _id, ...data } = night;
+  await setDoc(doc(db, 'nights', _id), data);
+  night._id = _id;
+}
+
+async function deleteNightDoc(night) {
+  if (night._id) await deleteDoc(doc(db, 'nights', night._id));
+}
+
+async function batchSaveCats(cats) {
+  const CHUNK = 400;
+  for (let i = 0; i < cats.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    cats.slice(i, i + CHUNK).forEach(cat => {
+      if (!cat._id) cat._id = toId(cat.name);
+      const { _id, ...data } = cat;
+      batch.set(doc(db, 'categories', _id), data);
+    });
+    await batch.commit();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name === 'library' ? 'librar' : name === 'search' ? 'search' : name === 'nights' ? 'night' : 'import')) t.classList.add('active');
+  });
+  if (name === 'library') renderLibrary();
+  if (name === 'nights') renderNights();
+}
+
+// ═══════════════════════════════════════════════
+// LIBRARY
+// ═══════════════════════════════════════════════
+function populateFilters() {
+  const types = [...new Set(categories.map(c => c.type).filter(Boolean))].sort();
+  const themes = [...new Set(categories.map(c => c.theme).filter(Boolean))].sort();
+  const tSel = document.getElementById('lib-filter-type');
+  const thSel = document.getElementById('lib-filter-theme');
+  const tVal = tSel.value, thVal = thSel.value;
+  tSel.innerHTML = '<option value="">All Types</option>' + types.map(t => `<option value="${esc(t)}" ${t===tVal?'selected':''}>${esc(t)}</option>`).join('');
+  thSel.innerHTML = '<option value="">All Themes</option>' + themes.map(t => `<option value="${esc(t)}" ${t===thVal?'selected':''}>${esc(t)}</option>`).join('');
+
+  const dl = document.getElementById('type-datalist');
+  if (dl) dl.innerHTML = types.map(t => `<option value="${esc(t)}">`).join('');
+}
+
+function renderLibrary() {
+  populateFilters();
+  const typeF = document.getElementById('lib-filter-type').value;
+  const themeF = document.getElementById('lib-filter-theme').value;
+
+  let filtered = categories.filter(c => {
+    if (typeF && c.type !== typeF) return false;
+    if (themeF && c.theme !== themeF) return false;
+    return true;
+  });
+
+  document.getElementById('lib-results-meta').textContent =
+    filtered.length === categories.length
+      ? `${categories.length} categories`
+      : `${filtered.length} of ${categories.length} categories`;
+
+  document.getElementById('lib-empty').style.display = categories.length === 0 ? 'block' : 'none';
+  document.getElementById('category-grid').innerHTML = filtered.map((c, i) => {
+    const realIdx = categories.indexOf(c);
+    return categoryCardHTML(c, realIdx, '');
+  }).join('');
+}
+
+function categoryCardHTML(cat, idx, highlight) {
+  const showsHtml = (cat.shows || []).map(s => {
+    const isMatch = highlight && s.toLowerCase().includes(highlight.toLowerCase());
+    return `<span class="show-tag${isMatch ? ' highlight' : ''}">${esc(s)}</span>`;
+  }).join('<span style="color:var(--text-dim)"> · </span>');
+
+  return `<div class="category-card">
+    <div class="category-card-header">
+      <div class="category-card-name">${esc(cat.name)}</div>
+    </div>
+    <div class="category-card-meta">
+      ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
+      ${cat.theme ? `<span class="badge badge-theme">${esc(cat.theme)}</span>` : ''}
+    </div>
+    <div class="category-shows">${showsHtml || '<span style="color:var(--text-dim); font-style:italic;">No shows listed</span>'}</div>
+    ${cat.notes ? `<p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.5rem; font-style:italic;">${esc(cat.notes)}</p>` : ''}
+    <div class="category-card-actions">
+      <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteCategory(${idx})">Delete</button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════
+function runSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  const container = document.getElementById('search-results');
+  const empty = document.getElementById('search-empty');
+  const meta = document.getElementById('search-results-meta');
+
+  if (!q) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    meta.textContent = '';
+    return;
+  }
+
+  const ql = q.toLowerCase();
+  const matches = categories.filter(c =>
+    (c.shows || []).some(s => s.toLowerCase().includes(ql)) ||
+    c.name.toLowerCase().includes(ql) ||
+    (c.theme && c.theme.toLowerCase().includes(ql)) ||
+    (c.type && c.type.toLowerCase().includes(ql))
+  );
+
+  empty.style.display = matches.length === 0 ? 'block' : 'none';
+  meta.textContent = matches.length > 0 ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} containing "${q}"` : '';
+
+  container.innerHTML = matches.map(c => {
+    const idx = categories.indexOf(c);
+    return categoryCardHTML(c, idx, q);
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// CATEGORY MODAL
+// ═══════════════════════════════════════════════
+function openAddCategoryModal() {
+  editingCatIndex = -1;
+  document.getElementById('cat-modal-title').textContent = 'Add Category';
+  document.getElementById('cat-name').value = '';
+  document.getElementById('cat-type').value = '';
+  document.getElementById('cat-theme').value = '';
+  document.getElementById('cat-shows').value = '';
+  document.getElementById('cat-notes').value = '';
+  document.getElementById('cat-modal').classList.add('open');
+}
+
+function editCategory(idx) {
+  editingCatIndex = idx;
+  const c = categories[idx];
+  document.getElementById('cat-modal-title').textContent = 'Edit Category';
+  document.getElementById('cat-name').value = c.name || '';
+  document.getElementById('cat-type').value = c.type || '';
+  document.getElementById('cat-theme').value = c.theme || '';
+  document.getElementById('cat-shows').value = (c.shows || []).join('\n');
+  document.getElementById('cat-notes').value = c.notes || '';
+  document.getElementById('cat-modal').classList.add('open');
+}
+
+function closeCatModal() {
+  document.getElementById('cat-modal').classList.remove('open');
+}
+
+async function saveCategoryFromModal() {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) { toast('Category name is required', 'error'); return; }
+
+  const showsRaw = document.getElementById('cat-shows').value;
+  const shows = showsRaw.split(/[\n|]/).map(s => s.trim()).filter(Boolean);
+
+  const isEdit = editingCatIndex >= 0;
+  const existing = isEdit ? categories[editingCatIndex] : {};
+  const cat = {
+    ...(existing._id ? { _id: existing._id } : {}),
+    name,
+    type: document.getElementById('cat-type').value.trim(),
+    theme: document.getElementById('cat-theme').value.trim(),
+    shows,
+    notes: document.getElementById('cat-notes').value.trim()
+  };
+
+  try {
+    await saveCat(cat);
+    if (isEdit) categories[editingCatIndex] = cat;
+    else categories.push(cat);
+    toast(isEdit ? 'Category updated' : 'Category added');
+  } catch(e) {
+    toast('Save failed — check connection', 'error'); return;
+  }
+  closeCatModal();
+  renderLibrary();
+}
+
+async function deleteCategory(idx) {
+  if (!confirm(`Delete "${categories[idx].name}"?`)) return;
+  try {
+    await deleteCat(categories[idx]);
+    categories.splice(idx, 1);
+    toast('Category deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  renderLibrary();
+}
+
+// ═══════════════════════════════════════════════
+// THEMED NIGHTS
+// ═══════════════════════════════════════════════
+function renderNights() {
+  const grid = document.getElementById('nights-grid');
+  const empty = document.getElementById('nights-empty');
+  empty.style.display = nights.length === 0 ? 'block' : 'none';
+  grid.innerHTML = nights.map((n, i) => {
+    const bannerStyle = n.bannerData
+      ? `background-image:url(${n.bannerData}); background-size:cover; background-position:center;`
+      : n.bannerColor ? `background:${n.bannerColor};` : `background:var(--surface2);`;
+    return `<div class="night-card" onclick="openNightDetail(${i})">
+      <div class="night-banner" style="${bannerStyle}">
+        <div class="night-banner-title">${esc(n.name)}</div>
+      </div>
+      <div class="night-card-body">
+        <div class="night-card-name">${esc(n.name)}</div>
+        <div class="night-cat-count">${(n.categoryIds || []).length} categories selected</div>
+      </div>
+      <div class="night-card-footer" onclick="event.stopPropagation()">
+        <button class="btn btn-sm btn-ghost" onclick="editNight(${i})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteNight(${i})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openNightDetail(idx) {
+  const night = nights[idx];
+  const nightCats = (night.categoryIds || [])
+    .map(id => categories.find(c => c.name === id))
+    .filter(Boolean);
+
+  const bannerStyle = night.bannerData
+    ? `background-image:url(${night.bannerData}); background-size:cover; background-position:center;`
+    : night.bannerColor ? `background:${night.bannerColor};` : '';
+
+  const detail = document.getElementById('night-detail-view');
+  const list = document.getElementById('nights-list-view');
+  list.style.display = 'none';
+  detail.style.display = 'block';
+
+  const typeBreakdown = {};
+  nightCats.forEach(c => { if (c.type) typeBreakdown[c.type] = (typeBreakdown[c.type] || 0) + 1; });
+
+  detail.innerHTML = `
+    <button class="back-btn" onclick="closeNightDetail()">← Back to Nights</button>
+    <div class="night-detail-banner" style="${bannerStyle}">
+      <div class="night-detail-banner-text">${esc(night.name)}</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><span class="stat-num">${nightCats.length}</span><span class="stat-label">Categories</span></div>
+      ${Object.entries(typeBreakdown).map(([t,n]) => `<div class="stat-box"><span class="stat-num">${n}</span><span class="stat-label">${esc(t)}</span></div>`).join('')}
+    </div>
+    <div class="section-title">Categories in This Night</div>
+    <div class="category-grid">
+      ${nightCats.length ? nightCats.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('') : '<p style="color:var(--text-dim); font-style:italic;">No categories assigned to this night.</p>'}
+    </div>
+  `;
+}
+
+function closeNightDetail() {
+  document.getElementById('nights-list-view').style.display = 'block';
+  document.getElementById('night-detail-view').style.display = 'none';
+}
+
+function openNewNightModal() {
+  editingNightIndex = -1;
+  nightBannerData = null;
+  document.getElementById('night-modal-title').textContent = 'New Themed Night';
+  document.getElementById('night-name').value = '';
+  document.getElementById('night-banner-color').value = '';
+  document.getElementById('banner-preview').style.display = 'none';
+  populateNightCatSelector([]);
+  document.getElementById('night-modal').classList.add('open');
+}
+
+function editNight(idx) {
+  editingNightIndex = idx;
+  const n = nights[idx];
+  nightBannerData = n.bannerData || null;
+  document.getElementById('night-modal-title').textContent = 'Edit Night';
+  document.getElementById('night-name').value = n.name || '';
+  document.getElementById('night-banner-color').value = n.bannerColor || '';
+  document.getElementById('banner-preview').style.display = 'block';
+  const inner = document.getElementById('banner-preview-inner');
+  if (n.bannerData) {
+    inner.style.backgroundImage = `url(${n.bannerData})`;
+    inner.style.backgroundSize = 'cover';
+  } else {
+    inner.style.backgroundImage = '';
+    inner.style.background = n.bannerColor || 'var(--surface2)';
+  }
+  document.getElementById('banner-preview-label').textContent = n.name;
+  populateNightCatSelector(n.categoryIds || []);
+  document.getElementById('night-modal').classList.add('open');
+}
+
+function closeNightModal() {
+  document.getElementById('night-modal').classList.remove('open');
+}
+
+function handleBannerUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    nightBannerData = ev.target.result;
+    document.getElementById('banner-preview').style.display = 'block';
+    const inner = document.getElementById('banner-preview-inner');
+    inner.style.backgroundImage = `url(${nightBannerData})`;
+    inner.style.backgroundSize = 'cover';
+    inner.style.background = '';
+    document.getElementById('banner-preview-label').textContent = document.getElementById('night-name').value || 'Preview';
+  };
+  reader.readAsDataURL(file);
+}
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'night-name') {
+    document.getElementById('banner-preview-label').textContent = e.target.value;
+  }
+  if (e.target.id === 'night-banner-color') {
+    const c = e.target.value;
+    if (c) {
+      document.getElementById('banner-preview').style.display = 'block';
+      const inner = document.getElementById('banner-preview-inner');
+      inner.style.backgroundImage = '';
+      inner.style.background = c;
+    }
+  }
+});
+
+function populateNightCatSelector(selectedIds) {
+  const sel = document.getElementById('night-cat-selector');
+  sel.innerHTML = categories.map(c =>
+    `<label class="cat-select-item${selectedIds.includes(c.name) ? ' selected' : ''}">
+      <input type="checkbox" value="${esc(c.name)}" ${selectedIds.includes(c.name) ? 'checked' : ''} onchange="this.closest('label').classList.toggle('selected',this.checked)">
+      <span class="cat-select-name">${esc(c.name)}${c.type ? ` <span class="badge badge-type" style="font-size:0.65rem;">${esc(c.type)}</span>` : ''}</span>
+    </label>`
+  ).join('');
+}
+
+function filterNightCatSelector() {
+  const q = document.getElementById('night-cat-search').value.toLowerCase();
+  document.querySelectorAll('#night-cat-selector .cat-select-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function saveNight() {
+  const name = document.getElementById('night-name').value.trim();
+  if (!name) { toast('Night name is required', 'error'); return; }
+
+  const checked = [...document.querySelectorAll('#night-cat-selector input[type="checkbox"]:checked')].map(cb => cb.value);
+  const color = document.getElementById('night-banner-color').value.trim();
+  const isEdit = editingNightIndex >= 0;
+  const existing = isEdit ? nights[editingNightIndex] : {};
+
+  const night = {
+    ...(existing._id ? { _id: existing._id } : {}),
+    name,
+    bannerData: nightBannerData || null,
+    bannerColor: color,
+    categoryIds: checked
+  };
+
+  try {
+    await saveNightDoc(night);
+    if (isEdit) nights[editingNightIndex] = night;
+    else nights.push(night);
+    toast(isEdit ? 'Night updated' : 'Themed night created');
+  } catch(e) {
+    toast('Save failed — check connection', 'error'); return;
+  }
+  closeNightModal();
+  renderNights();
+}
+
+async function deleteNight(idx) {
+  if (!confirm(`Delete "${nights[idx].name}"?`)) return;
+  try {
+    await deleteNightDoc(nights[idx]);
+    nights.splice(idx, 1);
+    toast('Night deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  renderNights();
+}
+
+// ═══════════════════════════════════════════════
+// CSV IMPORT
+// ═══════════════════════════════════════════════
+const dropZone = document.getElementById('file-drop');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) parseCSVFile(file);
+});
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) parseCSVFile(file);
+}
+
+function parseCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const parsed = parseCSV(e.target.result);
+    if (!parsed.length) { toast('No data found in CSV', 'error'); return; }
+    pendingImport = parsed;
+    showImportPreview(parsed);
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().trim());
+  const nameIdx = headers.findIndex(h => h.includes('name'));
+  const typeIdx = headers.findIndex(h => h.includes('type'));
+  const themeIdx = headers.findIndex(h => h.includes('theme'));
+  const showsIdx = headers.findIndex(h => h.includes('show') || h.includes('title'));
+  const notesIdx = headers.findIndex(h => h.includes('note'));
+
+  if (nameIdx === -1) { toast('CSV must have a "Name" column', 'error'); return []; }
+
+  return lines.slice(1).map(line => {
+    const cols = parseCSVRow(line);
+    const showsRaw = showsIdx >= 0 ? cols[showsIdx] || '' : '';
+    return {
+      name: cols[nameIdx] || '',
+      type: typeIdx >= 0 ? cols[typeIdx] || '' : '',
+      theme: themeIdx >= 0 ? cols[themeIdx] || '' : '',
+      notes: notesIdx >= 0 ? cols[notesIdx] || '' : '',
+      shows: showsRaw.split('|').map(s => s.trim()).filter(Boolean)
+    };
+  }).filter(c => c.name);
+}
+
+function parseCSVRow(row) {
+  const cols = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      if (inQuote && row[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      cols.push(cur.trim()); cur = '';
+    } else cur += ch;
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
+function showImportPreview(data) {
+  const preview = document.getElementById('import-preview');
+  const content = document.getElementById('import-preview-content');
+  preview.style.display = 'block';
+
+  content.innerHTML = `<p style="color:var(--text-muted); margin-bottom:1rem; font-size:0.95rem;">Found <strong style="color:var(--gold)">${data.length}</strong> categories to import.</p>
+  <div class="category-grid">${data.slice(0, 6).map(c => categoryCardHTML(c, -1, '')).join('')}</div>
+  ${data.length > 6 ? `<p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.75rem; font-style:italic;">…and ${data.length - 6} more</p>` : ''}`;
+}
+
+function confirmImport() {
+  const btn = document.getElementById('confirm-import-btn');
+  const mode = btn.dataset.mode || 'append';
+
+  if (mode === 'ask' || !btn.dataset.mode) {
+    const existing = categories.length;
+    if (existing > 0) {
+      btn.textContent = 'Replace All';
+      btn.dataset.mode = 'replace';
+      const appendBtn = document.createElement('button');
+      appendBtn.className = 'btn';
+      appendBtn.textContent = 'Add to Existing';
+      appendBtn.onclick = () => doImport('append');
+      btn.parentNode.insertBefore(appendBtn, btn);
+      return;
+    }
+  }
+
+  doImport('append');
+}
+
+async function doImport(mode) {
+  const btn = document.getElementById('confirm-import-btn');
+  btn.textContent = 'Importing…';
+  btn.disabled = true;
+  try {
+    if (mode === 'replace') {
+      // Delete existing first
+      const batch = writeBatch(db);
+      categories.forEach(c => { if (c._id) batch.delete(doc(db, 'categories', c._id)); });
+      await batch.commit();
+      categories = [...pendingImport];
+    } else {
+      categories = [...categories, ...pendingImport];
+    }
+    await batchSaveCats(categories);
+    toast(`Imported ${pendingImport.length} categories`, 'success');
+  } catch(e) {
+    toast('Import failed — check connection', 'error');
+  }
+  renderLibrary();
+  document.getElementById('import-preview').style.display = 'none';
+  pendingImport = [];
+  btn.textContent = 'Import All';
+  btn.disabled = false;
+  delete btn.dataset.mode;
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════
+function exportCSV() {
+  const rows = [['Name','Type','Theme','Shows','Notes']];
+  categories.forEach(c => rows.push([c.name, c.type||'', c.theme||'', (c.shows||[]).join(' | '), c.notes||'']));
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  download('belladonna-categories.csv', csv, 'text/csv');
+}
+
+function exportJSON() {
+  download('belladonna-data.json', JSON.stringify({categories, nights}, null, 2), 'application/json');
+}
+
+function download(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type: mime}));
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════
+// EXPOSE TO WINDOW (required for type=module inline onclick)
+// ═══════════════════════════════════════════════
+Object.assign(window, {
+  switchView, renderLibrary, runSearch,
+  openAddCategoryModal, editCategory, deleteCategory,
+  closeCatModal, saveCategoryFromModal,
+  openNightDetail, closeNightDetail, openNewNightModal,
+  editNight, deleteNight, closeNightModal, saveNight,
+  handleBannerUpload, filterNightCatSelector,
+  handleFileUpload, confirmImport,
+  exportCSV, exportJSON
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>
