@@ -609,15 +609,7 @@
 
 <header class="site-header">
   <div class="logo">
-    <svg class="logo-skull" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="18" cy="16" r="11" fill="none" stroke="#C9A84C" stroke-width="1.2"/>
-      <circle cx="14" cy="15" r="3" fill="#C9A84C" opacity="0.8"/>
-      <circle cx="22" cy="15" r="3" fill="#C9A84C" opacity="0.8"/>
-      <rect x="14" y="22" width="3" height="4" rx="1" fill="#C9A84C" opacity="0.6"/>
-      <rect x="19" y="22" width="3" height="4" rx="1" fill="#C9A84C" opacity="0.6"/>
-      <path d="M12 22 Q18 26 24 22" stroke="#C9A84C" stroke-width="1" fill="none" opacity="0.5"/>
-      <path d="M10 9 Q18 2 26 9" stroke="#C9A84C" stroke-width="0.8" fill="none" opacity="0.3"/>
-    </svg>
+    <img src="logo.png" alt="Belladonna Logo" class="logo-skull" style="width:42px; height:42px; object-fit:contain;">
     <div class="logo-text">
       Category Grimoire
       <span class="logo-sub">Belladonna Audio Alchemies</span>
@@ -625,7 +617,6 @@
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchView('library')">Library</button>
-    <button class="nav-tab" onclick="switchView('search')">Search</button>
     <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
@@ -635,41 +626,34 @@
 
   <!-- ═══ LIBRARY VIEW ═══ -->
   <div class="view active" id="view-library">
-    <div class="filter-row">
-      <select id="lib-filter-type" onchange="renderLibrary()">
-        <option value="">All Types</option>
-      </select>
-      <select id="lib-filter-theme" onchange="renderLibrary()">
-        <option value="">All Themes</option>
-      </select>
-      <select id="lib-filter-tag" onchange="renderLibrary()">
-        <option value="">All Tags</option>
-      </select>
-      <div style="margin-left:auto; display:flex; gap:8px;">
-        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
-      </div>
-    </div>
-    <div id="lib-results-meta" class="results-meta"></div>
-    <div id="category-grid" class="category-grid"></div>
-    <div id="lib-empty" class="empty-state" style="display:none">
-      <div class="empty-state-icon">📚</div>
-      <h3>No Categories Yet</h3>
-      <p>Import a CSV or add categories manually to begin.</p>
-    </div>
-  </div>
-
-  <!-- ═══ SEARCH VIEW ═══ -->
-  <div class="view" id="view-search">
-    <div class="search-bar">
+    <div class="search-bar" style="margin-bottom:0.75rem;">
       <span class="search-icon">🔍</span>
-      <input type="search" id="search-input" placeholder="Search for a show, artist, or title…" oninput="runSearch()" autofocus>
+      <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()">
     </div>
-    <div id="search-results-meta" class="results-meta"></div>
-    <div id="search-results" class="category-grid"></div>
-    <div id="search-empty" class="empty-state">
-      <div class="empty-state-icon">✦</div>
-      <h3>Begin Your Search</h3>
-      <p>Type a show name to find every category containing it.</p>
+    <div id="search-results-meta" class="results-meta" style="display:none;"></div>
+    <div id="search-results" class="category-grid" style="display:none;"></div>
+    <div id="filter-and-grid">
+      <div class="filter-row">
+        <select id="lib-filter-type" onchange="renderLibrary()">
+          <option value="">All Types</option>
+        </select>
+        <select id="lib-filter-theme" onchange="renderLibrary()">
+          <option value="">All Themes</option>
+        </select>
+        <select id="lib-filter-tag" onchange="renderLibrary()">
+          <option value="">All Tags</option>
+        </select>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
+        </div>
+      </div>
+      <div id="lib-results-meta" class="results-meta"></div>
+      <div id="category-grid" class="category-grid"></div>
+      <div id="lib-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">📚</div>
+        <h3>No Categories Yet</h3>
+        <p>Import a CSV or add categories manually to begin.</p>
+      </div>
     </div>
   </div>
 
@@ -771,13 +755,15 @@
         </div>
         <div class="form-group">
           <label class="form-label">Banner Image</label>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('cat-banner-file').click()">Upload Banner</button>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+            <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('cat-banner-file').click()">Upload File</button>
             <input type="file" id="cat-banner-file" accept="image/*" style="display:none" onchange="handleCatBannerUpload(event)">
+            <span style="color:var(--text-dim); font-size:0.82rem;">— or —</span>
             <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
           </div>
+          <input type="text" id="cat-banner-url" placeholder="Paste image URL…" oninput="handleCatBannerUrl(this.value)">
           <div id="cat-banner-preview" style="display:none; margin-top:0.75rem; height:110px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
-            <img id="cat-banner-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="">
+            <img id="cat-banner-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="" onerror="this.style.opacity=0.2">
           </div>
         </div>
       </div>
@@ -805,15 +791,18 @@
         </div>
         <div class="form-group">
           <label class="form-label">Banner / Header Image</label>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <button class="btn btn-sm btn-ghost" onclick="document.getElementById('night-banner-file').click()">Upload Image</button>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+            <button class="btn btn-sm btn-ghost" onclick="document.getElementById('night-banner-file').click()">Upload File</button>
             <input type="file" id="night-banner-file" accept="image/*" style="display:none" onchange="handleBannerUpload(event)">
-            <span style="color:var(--text-dim); font-size:0.85rem;">— or —</span>
-            <input type="text" id="night-banner-color" placeholder="Background color (e.g. #2D1B4E)" style="width:200px;">
+            <span style="color:var(--text-dim); font-size:0.82rem;">— or —</span>
+            <input type="text" id="night-banner-color" placeholder="Background color (e.g. #2D1B4E)" style="width:180px;" oninput="handleNightBannerColorInput(this.value)">
+            <button class="btn btn-sm btn-danger" id="night-banner-clear" onclick="clearNightBanner()" style="display:none;">Remove</button>
           </div>
-          <div id="banner-preview" style="display:none; margin-top:0.75rem; height:100px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative;">
-            <div id="banner-preview-inner" style="width:100%; height:100%; background:var(--surface2); display:flex; align-items:center; justify-content:center;">
-              <span id="banner-preview-label" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; text-align:center; padding:0 1rem;"></span>
+          <input type="text" id="night-banner-url" placeholder="Paste image URL…" oninput="handleNightBannerUrl(this.value)">
+          <div id="banner-preview" style="display:none; margin-top:0.75rem; height:100px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+            <img id="night-banner-img" style="width:100%; height:100%; object-fit:cover; display:none;" src="" alt="" onerror="this.style.opacity=0.2">
+            <div id="banner-preview-inner" style="width:100%; height:100%; background:transparent; display:flex; align-items:center; justify-content:center; position:absolute; inset:0;">
+              <span id="banner-preview-label" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; text-align:center; padding:0 1rem; text-shadow:0 1px 6px rgba(0,0,0,0.8);"></span>
             </div>
           </div>
         </div>
@@ -834,6 +823,7 @@
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="night-modal-delete-btn" onclick="deleteNightFromModal()" style="display:none; margin-right:auto;">Delete Night</button>
       <button class="btn btn-ghost" onclick="closeNightModal()">Cancel</button>
       <button class="btn" onclick="saveNight()">Save Night</button>
     </div>
@@ -951,7 +941,7 @@ function switchView(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t => {
-    if (t.textContent.toLowerCase().includes(name === 'library' ? 'librar' : name === 'search' ? 'search' : name === 'nights' ? 'night' : 'import')) t.classList.add('active');
+    if (t.textContent.toLowerCase().includes(name === 'library' ? 'librar' : name === 'nights' ? 'night' : 'import')) t.classList.add('active');
   });
   if (name === 'library') renderLibrary();
   if (name === 'nights') renderNights();
@@ -1038,16 +1028,18 @@ function categoryCardHTML(cat, idx, highlight) {
 // ═══════════════════════════════════════════════
 function runSearch() {
   const q = document.getElementById('search-input').value.trim();
-  const container = document.getElementById('search-results');
-  const empty = document.getElementById('search-empty');
-  const meta = document.getElementById('search-results-meta');
+  const searchResults = document.getElementById('search-results');
+  const searchMeta = document.getElementById('search-results-meta');
+  const filterGrid = document.getElementById('filter-and-grid');
 
   if (!q) {
-    container.innerHTML = '';
-    empty.style.display = 'block';
-    meta.textContent = '';
+    searchResults.style.display = 'none';
+    searchMeta.style.display = 'none';
+    filterGrid.style.display = 'block';
     return;
   }
+
+  filterGrid.style.display = 'none';
 
   const ql = q.toLowerCase();
   const matches = categories.filter(c =>
@@ -1058,13 +1050,13 @@ function runSearch() {
     (c.tags && c.tags.toLowerCase().includes(ql))
   );
 
-  empty.style.display = matches.length === 0 ? 'block' : 'none';
-  meta.textContent = matches.length > 0 ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} containing "${q}"` : '';
+  searchMeta.style.display = 'block';
+  searchMeta.textContent = matches.length > 0
+    ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} matching "${q}"`
+    : `No categories found for "${q}"`;
 
-  container.innerHTML = matches.map(c => {
-    const idx = categories.indexOf(c);
-    return categoryCardHTML(c, idx, q);
-  }).join('');
+  searchResults.style.display = matches.length > 0 ? 'grid' : 'none';
+  searchResults.innerHTML = matches.map(c => categoryCardHTML(c, categories.indexOf(c), q)).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -1080,6 +1072,7 @@ function openAddCategoryModal() {
   document.getElementById('cat-shows').value = '';
   document.getElementById('cat-notes').value = '';
   document.getElementById('cat-tags').value = '';
+  document.getElementById('cat-banner-url').value = '';
   setCatBannerPreview(null);
   document.getElementById('cat-modal-delete-btn').style.display = 'none';
   document.getElementById('cat-modal').classList.add('open');
@@ -1089,6 +1082,7 @@ function editCategory(idx) {
   editingCatIndex = idx;
   const c = categories[idx];
   catBannerData = c.bannerData || null;
+  document.getElementById('cat-banner-url').value = (c.bannerData && !c.bannerData.startsWith('data:')) ? c.bannerData : '';
   document.getElementById('cat-modal-title').textContent = 'Edit Category';
   document.getElementById('cat-name').value = c.name || '';
   document.getElementById('cat-type').value = c.type || '';
@@ -1105,18 +1099,19 @@ function closeCatModal() {
   document.getElementById('cat-modal').classList.remove('open');
 }
 
-function setCatBannerPreview(dataUrl) {
+function setCatBannerPreview(src) {
   const preview = document.getElementById('cat-banner-preview');
   const img = document.getElementById('cat-banner-img');
   const clearBtn = document.getElementById('cat-banner-clear');
-  if (dataUrl) {
-    img.src = dataUrl;
+  if (src) {
+    img.src = src;
     preview.style.display = 'block';
     clearBtn.style.display = 'inline-flex';
   } else {
     img.src = '';
     preview.style.display = 'none';
     clearBtn.style.display = 'none';
+    document.getElementById('cat-banner-url').value = '';
   }
 }
 
@@ -1126,10 +1121,23 @@ function handleCatBannerUpload(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     catBannerData = ev.target.result;
+    document.getElementById('cat-banner-url').value = '';
     setCatBannerPreview(catBannerData);
   };
   reader.readAsDataURL(file);
   e.target.value = '';
+}
+
+function handleCatBannerUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed) {
+    catBannerData = trimmed;
+    setCatBannerPreview(trimmed);
+  } else {
+    catBannerData = null;
+    document.getElementById('cat-banner-preview').style.display = 'none';
+    document.getElementById('cat-banner-clear').style.display = 'none';
+  }
 }
 
 function clearCatBanner() {
@@ -1221,7 +1229,6 @@ function renderNights() {
       </div>
       <div class="night-card-footer" onclick="event.stopPropagation()">
         <button class="btn btn-sm btn-ghost" onclick="editNight(${i})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteNight(${i})">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -1284,9 +1291,11 @@ function openNewNightModal() {
   document.getElementById('night-modal-title').textContent = 'New Themed Night';
   document.getElementById('night-name').value = '';
   document.getElementById('night-banner-color').value = '';
-  document.getElementById('banner-preview').style.display = 'none';
+  document.getElementById('night-banner-url').value = '';
+  setNightBannerPreview(null);
   renderEnhancements([]);
   populateNightCatSelector([]);
+  document.getElementById('night-modal-delete-btn').style.display = 'none';
   document.getElementById('night-modal').classList.add('open');
 }
 
@@ -1297,23 +1306,52 @@ function editNight(idx) {
   document.getElementById('night-modal-title').textContent = 'Edit Night';
   document.getElementById('night-name').value = n.name || '';
   document.getElementById('night-banner-color').value = n.bannerColor || '';
-  document.getElementById('banner-preview').style.display = 'block';
-  const inner = document.getElementById('banner-preview-inner');
-  if (n.bannerData) {
-    inner.style.backgroundImage = `url(${n.bannerData})`;
-    inner.style.backgroundSize = 'cover';
-  } else {
-    inner.style.backgroundImage = '';
-    inner.style.background = n.bannerColor || 'var(--surface2)';
-  }
-  document.getElementById('banner-preview-label').textContent = n.name;
+  document.getElementById('night-banner-url').value = (n.bannerData && !n.bannerData.startsWith('data:')) ? n.bannerData : '';
+  setNightBannerPreview(n.bannerData || null, n.bannerColor || null, n.name);
   renderEnhancements(n.enhancements || []);
   populateNightCatSelector(n.categoryIds || []);
+  document.getElementById('night-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('night-modal').classList.add('open');
 }
 
 function closeNightModal() {
   document.getElementById('night-modal').classList.remove('open');
+}
+
+function setNightBannerPreview(imgSrc, color, label) {
+  const preview = document.getElementById('banner-preview');
+  const img = document.getElementById('night-banner-img');
+  const inner = document.getElementById('banner-preview-inner');
+  const lbl = document.getElementById('banner-preview-label');
+  const clearBtn = document.getElementById('night-banner-clear');
+  lbl.textContent = label || document.getElementById('night-name').value || 'Preview';
+  if (imgSrc) {
+    img.src = imgSrc;
+    img.style.display = 'block';
+    inner.style.background = 'transparent';
+    preview.style.background = 'var(--surface2)';
+    clearBtn.style.display = 'inline-flex';
+  } else if (color) {
+    img.style.display = 'none';
+    img.src = '';
+    inner.style.background = 'transparent';
+    preview.style.background = color;
+    clearBtn.style.display = 'inline-flex';
+  } else {
+    img.style.display = 'none';
+    img.src = '';
+    inner.style.background = 'transparent';
+    preview.style.background = 'var(--surface2)';
+    clearBtn.style.display = 'none';
+  }
+  preview.style.display = (imgSrc || color) ? 'block' : 'none';
+}
+
+function clearNightBanner() {
+  nightBannerData = null;
+  document.getElementById('night-banner-url').value = '';
+  document.getElementById('night-banner-color').value = '';
+  setNightBannerPreview(null, null, null);
 }
 
 function handleBannerUpload(e) {
@@ -1322,28 +1360,34 @@ function handleBannerUpload(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     nightBannerData = ev.target.result;
-    document.getElementById('banner-preview').style.display = 'block';
-    const inner = document.getElementById('banner-preview-inner');
-    inner.style.backgroundImage = `url(${nightBannerData})`;
-    inner.style.backgroundSize = 'cover';
-    inner.style.background = '';
-    document.getElementById('banner-preview-label').textContent = document.getElementById('night-name').value || 'Preview';
+    document.getElementById('night-banner-url').value = '';
+    setNightBannerPreview(nightBannerData, null, null);
   };
   reader.readAsDataURL(file);
+}
+
+function handleNightBannerUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed) {
+    nightBannerData = trimmed;
+    setNightBannerPreview(trimmed, null, null);
+  } else {
+    nightBannerData = null;
+    const color = document.getElementById('night-banner-color').value.trim();
+    setNightBannerPreview(null, color || null, null);
+  }
+}
+
+function handleNightBannerColorInput(color) {
+  if (!nightBannerData) {
+    setNightBannerPreview(null, color || null, null);
+    if (!color) document.getElementById('banner-preview').style.display = 'none';
+  }
 }
 
 document.addEventListener('input', e => {
   if (e.target.id === 'night-name') {
     document.getElementById('banner-preview-label').textContent = e.target.value;
-  }
-  if (e.target.id === 'night-banner-color') {
-    const c = e.target.value;
-    if (c) {
-      document.getElementById('banner-preview').style.display = 'block';
-      const inner = document.getElementById('banner-preview-inner');
-      inner.style.backgroundImage = '';
-      inner.style.background = c;
-    }
   }
 });
 
@@ -1437,6 +1481,21 @@ async function deleteNight(idx) {
   } catch(e) {
     toast('Delete failed — check connection', 'error'); return;
   }
+  renderNights();
+}
+
+async function deleteNightFromModal() {
+  if (editingNightIndex < 0) return;
+  const night = nights[editingNightIndex];
+  if (!confirm(`Delete "${night.name}"? This cannot be undone.`)) return;
+  try {
+    await deleteNightDoc(night);
+    nights.splice(editingNightIndex, 1);
+    toast('Night deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  closeNightModal();
   renderNights();
 }
 
@@ -1626,8 +1685,10 @@ Object.assign(window, {
   handleFileUpload, confirmImport,
   exportCSV, exportJSON,
   addEnhancement, removeEnhancement,
-  handleCatBannerUpload, clearCatBanner,
-  deleteCategoryFromModal
+  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
+  handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
+  deleteCategoryFromModal,
+  deleteNightFromModal
 });
 
 // ═══════════════════════════════════════════════
