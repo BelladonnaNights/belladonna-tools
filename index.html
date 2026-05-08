@@ -1318,23 +1318,31 @@ function parseCSV(text) {
   if (lines.length < 2) return [];
 
   const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().trim());
-  const nameIdx = headers.findIndex(h => h.includes('name'));
-  const typeIdx = headers.findIndex(h => h.includes('type'));
-  const themeIdx = headers.findIndex(h => h.includes('theme'));
-  const showsIdx = headers.findIndex(h => h.includes('show') || h.includes('title'));
-  const notesIdx = headers.findIndex(h => h.includes('note'));
 
-  if (nameIdx === -1) { toast('CSV must have a "Name" column', 'error'); return []; }
+  // Matches both Ahnna's format (Category / Sub-Category / Themes-Keywords / Key Examples)
+  // and generic format (Type / Name / Theme / Shows)
+  const nameIdx  = headers.findIndex(h => h.includes('sub') || h === 'name');
+  const typeIdx  = headers.findIndex(h => (h.includes('cat') && !h.includes('sub')) || h === 'type');
+  const themeIdx = headers.findIndex(h => h.includes('theme') || h.includes('keyword'));
+  const showsIdx = headers.findIndex(h => h.includes('example') || h.includes('note') || h.includes('show') || h.includes('title'));
+
+  const rName  = nameIdx  >= 0 ? nameIdx  : 1;
+  const rType  = typeIdx  >= 0 ? typeIdx  : 0;
+  const rTheme = themeIdx >= 0 ? themeIdx : 2;
+  const rShows = showsIdx >= 0 ? showsIdx : 3;
+
+  if (headers.length < 2) { toast('CSV needs at least 2 columns', 'error'); return []; }
 
   return lines.slice(1).map(line => {
     const cols = parseCSVRow(line);
-    const showsRaw = showsIdx >= 0 ? cols[showsIdx] || '' : '';
+    const showsRaw = cols[rShows] || '';
+    const shows = showsRaw.split(/[|,]/).map(s => s.trim()).filter(s => s.length > 1);
     return {
-      name: cols[nameIdx] || '',
-      type: typeIdx >= 0 ? cols[typeIdx] || '' : '',
-      theme: themeIdx >= 0 ? cols[themeIdx] || '' : '',
-      notes: notesIdx >= 0 ? cols[notesIdx] || '' : '',
-      shows: showsRaw.split('|').map(s => s.trim()).filter(Boolean)
+      name:  cols[rName]  || '',
+      type:  cols[rType]  || '',
+      theme: cols[rTheme] || '',
+      notes: '',
+      shows
     };
   }).filter(c => c.name);
 }
