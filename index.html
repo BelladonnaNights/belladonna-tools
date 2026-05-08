@@ -642,6 +642,9 @@
       <select id="lib-filter-theme" onchange="renderLibrary()">
         <option value="">All Themes</option>
       </select>
+      <select id="lib-filter-tag" onchange="renderLibrary()">
+        <option value="">All Tags</option>
+      </select>
       <div style="margin-left:auto; display:flex; gap:8px;">
         <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
       </div>
@@ -748,9 +751,15 @@
             <datalist id="type-datalist"></datalist>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Theme / Tags</label>
-          <input type="text" id="cat-theme" placeholder="e.g. Witches & Magic, Gothic, Teen TV…">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Theme</label>
+            <input type="text" id="cat-theme" placeholder="e.g. Witches & Magic, Gothic…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <input type="text" id="cat-tags" placeholder="e.g. Teen TV, Supernatural, Movies…">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Shows / Titles (one per line or pipe-separated)</label>
@@ -774,6 +783,7 @@
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="cat-modal-delete-btn" onclick="deleteCategoryFromModal()" style="display:none; margin-right:auto;">Delete Category</button>
       <button class="btn btn-ghost" onclick="closeCatModal()">Cancel</button>
       <button class="btn" onclick="saveCategoryFromModal()">Save Category</button>
     </div>
@@ -953,11 +963,14 @@ function switchView(name) {
 function populateFilters() {
   const types = [...new Set(categories.map(c => c.type).filter(Boolean))].sort();
   const themes = [...new Set(categories.map(c => c.theme).filter(Boolean))].sort();
+  const tags = [...new Set(categories.flatMap(c => (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean)))].sort();
   const tSel = document.getElementById('lib-filter-type');
   const thSel = document.getElementById('lib-filter-theme');
-  const tVal = tSel.value, thVal = thSel.value;
+  const tagSel = document.getElementById('lib-filter-tag');
+  const tVal = tSel.value, thVal = thSel.value, tagVal = tagSel.value;
   tSel.innerHTML = '<option value="">All Types</option>' + types.map(t => `<option value="${esc(t)}" ${t===tVal?'selected':''}>${esc(t)}</option>`).join('');
   thSel.innerHTML = '<option value="">All Themes</option>' + themes.map(t => `<option value="${esc(t)}" ${t===thVal?'selected':''}>${esc(t)}</option>`).join('');
+  tagSel.innerHTML = '<option value="">All Tags</option>' + tags.map(t => `<option value="${esc(t)}" ${t===tagVal?'selected':''}>${esc(t)}</option>`).join('');
 
   const dl = document.getElementById('type-datalist');
   if (dl) dl.innerHTML = types.map(t => `<option value="${esc(t)}">`).join('');
@@ -968,9 +981,11 @@ function renderLibrary() {
   const typeF = document.getElementById('lib-filter-type').value;
   const themeF = document.getElementById('lib-filter-theme').value;
 
+  const tagF = document.getElementById('lib-filter-tag').value;
   let filtered = categories.filter(c => {
     if (typeF && c.type !== typeF) return false;
     if (themeF && c.theme !== themeF) return false;
+    if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
     return true;
   });
 
@@ -1008,12 +1023,12 @@ function categoryCardHTML(cat, idx, highlight) {
     <div class="category-card-meta">
       ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
       ${cat.theme ? `<span class="badge badge-theme">${esc(cat.theme)}</span>` : ''}
+      ${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.68rem;">${esc(t)}</span>`).join('')}
     </div>
     <div class="category-shows">${showsHtml || '<span style="color:var(--text-dim); font-style:italic;">No shows listed</span>'}</div>
     ${cat.notes ? `<p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.5rem; font-style:italic;">${esc(cat.notes)}</p>` : ''}
     <div class="category-card-actions">
       <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
-      <button class="btn btn-sm btn-danger" onclick="deleteCategory(${idx})">Delete</button>
     </div>
   </div>`;
 }
@@ -1039,7 +1054,8 @@ function runSearch() {
     (c.shows || []).some(s => s.toLowerCase().includes(ql)) ||
     c.name.toLowerCase().includes(ql) ||
     (c.theme && c.theme.toLowerCase().includes(ql)) ||
-    (c.type && c.type.toLowerCase().includes(ql))
+    (c.type && c.type.toLowerCase().includes(ql)) ||
+    (c.tags && c.tags.toLowerCase().includes(ql))
   );
 
   empty.style.display = matches.length === 0 ? 'block' : 'none';
@@ -1063,7 +1079,9 @@ function openAddCategoryModal() {
   document.getElementById('cat-theme').value = '';
   document.getElementById('cat-shows').value = '';
   document.getElementById('cat-notes').value = '';
+  document.getElementById('cat-tags').value = '';
   setCatBannerPreview(null);
+  document.getElementById('cat-modal-delete-btn').style.display = 'none';
   document.getElementById('cat-modal').classList.add('open');
 }
 
@@ -1077,7 +1095,9 @@ function editCategory(idx) {
   document.getElementById('cat-theme').value = c.theme || '';
   document.getElementById('cat-shows').value = (c.shows || []).join('\n');
   document.getElementById('cat-notes').value = c.notes || '';
+  document.getElementById('cat-tags').value = c.tags || '';
   setCatBannerPreview(c.bannerData || null);
+  document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('cat-modal').classList.add('open');
 }
 
@@ -1133,6 +1153,7 @@ async function saveCategoryFromModal() {
     theme: document.getElementById('cat-theme').value.trim(),
     shows,
     notes: document.getElementById('cat-notes').value.trim(),
+    tags: document.getElementById('cat-tags').value.trim(),
     bannerData: catBannerData || null
   };
 
@@ -1157,6 +1178,21 @@ async function deleteCategory(idx) {
   } catch(e) {
     toast('Delete failed — check connection', 'error'); return;
   }
+  renderLibrary();
+}
+
+async function deleteCategoryFromModal() {
+  if (editingCatIndex < 0) return;
+  const cat = categories[editingCatIndex];
+  if (!confirm(`Delete "${cat.name}"? This cannot be undone.`)) return;
+  try {
+    await deleteCat(cat);
+    categories.splice(editingCatIndex, 1);
+    toast('Category deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  closeCatModal();
   renderLibrary();
 }
 
@@ -1590,7 +1626,8 @@ Object.assign(window, {
   handleFileUpload, confirmImport,
   exportCSV, exportJSON,
   addEnhancement, removeEnhancement,
-  handleCatBannerUpload, clearCatBanner
+  handleCatBannerUpload, clearCatBanner,
+  deleteCategoryFromModal
 });
 
 // ═══════════════════════════════════════════════
