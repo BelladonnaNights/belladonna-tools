@@ -760,6 +760,17 @@
           <label class="form-label">Notes (optional)</label>
           <input type="text" id="cat-notes" placeholder="Any extra info about this category">
         </div>
+        <div class="form-group">
+          <label class="form-label">Banner Image</label>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" type="button" onclick="document.getElementById('cat-banner-file').click()">Upload Banner</button>
+            <input type="file" id="cat-banner-file" accept="image/*" style="display:none" onchange="handleCatBannerUpload(event)">
+            <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
+          </div>
+          <div id="cat-banner-preview" style="display:none; margin-top:0.75rem; height:110px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+            <img id="cat-banner-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="">
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -794,6 +805,15 @@
             <div id="banner-preview-inner" style="width:100%; height:100%; background:var(--surface2); display:flex; align-items:center; justify-content:center;">
               <span id="banner-preview-label" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; text-align:center; padding:0 1rem;"></span>
             </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Night Enhancements</label>
+          <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:0.5rem; font-style:italic;">Decor, prizes, food/drinks, activities, vibe notes — anything that makes this night special.</p>
+          <div id="enhancements-list" style="display:grid; gap:6px; margin-bottom:8px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="enhancement-input" placeholder="e.g. Serve popcorn in little tins, Prizes are adult toys…" onkeydown="if(event.key==='Enter'){event.preventDefault();addEnhancement();}">
+            <button class="btn btn-sm" onclick="addEnhancement()" style="flex-shrink:0;">+ Add</button>
           </div>
         </div>
         <div class="form-group">
@@ -856,6 +876,7 @@ let editingCatIndex = -1;
 let editingNightIndex = -1;
 let pendingImport = [];
 let nightBannerData = null;
+let catBannerData = null;
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -971,10 +992,19 @@ function categoryCardHTML(cat, idx, highlight) {
     return `<span class="show-tag${isMatch ? ' highlight' : ''}">${esc(s)}</span>`;
   }).join('<span style="color:var(--text-dim)"> · </span>');
 
-  return `<div class="category-card">
-    <div class="category-card-header">
-      <div class="category-card-name">${esc(cat.name)}</div>
-    </div>
+  const bannerHtml = cat.bannerData
+    ? `<div style="height:110px; overflow:hidden; border-radius:4px 4px 0 0; position:relative; background:var(--surface2); margin:-1.1rem -1.3rem 0.9rem;">
+        <img src="${cat.bannerData}" style="width:100%; height:100%; object-fit:cover; display:block;" alt="">
+        <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(14,12,10,0.7) 0%, transparent 60%);"></div>
+        <div style="position:absolute; bottom:0.6rem; left:0.9rem; right:0.9rem;">
+          <div style="font-family:'Cinzel',serif; font-size:0.88rem; font-weight:600; color:#E8C97A; text-shadow:0 1px 6px rgba(0,0,0,0.9); line-height:1.3;">${esc(cat.name)}</div>
+        </div>
+      </div>`
+    : '';
+
+  return `<div class="category-card" style="${cat.bannerData ? 'padding-top:0;' : ''}">
+    ${bannerHtml}
+    ${!cat.bannerData ? `<div class="category-card-header"><div class="category-card-name">${esc(cat.name)}</div></div>` : ''}
     <div class="category-card-meta">
       ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
       ${cat.theme ? `<span class="badge badge-theme">${esc(cat.theme)}</span>` : ''}
@@ -1026,29 +1056,65 @@ function runSearch() {
 // ═══════════════════════════════════════════════
 function openAddCategoryModal() {
   editingCatIndex = -1;
+  catBannerData = null;
   document.getElementById('cat-modal-title').textContent = 'Add Category';
   document.getElementById('cat-name').value = '';
   document.getElementById('cat-type').value = '';
   document.getElementById('cat-theme').value = '';
   document.getElementById('cat-shows').value = '';
   document.getElementById('cat-notes').value = '';
+  setCatBannerPreview(null);
   document.getElementById('cat-modal').classList.add('open');
 }
 
 function editCategory(idx) {
   editingCatIndex = idx;
   const c = categories[idx];
+  catBannerData = c.bannerData || null;
   document.getElementById('cat-modal-title').textContent = 'Edit Category';
   document.getElementById('cat-name').value = c.name || '';
   document.getElementById('cat-type').value = c.type || '';
   document.getElementById('cat-theme').value = c.theme || '';
   document.getElementById('cat-shows').value = (c.shows || []).join('\n');
   document.getElementById('cat-notes').value = c.notes || '';
+  setCatBannerPreview(c.bannerData || null);
   document.getElementById('cat-modal').classList.add('open');
 }
 
 function closeCatModal() {
   document.getElementById('cat-modal').classList.remove('open');
+}
+
+function setCatBannerPreview(dataUrl) {
+  const preview = document.getElementById('cat-banner-preview');
+  const img = document.getElementById('cat-banner-img');
+  const clearBtn = document.getElementById('cat-banner-clear');
+  if (dataUrl) {
+    img.src = dataUrl;
+    preview.style.display = 'block';
+    clearBtn.style.display = 'inline-flex';
+  } else {
+    img.src = '';
+    preview.style.display = 'none';
+    clearBtn.style.display = 'none';
+  }
+}
+
+function handleCatBannerUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    catBannerData = ev.target.result;
+    setCatBannerPreview(catBannerData);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearCatBanner() {
+  catBannerData = null;
+  setCatBannerPreview(null);
 }
 
 async function saveCategoryFromModal() {
@@ -1066,7 +1132,8 @@ async function saveCategoryFromModal() {
     type: document.getElementById('cat-type').value.trim(),
     theme: document.getElementById('cat-theme').value.trim(),
     shows,
-    notes: document.getElementById('cat-notes').value.trim()
+    notes: document.getElementById('cat-notes').value.trim(),
+    bannerData: catBannerData || null
   };
 
   try {
@@ -1104,13 +1171,17 @@ function renderNights() {
     const bannerStyle = n.bannerData
       ? `background-image:url(${n.bannerData}); background-size:cover; background-position:center;`
       : n.bannerColor ? `background:${n.bannerColor};` : `background:var(--surface2);`;
+    const catNames = (n.categoryIds || []);
+    const catListHtml = catNames.length
+      ? catNames.map(id => `<span style="display:block; padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.88rem; color:var(--text-muted); line-height:1.3;">${esc(id)}</span>`).join('')
+      : `<span style="font-size:0.82rem; color:var(--text-dim); font-style:italic;">No categories yet</span>`;
     return `<div class="night-card" onclick="openNightDetail(${i})">
       <div class="night-banner" style="${bannerStyle}">
         <div class="night-banner-title">${esc(n.name)}</div>
       </div>
       <div class="night-card-body">
         <div class="night-card-name">${esc(n.name)}</div>
-        <div class="night-cat-count">${(n.categoryIds || []).length} categories selected</div>
+        <div style="margin-top:0.6rem; max-height:160px; overflow-y:auto;">${catListHtml}</div>
       </div>
       <div class="night-card-footer" onclick="event.stopPropagation()">
         <button class="btn btn-sm btn-ghost" onclick="editNight(${i})">Edit</button>
@@ -1138,6 +1209,8 @@ function openNightDetail(idx) {
   const typeBreakdown = {};
   nightCats.forEach(c => { if (c.type) typeBreakdown[c.type] = (typeBreakdown[c.type] || 0) + 1; });
 
+  const enhList = (night.enhancements || []);
+
   detail.innerHTML = `
     <button class="back-btn" onclick="closeNightDetail()">← Back to Nights</button>
     <div class="night-detail-banner" style="${bannerStyle}">
@@ -1146,7 +1219,17 @@ function openNightDetail(idx) {
     <div class="stats-row">
       <div class="stat-box"><span class="stat-num">${nightCats.length}</span><span class="stat-label">Categories</span></div>
       ${Object.entries(typeBreakdown).map(([t,n]) => `<div class="stat-box"><span class="stat-num">${n}</span><span class="stat-label">${esc(t)}</span></div>`).join('')}
+      ${enhList.length ? `<div class="stat-box"><span class="stat-num">${enhList.length}</span><span class="stat-label">Enhancements</span></div>` : ''}
     </div>
+    ${enhList.length ? `
+    <div class="section-title">Night Enhancements</div>
+    <div style="display:grid; gap:8px; margin-bottom:2rem;">
+      ${enhList.map(e => `
+        <div style="display:flex; align-items:flex-start; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:0.75rem 1rem;">
+          <span style="color:var(--gold); font-size:1rem; margin-top:1px; flex-shrink:0;">✦</span>
+          <span style="font-size:1rem; color:var(--text); line-height:1.5;">${esc(e)}</span>
+        </div>`).join('')}
+    </div>` : ''}
     <div class="section-title">Categories in This Night</div>
     <div class="category-grid">
       ${nightCats.length ? nightCats.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('') : '<p style="color:var(--text-dim); font-style:italic;">No categories assigned to this night.</p>'}
@@ -1166,6 +1249,7 @@ function openNewNightModal() {
   document.getElementById('night-name').value = '';
   document.getElementById('night-banner-color').value = '';
   document.getElementById('banner-preview').style.display = 'none';
+  renderEnhancements([]);
   populateNightCatSelector([]);
   document.getElementById('night-modal').classList.add('open');
 }
@@ -1187,6 +1271,7 @@ function editNight(idx) {
     inner.style.background = n.bannerColor || 'var(--surface2)';
   }
   document.getElementById('banner-preview-label').textContent = n.name;
+  renderEnhancements(n.enhancements || []);
   populateNightCatSelector(n.categoryIds || []);
   document.getElementById('night-modal').classList.add('open');
 }
@@ -1231,9 +1316,41 @@ function populateNightCatSelector(selectedIds) {
   sel.innerHTML = categories.map(c =>
     `<label class="cat-select-item${selectedIds.includes(c.name) ? ' selected' : ''}">
       <input type="checkbox" value="${esc(c.name)}" ${selectedIds.includes(c.name) ? 'checked' : ''} onchange="this.closest('label').classList.toggle('selected',this.checked)">
+      ${c.bannerData ? `<img src="${c.bannerData}" style="width:48px; height:32px; object-fit:cover; border-radius:3px; flex-shrink:0;" alt="">` : ''}
       <span class="cat-select-name">${esc(c.name)}${c.type ? ` <span class="badge badge-type" style="font-size:0.65rem;">${esc(c.type)}</span>` : ''}</span>
     </label>`
   ).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ENHANCEMENTS
+// ═══════════════════════════════════════════════
+let _enhancements = [];
+
+function renderEnhancements(items) {
+  _enhancements = [...items];
+  const list = document.getElementById('enhancements-list');
+  list.innerHTML = _enhancements.map((item, i) =>
+    `<div class="enhancement-item" data-value="${esc(item)}" style="display:flex; align-items:center; gap:8px; background:var(--surface3); border:1px solid var(--border); border-radius:4px; padding:0.45rem 0.75rem;">
+      <span style="flex:1; font-size:0.92rem; color:var(--text);">${esc(item)}</span>
+      <button onclick="removeEnhancement(${i})" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1rem; line-height:1; padding:0; transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function addEnhancement() {
+  const input = document.getElementById('enhancement-input');
+  const val = input.value.trim();
+  if (!val) return;
+  _enhancements.push(val);
+  renderEnhancements(_enhancements);
+  input.value = '';
+  input.focus();
+}
+
+function removeEnhancement(idx) {
+  _enhancements.splice(idx, 1);
+  renderEnhancements(_enhancements);
 }
 
 function filterNightCatSelector() {
@@ -1252,12 +1369,15 @@ async function saveNight() {
   const isEdit = editingNightIndex >= 0;
   const existing = isEdit ? nights[editingNightIndex] : {};
 
+  const enhancements = [...document.querySelectorAll('#enhancements-list .enhancement-item')].map(el => el.dataset.value).filter(Boolean);
+
   const night = {
     ...(existing._id ? { _id: existing._id } : {}),
     name,
     bannerData: nightBannerData || null,
     bannerColor: color,
-    categoryIds: checked
+    categoryIds: checked,
+    enhancements
   };
 
   try {
@@ -1468,7 +1588,9 @@ Object.assign(window, {
   editNight, deleteNight, closeNightModal, saveNight,
   handleBannerUpload, filterNightCatSelector,
   handleFileUpload, confirmImport,
-  exportCSV, exportJSON
+  exportCSV, exportJSON,
+  addEnhancement, removeEnhancement,
+  handleCatBannerUpload, clearCatBanner
 });
 
 // ═══════════════════════════════════════════════
