@@ -673,11 +673,12 @@
       <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
         <div style="flex:1; min-width:0;">
           <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            <button class="filter-chip active" data-filter="" onclick="setNightFilter(this,'')">All</button>
+            <button class="filter-chip active" onclick="clearNightFilters()">All</button>
           </div>
         </div>
-        <div style="display:flex; gap:8px; flex-shrink:0;">
-          <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage Filters</button>
+        <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
+          <button class="btn btn-sm btn-ghost" id="filter-visibility-btn" onclick="toggleNightFilterVisibility()">☰ Filters</button>
+          <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage</button>
           <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
         </div>
       </div>
@@ -945,7 +946,8 @@ let editingNightIndex = -1;
 let pendingImport = [];
 let nightBannerData = null;
 let catBannerData = null;
-let activeNightFilter = '';
+let activeNightFilters = new Set();
+let nightFiltersVisible = true;
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -954,17 +956,48 @@ function toId(name) {
 }
 
 async function loadData() {
+  const loadingEl = document.getElementById('loading-overlay');
+  const loadingMsg = loadingEl.querySelector('p');
+
+  // 8-second timeout so a hung Firebase connection doesn't spin forever
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 8000)
+  );
+
   try {
-    const [cSnap, nSnap, tSnap] = await Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]);
+    const [cSnap, nSnap, tSnap] = await Promise.race([
+      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]),
+      timeout
+    ]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
   } catch(e) {
     console.error('Firebase load error:', e);
-    toast('Could not connect to database', 'error');
-    categories = []; nights = [];
+    const msg = e.message === 'timeout'
+      ? 'Connection timed out. Check Firestore rules are set to allow read/write.'
+      : `Firebase error: ${e.code || e.message}`;
+    // Show error on the loading overlay instead of just spinning
+    loadingMsg.textContent = msg;
+    loadingMsg.style.color = '#C0654F';
+    loadingMsg.style.maxWidth = '320px';
+    loadingMsg.style.textAlign = 'center';
+    loadingMsg.style.letterSpacing = '0';
+    loadingMsg.style.textTransform = 'none';
+    loadingMsg.style.fontSize = '0.85rem';
+    // Add a "Continue Offline" button
+    const btn = document.createElement('button');
+    btn.textContent = 'Continue Offline';
+    btn.style.cssText = 'margin-top:1rem;padding:0.5rem 1.2rem;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;';
+    btn.onclick = () => {
+      loadingEl.style.display = 'none';
+      renderLibrary();
+    };
+    loadingEl.appendChild(btn);
+    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
+    return;
   }
-  document.getElementById('loading-overlay').style.display = 'none';
+  loadingEl.style.display = 'none';
   renderLibrary();
 }
 
@@ -1325,8 +1358,8 @@ async function deleteCategoryFromModal() {
 function renderNights() {
   renderNightFilterChips();
   const grid = document.getElementById('nights-grid');
-  const filtered = activeNightFilter
-    ? nights.filter(n => (n.filterTags || []).includes(activeNightFilter))
+  const filtered = activeNightFilters.size > 0
+    ? nights.filter(n => [...activeNightFilters].every(f => (n.filterTags || []).includes(f)))
     : nights;
   const empty = document.getElementById('nights-empty');
   empty.style.display = filtered.length === 0 ? 'block' : 'none';
@@ -1852,17 +1885,49 @@ function toast(msg, type = 'success') {
 
 function renderNightFilterChips() {
   const bar = document.getElementById('night-filter-chips');
-  bar.innerHTML = `<button class="filter-chip${activeNightFilter === '' ? ' active' : ''}" data-filter="" onclick="setNightFilter(this,'')">All</button>`
-    + nightTags.map(t =>
-      `<button class="filter-chip${activeNightFilter === t ? ' active' : ''}" data-filter="${esc(t)}" onclick="setNightFilter(this,'${esc(t)}')">${esc(t)}</button>`
+  bar.style.display = nightFiltersVisible ? 'flex' : 'none';
+  const allActive = activeNightFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearNightFilters()">All</button>`
+    + nightTags.map((t, i) =>
+      `<button class="filter-chip${activeNightFilters.has(t) ? ' active' : ''}"
+        draggable="true"
+        ondragstart="onFilterDragStart(event,${i})"
+        ondragover="event.preventDefault()"
+        ondrop="onFilterDrop(event,${i})"
+        onclick="toggleNightFilter('${esc(t)}')">${esc(t)}</button>`
     ).join('');
+  const btn = document.getElementById('filter-visibility-btn');
+  if (btn) btn.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
 }
 
-function setNightFilter(el, tag) {
-  activeNightFilter = tag;
-  document.querySelectorAll('#night-filter-chips .filter-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
+function clearNightFilters() {
+  activeNightFilters.clear();
+  renderNightFilterChips();
   renderNights();
+}
+
+function toggleNightFilter(tag) {
+  if (activeNightFilters.has(tag)) activeNightFilters.delete(tag);
+  else activeNightFilters.add(tag);
+  renderNightFilterChips();
+  renderNights();
+}
+
+function toggleNightFilterVisibility() {
+  nightFiltersVisible = !nightFiltersVisible;
+  renderNightFilterChips();
+}
+
+let _dragFilterIdx = null;
+function onFilterDragStart(e, i) { _dragFilterIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+async function onFilterDrop(e, i) {
+  e.preventDefault();
+  if (_dragFilterIdx === null || _dragFilterIdx === i) return;
+  const moved = nightTags.splice(_dragFilterIdx, 1)[0];
+  nightTags.splice(i, 0, moved);
+  _dragFilterIdx = null;
+  await saveNightTags();
+  renderNightFilterChips();
 }
 
 function openNightTagsModal() {
@@ -1884,9 +1949,15 @@ function renderNightTagsList() {
     return;
   }
   list.innerHTML = nightTags.map((t, i) =>
-    `<div style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.4rem 0.75rem;">
+    `<div id="tag-row-${i}" draggable="true"
+        ondragstart="onTagListDragStart(event,${i})"
+        ondragover="onTagListDragOver(event,${i})"
+        ondragleave="onTagListDragLeave(event)"
+        ondrop="onTagListDrop(event,${i})"
+        style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.4rem 0.75rem; transition:border-color 0.15s;">
+      <span style="color:var(--text-dim);cursor:grab;font-size:1rem;user-select:none;" title="Drag to reorder">⠿</span>
       <span id="night-tag-label-${i}" style="flex:1; font-size:0.92rem; color:var(--text);">${esc(t)}</span>
-      <input type="text" id="night-tag-edit-${i}" value="${esc(t)}" style="display:none; flex:1; padding:0.2rem 0.5rem; font-size:0.9rem;">
+      <input type="text" id="night-tag-edit-${i}" value="${esc(t)}" style="display:none; flex:1; padding:0.2rem 0.5rem; font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveEditNightTag(${i})">
       <button onclick="startEditNightTag(${i})" id="night-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
       <button onclick="saveEditNightTag(${i})" id="night-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
       <button onclick="deleteNightTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
@@ -1956,37 +2027,29 @@ function getSelectedNightModalTags() {
 }
 
 // ═══════════════════════════════════════════════
-// DRAG-TO-REORDER: CATEGORIES
+// ═══════════════════════════════════════════════
+// DRAG: CATEGORY REORDER
 // ═══════════════════════════════════════════════
 let _catDragIdx = null;
-
 function onCatDragStart(e, idx) {
   _catDragIdx = idx;
   e.dataTransfer.effectAllowed = 'move';
   setTimeout(() => {
-    const cards = document.querySelectorAll('#category-grid .category-card');
-    cards.forEach(c => { if (c === e.target.closest('.category-card')) c.style.opacity = '0.4'; });
+    document.querySelectorAll('#category-grid .category-card').forEach((c,i) => {
+      if (i === idx) c.style.opacity = '0.4';
+    });
   }, 0);
 }
-
-function onCatDragEnd(e) {
-  document.querySelectorAll('#category-grid .category-card').forEach(c => {
-    c.style.opacity = '';
-    c.style.borderColor = '';
-  });
+function onCatDragEnd() {
+  document.querySelectorAll('#category-grid .category-card').forEach(c => { c.style.opacity=''; c.style.borderColor=''; });
   _catDragIdx = null;
 }
-
 function onCatDragOver(e, idx) {
   e.preventDefault();
   if (_catDragIdx === null || _catDragIdx === idx) return;
   e.currentTarget.style.borderColor = 'var(--gold)';
 }
-
-function onCatDragLeave(e) {
-  e.currentTarget.style.borderColor = '';
-}
-
+function onCatDragLeave(e) { e.currentTarget.style.borderColor = ''; }
 async function onCatDrop(e, idx) {
   e.preventDefault();
   e.currentTarget.style.borderColor = '';
@@ -1995,39 +2058,29 @@ async function onCatDrop(e, idx) {
   categories.splice(idx, 0, moved);
   _catDragIdx = null;
   renderLibrary();
-  // Save new order to Firebase - batch update all with position field
   try {
     const batch = writeBatch(db);
-    categories.forEach((cat, i) => {
-      if (cat._id) batch.update(doc(db, 'categories', cat._id), { position: i });
-    });
+    categories.forEach((cat, i) => { if (cat._id) batch.set(doc(db,'categories',cat._id), {...cat, position:i}, {merge:true}); });
     await batch.commit();
   } catch(e) { console.warn('Order save failed:', e); }
 }
 
 // ═══════════════════════════════════════════════
-// DRAG-TO-REORDER: FILTER TAGS IN MODAL
+// DRAG: TAG LIST REORDER (Manage Filters modal)
 // ═══════════════════════════════════════════════
 let _tagListDragIdx = null;
-
-function onTagListDragStart(e, i) {
-  _tagListDragIdx = i;
-  e.dataTransfer.effectAllowed = 'move';
-}
-
+function onTagListDragStart(e, i) { _tagListDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
 function onTagListDragOver(e, i) {
   e.preventDefault();
   if (_tagListDragIdx === i) return;
-  document.getElementById(`tag-row-${i}`).style.borderColor = 'var(--gold)';
+  const row = document.getElementById(`tag-row-${i}`);
+  if (row) row.style.borderColor = 'var(--gold)';
 }
-
-function onTagListDragLeave(e) {
-  e.currentTarget.style.borderColor = '';
-}
-
+function onTagListDragLeave(e) { e.currentTarget.style.borderColor = ''; }
 async function onTagListDrop(e, i) {
   e.preventDefault();
-  document.getElementById(`tag-row-${i}`).style.borderColor = '';
+  const row = document.getElementById(`tag-row-${i}`);
+  if (row) row.style.borderColor = '';
   if (_tagListDragIdx === null || _tagListDragIdx === i) return;
   const moved = nightTags.splice(_tagListDragIdx, 1)[0];
   nightTags.splice(i, 0, moved);
@@ -2041,25 +2094,20 @@ async function onTagListDrop(e, i) {
 // ═══════════════════════════════════════════════
 Object.assign(window, {
   switchView, renderLibrary, runSearch,
-  openAddCategoryModal, editCategory, deleteCategory,
+  openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   closeCatModal, saveCategoryFromModal,
-  openNightDetail, closeNightDetail, openNewNightModal,
-  editNight, deleteNight, closeNightModal, saveNight,
-  handleBannerUpload, filterNightCatSelector,
-  handleFileUpload, confirmImport,
-  exportCSV, exportJSON,
-  addEnhancement, removeEnhancement,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
+  openNightDetail, closeNightDetail, openNewNightModal,
+  editNight, deleteNight, deleteNightFromModal, closeNightModal, saveNight,
   handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
-  deleteCategoryFromModal,
-  deleteNightFromModal,
   openNightTagsModal, closeNightTagsModal,
   addNightTag, deleteNightTag, startEditNightTag, saveEditNightTag,
-  toggleNightFilter, clearNightFilters, toggleNightFilterVisibility,
+  clearNightFilters, toggleNightFilter, toggleNightFilterVisibility,
   toggleNightModalTag,
+  onFilterDragStart, onFilterDrop,
   onCatDragStart, onCatDragEnd, onCatDragOver, onCatDragLeave, onCatDrop,
   onTagListDragStart, onTagListDragOver, onTagListDragLeave, onTagListDrop,
-  onFilterDragStart, onFilterDrop
+  addEnhancement, removeEnhancement
 });
 
 // ═══════════════════════════════════════════════
