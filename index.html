@@ -857,6 +857,10 @@
           </div>
         </div>
         <div class="form-group">
+          <label class="form-label">Tags <span style="color:var(--text-dim); font-size:0.72rem; font-style:italic; font-family:'Crimson Text',serif; text-transform:none; letter-spacing:0;">comma separated</span></label>
+          <input type="text" id="night-tags-input" placeholder="e.g. Witches, Dark, Halloween, 90s…">
+        </div>
+        <div class="form-group">
           <label class="form-label">Select Categories for This Night</label>
           <input type="search" id="night-cat-search" placeholder="Filter categories…" oninput="filterNightCatSelector()" style="margin-bottom:0.5rem;">
           <div class="cat-selector" id="night-cat-selector"></div>
@@ -909,7 +913,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc,
-  getDocs, getDoc, setDoc, deleteDoc, writeBatch
+  getDocs, getDoc, setDoc, updateDoc, deleteDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ═══════════════════════════════════════════════
@@ -952,7 +956,7 @@ function toId(name) {
 async function loadData() {
   try {
     const [cSnap, nSnap, tSnap] = await Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]);
-    categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
   } catch(e) {
@@ -1342,10 +1346,11 @@ function renderNights() {
         ${bannerImg}
       </div>
       <div class="night-card-body">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.25rem;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.35rem;">
           <div class="night-card-name" style="margin-bottom:0;">${esc(n.name)}</div>
           ${n.published ? `<span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;background:rgba(42,107,58,0.2);color:#7DC996;border:1px solid rgba(42,107,58,0.4);padding:2px 7px;border-radius:3px;flex-shrink:0;">Published</span>` : ''}
         </div>
+        ${(n.nightTagsList||[]).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0.5rem;">${(n.nightTagsList||[]).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
         <div style="margin-top:0.6rem; max-height:160px; overflow-y:auto;">${catListHtml}</div>
       </div>
       <div class="night-card-footer" onclick="event.stopPropagation()">
@@ -1385,6 +1390,8 @@ function openNightDetail(idx) {
       ${Object.entries(typeBreakdown).map(([t,n]) => `<div class="stat-box"><span class="stat-num">${n}</span><span class="stat-label">${esc(t)}</span></div>`).join('')}
       ${enhList.length ? `<div class="stat-box"><span class="stat-num">${enhList.length}</span><span class="stat-label">Enhancements</span></div>` : ''}
     </div>
+    ${(night.nightTagsList||[]).length ? `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;">${(night.nightTagsList||[]).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.72rem;">${esc(t)}</span>`).join('')}</div>` : ''}
     ${night.description ? `
     <div class="section-title">Venue Description</div>
     <div style="background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:1rem; color:var(--text-muted); line-height:1.7;">${esc(night.description)}</div>` : ''}
@@ -1425,6 +1432,7 @@ function openNewNightModal() {
   document.getElementById('night-published').checked = false;
   document.getElementById('night-description').value = '';
   document.getElementById('night-admin-notes').value = '';
+  document.getElementById('night-tags-input').value = '';
   populateNightModalTags([]);
   renderEnhancements([]);
   populateNightCatSelector([]);
@@ -1444,6 +1452,7 @@ function editNight(idx) {
   document.getElementById('night-published').checked = !!n.published;
   document.getElementById('night-description').value = n.description || '';
   document.getElementById('night-admin-notes').value = n.adminNotes || '';
+  document.getElementById('night-tags-input').value = (n.nightTagsList || []).join(', ');
   populateNightModalTags(n.filterTags || []);
   renderEnhancements(n.enhancements || []);
   populateNightCatSelector(n.categoryIds || []);
@@ -1599,7 +1608,8 @@ async function saveNight() {
     filterTags,
     published: document.getElementById('night-published').checked,
     description: document.getElementById('night-description').value.trim(),
-    adminNotes: document.getElementById('night-admin-notes').value.trim()
+    adminNotes: document.getElementById('night-admin-notes').value.trim(),
+    nightTagsList: document.getElementById('night-tags-input').value.split(',').map(t=>t.trim()).filter(Boolean)
   };
 
   try {
@@ -1946,6 +1956,87 @@ function getSelectedNightModalTags() {
 }
 
 // ═══════════════════════════════════════════════
+// DRAG-TO-REORDER: CATEGORIES
+// ═══════════════════════════════════════════════
+let _catDragIdx = null;
+
+function onCatDragStart(e, idx) {
+  _catDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const cards = document.querySelectorAll('#category-grid .category-card');
+    cards.forEach(c => { if (c === e.target.closest('.category-card')) c.style.opacity = '0.4'; });
+  }, 0);
+}
+
+function onCatDragEnd(e) {
+  document.querySelectorAll('#category-grid .category-card').forEach(c => {
+    c.style.opacity = '';
+    c.style.borderColor = '';
+  });
+  _catDragIdx = null;
+}
+
+function onCatDragOver(e, idx) {
+  e.preventDefault();
+  if (_catDragIdx === null || _catDragIdx === idx) return;
+  e.currentTarget.style.borderColor = 'var(--gold)';
+}
+
+function onCatDragLeave(e) {
+  e.currentTarget.style.borderColor = '';
+}
+
+async function onCatDrop(e, idx) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = '';
+  if (_catDragIdx === null || _catDragIdx === idx) return;
+  const moved = categories.splice(_catDragIdx, 1)[0];
+  categories.splice(idx, 0, moved);
+  _catDragIdx = null;
+  renderLibrary();
+  // Save new order to Firebase - batch update all with position field
+  try {
+    const batch = writeBatch(db);
+    categories.forEach((cat, i) => {
+      if (cat._id) batch.update(doc(db, 'categories', cat._id), { position: i });
+    });
+    await batch.commit();
+  } catch(e) { console.warn('Order save failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// DRAG-TO-REORDER: FILTER TAGS IN MODAL
+// ═══════════════════════════════════════════════
+let _tagListDragIdx = null;
+
+function onTagListDragStart(e, i) {
+  _tagListDragIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onTagListDragOver(e, i) {
+  e.preventDefault();
+  if (_tagListDragIdx === i) return;
+  document.getElementById(`tag-row-${i}`).style.borderColor = 'var(--gold)';
+}
+
+function onTagListDragLeave(e) {
+  e.currentTarget.style.borderColor = '';
+}
+
+async function onTagListDrop(e, i) {
+  e.preventDefault();
+  document.getElementById(`tag-row-${i}`).style.borderColor = '';
+  if (_tagListDragIdx === null || _tagListDragIdx === i) return;
+  const moved = nightTags.splice(_tagListDragIdx, 1)[0];
+  nightTags.splice(i, 0, moved);
+  _tagListDragIdx = null;
+  await saveNightTags();
+  renderNightTagsList();
+}
+
+// ═══════════════════════════════════════════════
 // EXPOSE TO WINDOW (required for type=module inline onclick)
 // ═══════════════════════════════════════════════
 Object.assign(window, {
@@ -1964,7 +2055,11 @@ Object.assign(window, {
   deleteNightFromModal,
   openNightTagsModal, closeNightTagsModal,
   addNightTag, deleteNightTag, startEditNightTag, saveEditNightTag,
-  setNightFilter, toggleNightModalTag
+  toggleNightFilter, clearNightFilters, toggleNightFilterVisibility,
+  toggleNightModalTag,
+  onCatDragStart, onCatDragEnd, onCatDragOver, onCatDragLeave, onCatDrop,
+  onTagListDragStart, onTagListDragOver, onTagListDragLeave, onTagListDrop,
+  onFilterDragStart, onFilterDrop
 });
 
 // ═══════════════════════════════════════════════
