@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Belladonna Audio Alchemies — Theme Lineup</title>
+<title>Belladonna Audio Alchemies — Tonight's Lineup</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -319,6 +319,9 @@
     <div class="detail-banner" id="detail-banner"></div>
     <div class="detail-body">
       <div class="detail-name" id="detail-name"></div>
+      <div id="detail-description-section" style="display:none; margin-bottom:1.25rem;">
+        <p id="detail-description" style="font-size:1rem; color:var(--text-muted); line-height:1.7; font-style:italic;"></p>
+      </div>
       <div id="detail-cats-section">
         <div class="detail-section-label">Categories</div>
         <div class="detail-cats" id="detail-cats"></div>
@@ -409,6 +412,16 @@ function openDetail(i) {
 
   // Name
   document.getElementById('detail-name').textContent = n.name;
+
+  // Description
+  const descSection = document.getElementById('detail-description-section');
+  const descEl = document.getElementById('detail-description');
+  if (n.description) {
+    descEl.textContent = n.description;
+    descSection.style.display = 'block';
+  } else {
+    descSection.style.display = 'none';
+  }
 
   // Categories
   const cats = n.categoryIds || [];
