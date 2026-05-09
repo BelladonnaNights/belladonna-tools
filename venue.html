@@ -319,6 +319,7 @@
     <div class="detail-banner" id="detail-banner"></div>
     <div class="detail-body">
       <div class="detail-name" id="detail-name"></div>
+      <div id="detail-tags" style="display:none; gap:5px; flex-wrap:wrap; margin-bottom:0.75rem;"></div>
       <div id="detail-description-section" style="display:none; margin-bottom:1.25rem;">
         <p id="detail-description" style="font-size:1rem; color:var(--text-muted); line-height:1.7; font-style:italic;"></p>
       </div>
@@ -412,6 +413,16 @@ function openDetail(i) {
 
   // Name
   document.getElementById('detail-name').textContent = n.name;
+
+  // Tags
+  const tagsEl = document.getElementById('detail-tags');
+  const tags = n.nightTagsList || [];
+  if (tags.length && tagsEl) {
+    tagsEl.innerHTML = tags.map(t => `<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.7rem;padding:2px 9px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;">${esc(t)}</span>`).join('');
+    tagsEl.style.display = 'flex';
+  } else if (tagsEl) {
+    tagsEl.style.display = 'none';
+  }
 
   // Description
   const descSection = document.getElementById('detail-description-section');
