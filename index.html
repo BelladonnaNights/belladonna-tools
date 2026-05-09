@@ -784,12 +784,12 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Shows / Titles (one per line or pipe-separated)</label>
-          <textarea id="cat-shows" rows="5" placeholder="Vampire Diaries&#10;Charmed&#10;Sabrina the Teenage Witch&#10;The Craft"></textarea>
+          <label class="form-label">Notes <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— for trivia/bingo: shows & titles. For mini games: shown on the card face.</span></label>
+          <textarea id="cat-shows" rows="4" placeholder="Trivia/Bingo: Vampire Diaries, Charmed, Sabrina…&#10;Mini Game: Rules, description, how to play, etc."></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Notes (optional)</label>
-          <input type="text" id="cat-notes" placeholder="Any extra info about this category">
+          <label class="form-label">Admin Notes <span style="font-size:0.65rem;color:#C0654F;background:rgba(139,58,42,0.15);border:1px solid rgba(139,58,42,0.3);padding:1px 7px;border-radius:3px;font-family:'Crimson Text',serif;text-transform:uppercase;font-style:normal;letter-spacing:0.08em;">Private</span></label>
+          <input type="text" id="cat-notes" placeholder="Internal notes — not visible anywhere public">
         </div>
         <div class="form-group">
           <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
@@ -799,13 +799,20 @@
           <p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked and Type contains "mini game", this appears on the Mini Games tab and venue page.</p>
         </div>
         <div class="form-group">
-          <label class="form-label">Banner Image</label>
+          <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide, shown in Library</span></label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
             <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
           </div>
-          <input type="text" id="cat-banner-url" placeholder="Paste image URL…" oninput="handleCatBannerUrl(this.value)">
-          <div id="cat-banner-preview" style="display:none; margin-top:0.75rem; height:110px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+          <input type="text" id="cat-banner-url" placeholder="Paste banner image URL…" oninput="handleCatBannerUrl(this.value)">
+          <div id="cat-banner-preview" style="display:none; margin-top:0.6rem; height:90px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
             <img id="cat-banner-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="" onerror="this.style.opacity=0.2">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mini Game Card Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— 4:5 portrait, shown on Mini Games tab</span></label>
+          <input type="text" id="cat-minigame-url" placeholder="Paste 4:5 portrait image URL…" oninput="handleCatMiniUrl(this.value)">
+          <div id="cat-minigame-preview" style="display:none; margin-top:0.6rem; max-width:120px; aspect-ratio:4/5; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+            <img id="cat-minigame-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="" onerror="this.style.opacity=0.2">
           </div>
         </div>
       </div>
@@ -1151,9 +1158,10 @@ function renderMiniGames() {
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
     const bgColor = '';
-    const bannerHtml = c.bannerData
+    const miniSrc = c.miniGameImage || c.bannerData || null;
+    const bannerHtml = miniSrc
       ? `<div style="aspect-ratio:4/5; width:100%; overflow:hidden; border-radius:6px 6px 0 0; position:relative; background:var(--surface2);">
-          <img src="${c.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">
+          <img src="${miniSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">
         </div>`
       : `<div style="aspect-ratio:4/5; width:100%; background:var(--surface2); border-radius:6px 6px 0 0; display:flex; align-items:center; justify-content:center;">
           <span style="font-size:2.5rem; opacity:0.3;">🎲</span>
@@ -1284,6 +1292,8 @@ function openAddCategoryModal() {
   document.getElementById('cat-notes').value = '';
   document.getElementById('cat-tags').value = '';
   document.getElementById('cat-banner-url').value = '';
+  document.getElementById('cat-minigame-url').value = '';
+  setCatMiniPreview(null);
   setCatBannerPreview(null);
   document.getElementById('cat-modal-delete-btn').style.display = 'none';
   document.getElementById('cat-modal').classList.add('open');
@@ -1302,6 +1312,8 @@ function editCategory(idx) {
   document.getElementById('cat-notes').value = c.notes || '';
   document.getElementById('cat-tags').value = c.tags || '';
   document.getElementById('cat-published').checked = !!c.published;
+  document.getElementById('cat-minigame-url').value = c.miniGameImage || '';
+  setCatMiniPreview(c.miniGameImage || null);
   setCatBannerPreview(c.bannerData || null);
   document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('cat-modal').classList.add('open');
@@ -1357,6 +1369,23 @@ function clearCatBanner() {
   setCatBannerPreview(null);
 }
 
+function setCatMiniPreview(url) {
+  const preview = document.getElementById('cat-minigame-preview');
+  const img = document.getElementById('cat-minigame-img');
+  if (url) {
+    img.src = url;
+    preview.style.display = 'block';
+  } else {
+    img.src = '';
+    preview.style.display = 'none';
+  }
+}
+
+function handleCatMiniUrl(url) {
+  const trimmed = url.trim();
+  setCatMiniPreview(trimmed || null);
+}
+
 async function saveCategoryFromModal() {
   const name = document.getElementById('cat-name').value.trim();
   if (!name) { toast('Category name is required', 'error'); return; }
@@ -1375,6 +1404,7 @@ async function saveCategoryFromModal() {
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
     published: document.getElementById('cat-published').checked,
+    miniGameImage: document.getElementById('cat-minigame-url').value.trim() || null,
     bannerData: catBannerData || null
   };
 
@@ -2204,7 +2234,7 @@ Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   closeCatModal, saveCategoryFromModal,
-  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
+  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
   editNight, deleteNight, deleteNightFromModal, closeNightModal, saveNight,
   handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
