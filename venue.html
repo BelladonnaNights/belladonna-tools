@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -337,6 +336,15 @@
   </div>
 </div>
 
+<!-- MINI GAMES SECTION -->
+<section id="minigames-section" style="display:none; max-width:1100px; margin:0 auto; padding:0 2rem 3rem;">
+  <div style="border-top:1px solid rgba(201,168,76,0.2); margin-bottom:2rem; padding-top:2.5rem; display:flex; align-items:center; gap:12px;">
+    <span style="font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold);">Mini Games</span>
+    <div style="flex:1; height:1px; background:rgba(201,168,76,0.2);"></div>
+  </div>
+  <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1.25rem;"></div>
+</section>
+
 <footer class="site-footer">Belladonna Audio Alchemies &nbsp;✦&nbsp; Seattle–Tacoma</footer>
 
 <script type="module">
@@ -372,6 +380,16 @@ async function load() {
   }
 
   document.getElementById('loading').style.display = 'none';
+
+  // Load mini games (published categories with mini game type)
+  try {
+    const cSnap = await getDocs(collection(db, 'categories'));
+    const miniGames = cSnap.docs
+      .map(d => ({ _id: d.id, ...d.data() }))
+      .filter(c => c.published && (c.type||'').toLowerCase().includes('mini'))
+      .sort((a,b) => (a.position??9999) - (b.position??9999));
+    renderMiniGames(miniGames);
+  } catch(e) { console.error('Mini games load error:', e); }
 
   if (!publishedNights.length) {
     document.getElementById('empty').style.display = 'block';
@@ -449,6 +467,53 @@ function openDetail(i) {
   document.body.style.overflow = 'hidden';
 }
 
+function renderMiniGames(games) {
+  const section = document.getElementById('minigames-section');
+  const grid = document.getElementById('minigames-grid');
+  if (!games.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  grid.innerHTML = games.map((c, i) => {
+    const bannerHtml = c.bannerData
+      ? `<img src="${c.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="${esc(c.name)}">`
+      : '';
+    return `<div class="night-card" onclick="openMiniDetail(${i})" data-mini="${i}">
+      <div class="night-banner" style="background:var(--surface2);">
+        ${bannerHtml}
+      </div>
+      <div class="night-info">
+        <div class="night-name">${esc(c.name)}</div>
+        ${c.theme ? `<p style="font-size:0.85rem;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">${esc(c.theme)}</p>` : ''}
+        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;padding:2px 8px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;margin-right:4px;">${esc(t)}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  window._miniGames = games;
+}
+
+function openMiniDetail(i) {
+  const c = window._miniGames[i];
+  document.getElementById('detail-banner').innerHTML = c.bannerData ? `<img src="${c.bannerData}" alt="${esc(c.name)}">` : '';
+  document.getElementById('detail-banner').style.background = 'var(--surface2)';
+  document.getElementById('detail-name').textContent = c.name;
+
+  const descSection = document.getElementById('detail-description-section');
+  const descEl = document.getElementById('detail-description');
+  if (c.notes) { descEl.textContent = c.notes; descSection.style.display = 'block'; }
+  else descSection.style.display = 'none';
+
+  // Show shows list
+  const cats = document.getElementById('detail-cats');
+  const shows = c.shows || [];
+  cats.innerHTML = shows.length
+    ? shows.map(s => `<div class="detail-cat-item">${esc(s)}</div>`).join('')
+    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
+
+  document.getElementById('detail-enhancements-section').style.display = 'none';
+  document.getElementById('detail-tags').style.display = 'none';
+  document.getElementById('detail-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -459,6 +524,7 @@ function handleOverlayClick(e) {
 }
 
 window.openDetail = openDetail;
+window.openMiniDetail = openMiniDetail;
 window.closeDetail = closeDetail;
 window.handleOverlayClick = handleOverlayClick;
 
