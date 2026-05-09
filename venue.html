@@ -3,21 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Belladonna Audio Alchemies — Tonight's Lineup</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<title>Belladonna Category Grimoire</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
     --gold: #C9A84C;
     --gold-light: #E8C97A;
     --gold-dim: #8B6B2A;
     --ink: #0E0C0A;
-    --surface: #1A1610;
-    --surface2: #201C16;
+    --parchment: #1A1610;
+    --surface: #201C16;
+    --surface2: #2A2418;
+    --surface3: #332C1E;
     --border: rgba(201,168,76,0.2);
-    --border-strong: rgba(201,168,76,0.4);
+    --border-strong: rgba(201,168,76,0.45);
     --text: #E8DFC8;
     --text-muted: #9E8E6A;
     --text-dim: #6A5E42;
+    --skull: #3D3428;
+    --danger: #8B3A2A;
+    --success: #2A6B3A;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,309 +44,882 @@
     padding: 1.5rem 2rem;
     display: flex;
     align-items: center;
-    gap: 16px;
-    background: rgba(14,12,10,0.9);
-    backdrop-filter: blur(8px);
+    justify-content: space-between;
+    background: rgba(14,12,10,0.8);
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(8px);
   }
-  .logo-img { width: 44px; height: 44px; object-fit: contain; }
-  .header-text { line-height: 1.25; }
-  .header-title {
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-skull {
+    width: 36px;
+    height: 36px;
+    opacity: 0.9;
+  }
+  .logo-text {
     font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--gold);
     letter-spacing: 0.08em;
+    line-height: 1.2;
   }
-  .header-sub {
-    font-size: 0.78rem;
+  .logo-sub {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    letter-spacing: 0.14em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
+    display: block;
+    font-weight: 400;
   }
-
-  /* MAIN */
-  .main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2.5rem 2rem;
-  }
-
-  /* LOADING */
-  #loading {
+  .nav-tabs {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 2rem;
-    gap: 1rem;
+    gap: 4px;
   }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 2px solid var(--border);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #loading p {
+  .nav-tab {
+    padding: 0.5rem 1.1rem;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--text-muted);
     font-family: 'Cinzel', serif;
     font-size: 0.72rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  /* EMPTY */
-  #empty {
-    display: none;
-    text-align: center;
-    padding: 6rem 2rem;
-    color: var(--text-dim);
-  }
-  #empty h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    margin-bottom: 0.5rem;
-  }
-
-  /* NIGHTS GRID */
-  #nights-grid {
-    display: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
-  }
-
-  /* NIGHT CARD */
-  .night-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
+    letter-spacing: 0.12em;
     cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    text-transform: uppercase;
   }
-  .night-card:hover {
+  .nav-tab:hover { color: var(--gold-light); border-color: var(--border); }
+  .nav-tab.active {
+    color: var(--gold);
     border-color: var(--border-strong);
-    transform: translateY(-2px);
+    background: rgba(201,168,76,0.07);
   }
 
-  .night-banner {
-    aspect-ratio: 4 / 5;
-    width: 100%;
-    background: var(--surface2);
-    position: relative;
-    overflow: hidden;
-  }
-  .night-banner img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  /* LAYOUT */
+  .main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+  .view { display: none; }
+  .view.active { display: block; }
 
-  .night-info {
-    padding: 1rem 1.2rem 1.2rem;
-  }
-  .night-name {
-    font-family: 'Cinzel', serif;
+  /* ORNAMENT DIVIDER */
+  .ornament {
+    text-align: center;
+    color: var(--gold-dim);
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--gold-light);
-    margin-bottom: 0.6rem;
-    line-height: 1.3;
+    margin: 1.5rem 0;
+    letter-spacing: 0.3em;
+    opacity: 0.7;
   }
-  .night-cats {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-  .night-cats span {
-    display: block;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .night-cats span:last-child { border-bottom: none; }
 
-  /* DETAIL OVERLAY */
-  .detail-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.82);
-    z-index: 200;
-    overflow-y: auto;
-    padding: 2rem 1rem;
-  }
-  .detail-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
-  .detail-panel {
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 10px;
-    width: 100%;
-    max-width: 560px;
-    overflow: hidden;
-  }
-  .detail-banner {
-    aspect-ratio: 4 / 5;
-    width: 100%;
-    background: var(--surface2);
-    position: relative;
-    overflow: hidden;
-  }
-  .detail-banner img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .detail-body { padding: 1.5rem; }
-  .detail-name {
+  /* SECTION HEADING */
+  .section-title {
     font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--gold-light);
-    margin-bottom: 1.2rem;
-    line-height: 1.3;
-  }
-  .detail-section-label {
-    font-family: 'Cinzel', serif;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.5rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
-  .detail-section-label::after {
+  .section-title::after {
     content: '';
     flex: 1;
     height: 1px;
     background: var(--border);
   }
-  .detail-cats {
-    margin-bottom: 1.25rem;
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
   }
-  .detail-cat-item {
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-    color: var(--text-muted);
+  .card-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
   }
-  .detail-cat-item:last-child { border-bottom: none; }
-  .detail-enhancements { margin-bottom: 1rem; }
-  .detail-enhance-item {
-    display: flex;
-    gap: 10px;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
+
+  /* INPUTS */
+  input[type="text"], input[type="search"], textarea, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
     color: var(--text);
-  }
-  .detail-enhance-item:last-child { border-bottom: none; }
-  .detail-enhance-item::before {
-    content: '✦';
-    color: var(--gold-dim);
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .close-btn {
-    display: block;
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
     width: 100%;
-    padding: 0.8rem;
-    background: none;
-    border: none;
-    border-top: 1px solid var(--border);
-    color: var(--text-muted);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input[type="text"]:focus,
+  input[type="search"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--gold-dim);
+  }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 0.55rem 1.3rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-strong);
+    background: rgba(201,168,76,0.1);
+    color: var(--gold);
     font-family: 'Cinzel', serif;
     font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.2s, background 0.2s;
-  }
-  .close-btn:hover { color: var(--gold); background: rgba(201,168,76,0.05); }
-
-  /* FOOTER */
-  .site-footer {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-dim);
-    font-size: 0.8rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover {
+    background: rgba(201,168,76,0.18);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: none;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface3); }
+  .btn-danger { border-color: rgba(139,58,42,0.5); color: #C0654F; background: rgba(139,58,42,0.1); }
+  .btn-danger:hover { background: rgba(139,58,42,0.2); border-color: #8B3A2A; }
+  .btn-sm { padding: 0.35rem 0.85rem; font-size: 0.65rem; }
+
+  /* FILE UPLOAD */
+  .file-drop {
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .file-drop:hover, .file-drop.drag-over {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+  .file-drop input { display: none; }
+  .file-drop-icon { font-size: 2rem; margin-bottom: 0.75rem; color: var(--gold-dim); }
+  .file-drop p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .file-drop small { color: var(--text-dim); font-size: 0.8rem; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 3px;
+    font-size: 0.72rem;
     font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-type { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.25); }
+  .badge-theme { background: rgba(90,60,120,0.2); color: #B89ED4; border: 1px solid rgba(150,100,200,0.2); }
+  .badge-match { background: rgba(42,107,58,0.2); color: #7DC996; border: 1px solid rgba(42,107,58,0.3); }
+
+  /* SEARCH BAR */
+  .search-bar {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .search-bar input { font-size: 18px; padding: 0.7rem 1rem; }
+  .search-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--text-dim);
+    pointer-events: none;
+    font-size: 1rem;
+  }
+  .search-bar input { padding-left: 2.4rem; }
+
+  /* FILTER ROW */
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .filter-row select { width: auto; min-width: 160px; font-size: 15px; }
+  .filter-chip {
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Crimson Text', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-chip:hover { border-color: var(--border-strong); color: var(--text); }
+  .filter-chip.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.1); }
+
+  /* CATEGORY CARDS GRID */
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+  .category-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.4rem 1.3rem 1.2rem;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .category-card:hover { border-color: var(--border-strong); }
+  .category-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0.6rem;
+  }
+  .category-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.92rem;
+    color: var(--gold-light);
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .category-card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .category-shows {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .show-tag {
+    display: inline;
+  }
+  .show-tag.highlight {
+    color: var(--gold-light);
+    font-weight: 600;
+  }
+  .category-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 1.2rem;
+    padding-top: 0.75rem;
     border-top: 1px solid var(--border);
-    margin-top: 3rem;
   }
 
-  @media (max-width: 600px) {
-    .site-header { padding: 1rem; }
-    .main { padding: 1.5rem 1rem; }
-    #nights-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+  /* SEARCH RESULTS COUNT */
+  .results-meta {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  /* THEMED NIGHTS */
+  .nights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .night-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .night-card:hover { border-color: var(--border-strong); }
+  .night-banner {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .night-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .night-banner-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    text-align: center;
+    padding: 0 1rem;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.95);
+    position: absolute;
+    width: 100%;
+    z-index: 2;
+    bottom: 0.75rem;
+  }
+  .night-card-body { padding: 1.4rem 1.3rem 0.6rem; }
+  .night-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    color: var(--gold-light);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  .night-cat-count { font-size: 0.85rem; color: var(--text-muted); }
+  .night-card-footer {
+    display: flex;
+    gap: 6px;
+    padding: 0.75rem 1.3rem 1.2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* MODAL */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0.2rem;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 1.5rem; }
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  /* FORM GRID */
+  .form-grid { display: grid; gap: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: grid; gap: 6px; }
+  .form-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* CATEGORY SELECTOR (for nights) */
+  .cat-selector {
+    display: grid;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .cat-select-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0.9rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+  }
+  .cat-select-item:hover { border-color: var(--border-strong); }
+  .cat-select-item.selected { border-color: var(--gold-dim); background: rgba(201,168,76,0.08); }
+  .cat-select-item input[type="checkbox"] { accent-color: var(--gold); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .cat-select-name { font-size: 0.9rem; color: var(--text); flex: 1; line-height: 1.3; }
+
+  /* NIGHT DETAIL VIEW */
+  .night-detail-banner {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 4 / 5;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .night-detail-banner img { width: 100%; height: 100%; object-fit: cover; }
+  .night-detail-banner-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5));
+  }
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--gold); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.75rem 1.2rem;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    font-weight: 700;
+    display: block;
+  }
+  .stat-label { font-size: 0.75rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+  }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--surface3);
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.9rem;
+    color: var(--text);
+    animation: slideIn 0.3s ease;
+    max-width: 320px;
+  }
+  .toast.success { border-color: rgba(42,107,58,0.5); color: #7DC996; }
+  .toast.error { border-color: rgba(139,58,42,0.5); color: #C0654F; }
+  @keyframes slideIn { from { transform: translateX(2rem); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .site-header { flex-direction: column; gap: 1rem; padding: 1rem; }
+    .main { padding: 1rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .category-grid, .nights-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <img src="logo.png" alt="Belladonna" class="logo-img">
-  <div class="header-text">
-    <div class="header-title">Belladonna Audio Alchemies</div>
-    <div class="header-sub">Tonight's Lineup</div>
+  <div class="logo">
+    <img src="logo.png" alt="Belladonna Logo" class="logo-skull" style="width:42px; height:42px; object-fit:contain;">
+    <div class="logo-text">
+      Category Grimoire
+      <span class="logo-sub">Belladonna Audio Alchemies</span>
+    </div>
   </div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('library')">Library</button>
+    <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchView('import')">Import</button>
+  </nav>
 </header>
 
 <main class="main">
-  <div id="loading">
-    <div class="spinner"></div>
-    <p>Summoning the lineup…</p>
-  </div>
-  <div id="empty">
-    <h2>Nothing Published Yet</h2>
-    <p>Check back soon.</p>
-  </div>
-  <div id="nights-grid"></div>
-</main>
 
-<!-- DETAIL OVERLAY -->
-<div class="detail-overlay" id="detail-overlay" onclick="handleOverlayClick(event)">
-  <div class="detail-panel" id="detail-panel">
-    <div class="detail-banner" id="detail-banner"></div>
-    <div class="detail-body">
-      <div class="detail-name" id="detail-name"></div>
-      <div id="detail-tags" style="display:none; gap:5px; flex-wrap:wrap; margin-bottom:0.75rem;"></div>
-      <div id="detail-description-section" style="display:none; margin-bottom:1.25rem;">
-        <p id="detail-description" style="font-size:1rem; color:var(--text-muted); line-height:1.7; font-style:italic;"></p>
+  <!-- ═══ LIBRARY VIEW ═══ -->
+  <div class="view active" id="view-library">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <div class="search-bar" style="margin-bottom:0; flex:1; min-width:200px;">
+        <span class="search-icon">🔍</span>
+        <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()">
       </div>
-      <div id="detail-cats-section">
-        <div class="detail-section-label">Categories</div>
-        <div class="detail-cats" id="detail-cats"></div>
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap; user-select:none;">
+        <input type="checkbox" id="show-bingo" onchange="renderLibrary()" style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer; flex-shrink:0;">
+        <span style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Show Bingo</span>
+      </label>
+    </div>
+    <div id="search-results-meta" class="results-meta" style="display:none;"></div>
+    <div id="search-results" class="category-grid" style="display:none;"></div>
+    <div id="filter-and-grid">
+      <div class="filter-row">
+        <select id="lib-filter-type" onchange="renderLibrary()">
+          <option value="">All Types</option>
+        </select>
+        <select id="lib-filter-theme" onchange="renderLibrary()">
+          <option value="">All Themes</option>
+        </select>
+        <select id="lib-filter-tag" onchange="renderLibrary()">
+          <option value="">All Tags</option>
+        </select>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
+        </div>
       </div>
-      <div id="detail-enhancements-section" style="display:none;">
-        <div class="detail-section-label">Night Enhancements</div>
-        <div class="detail-enhancements" id="detail-enhancements"></div>
+      <div id="lib-results-meta" class="results-meta"></div>
+      <div id="category-grid" class="category-grid"></div>
+      <div id="lib-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">📚</div>
+        <h3>No Categories Yet</h3>
+        <p>Import a CSV or add categories manually to begin.</p>
       </div>
     </div>
-    <button class="close-btn" onclick="closeDetail()">Close</button>
+  </div>
+
+  <!-- ═══ THEMED NIGHTS VIEW ═══ -->
+  <div class="view" id="view-nights">
+    <div id="nights-list-view">
+      <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <div style="flex:1; min-width:0;">
+          <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="filter-chip active" onclick="clearNightFilters()">All</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
+          <button class="btn btn-sm btn-ghost" id="filter-visibility-btn" onclick="toggleNightFilterVisibility()">☰ Filters</button>
+          <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage</button>
+          <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
+        </div>
+      </div>
+      <div id="nights-grid" class="nights-grid"></div>
+      <div id="nights-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">🌙</div>
+        <h3>No Themed Nights Yet</h3>
+        <p>Create your first themed night to start building event lineups.</p>
+      </div>
+    </div>
+    <div id="night-detail-view" style="display:none"></div>
+  </div>
+
+  <!-- ═══ IMPORT VIEW ═══ -->
+  <div class="view" id="view-import">
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title">CSV Format Guide</div>
+      <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:1rem;">Two formats are supported — export directly from your spreadsheet, no reformatting needed.</p>
+      <p style="font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem;">Trivia / Standard format</p>
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.85rem 1rem; font-family:monospace; font-size:0.8rem; color:var(--text-muted); overflow-x:auto; margin-bottom:1rem;">
+        Category, Sub-Category, Themes/Keywords, Key Examples/Notes<br>
+        "FANTASY / SUPERNATURAL", "Witchcore Trivia", "Witchcraft, occult", "Charmed, Sabrina, The Craft"
+      </div>
+      <p style="font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem;">Bingo format</p>
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.85rem 1rem; font-family:monospace; font-size:0.8rem; color:var(--text-muted); overflow-x:auto;">
+        Category, Title, Themes/Keywords<br>
+        "BINGO", "Witchcore Bingo", "Witchcore"<br>
+        "BINGO", "90s Metal Bingo", "90s, Metal"
+      </div>
+      <p style="color:var(--text-dim); font-size:0.82rem; margin-top:0.75rem;">Bingo categories are hidden by default in the library — toggle "Show Bingo" near the search bar to reveal them. They always appear in search results.</p>
+    </div>
+
+    <div class="section-title">Upload CSV File</div>
+    <div class="file-drop" id="file-drop" onclick="document.getElementById('csv-file-input').click()">
+      <input type="file" id="csv-file-input" accept=".csv" onchange="handleFileUpload(event)">
+      <div class="file-drop-icon">📄</div>
+      <p>Drop your CSV here or click to browse</p>
+      <small>Accepts .csv files</small>
+    </div>
+
+    <div id="import-preview" style="display:none; margin-top:1.5rem;">
+      <div class="section-title">Import Preview</div>
+      <div id="import-preview-content"></div>
+      <div style="display:flex; gap:8px; margin-top:1rem;">
+        <button class="btn" id="confirm-import-btn" onclick="confirmImport()">Import All</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('import-preview').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+    <div class="ornament" style="margin: 2rem 0;">✦ ✦ ✦</div>
+
+    <div class="section-title">Export Data</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn" onclick="exportCSV()">Export Library as CSV</button>
+      <button class="btn btn-ghost" onclick="exportJSON()">Export as JSON</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ ADD/EDIT CATEGORY MODAL ═══ -->
+<div class="modal-backdrop" id="cat-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="cat-modal-title">Add Category</span>
+      <button class="modal-close" onclick="closeCatModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category Name *</label>
+            <input type="text" id="cat-name" placeholder="e.g. Witchcore Trivia">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist">
+            <datalist id="type-datalist"></datalist>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Theme</label>
+            <input type="text" id="cat-theme" placeholder="e.g. Witches & Magic, Gothic…">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <input type="text" id="cat-tags" placeholder="e.g. Teen TV, Supernatural, Movies…">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shows / Titles (one per line or pipe-separated)</label>
+          <textarea id="cat-shows" rows="5" placeholder="Vampire Diaries&#10;Charmed&#10;Sabrina the Teenage Witch&#10;The Craft"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" id="cat-notes" placeholder="Any extra info about this category">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banner Image</label>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+            <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
+          </div>
+          <input type="text" id="cat-banner-url" placeholder="Paste image URL…" oninput="handleCatBannerUrl(this.value)">
+          <div id="cat-banner-preview" style="display:none; margin-top:0.75rem; height:110px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+            <img id="cat-banner-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="" onerror="this.style.opacity=0.2">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="cat-modal-delete-btn" onclick="deleteCategoryFromModal()" style="display:none; margin-right:auto;">Delete Category</button>
+      <button class="btn btn-ghost" onclick="closeCatModal()">Cancel</button>
+      <button class="btn" onclick="saveCategoryFromModal()">Save Category</button>
+    </div>
   </div>
 </div>
 
-<footer class="site-footer">Belladonna Audio Alchemies &nbsp;✦&nbsp; Seattle–Tacoma</footer>
+<!-- ═══ NEW/EDIT NIGHT MODAL ═══ -->
+<div class="modal-backdrop" id="night-modal">
+  <div class="modal" style="max-width:800px;">
+    <div class="modal-header">
+      <span class="modal-title" id="night-modal-title">New Themed Night</span>
+      <button class="modal-close" onclick="closeNightModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Night Name *</label>
+          <input type="text" id="night-name" placeholder="e.g. Coven Night, Spooky Season Spectacular…">
+        </div>
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+            <input type="checkbox" id="night-published" style="accent-color:var(--gold); width:18px; height:18px; cursor:pointer; flex-shrink:0;">
+            <span style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published to Venue Page</span>
+          </label>
+          <p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this night appears on the public venue view.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Venue Description <span style="color:var(--text-dim); font-weight:400; font-style:italic; font-size:0.75rem; letter-spacing:0;">— visible to venues</span></label>
+          <textarea id="night-description" rows="3" placeholder="A short blurb about this night that venues will see. e.g. A witchy evening of occult trivia, spooky sing-alongs, and cauldron-worthy drinks…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex; align-items:center; gap:8px;">
+            Admin Notes
+            <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.3); color:#C0654F; padding:1px 7px; border-radius:3px; letter-spacing:0.08em; font-family:'Crimson Text',serif; text-transform:uppercase; font-style:normal;">Private</span>
+          </label>
+          <textarea id="night-admin-notes" rows="6" placeholder="Your private brainstorming space. Vibe references, movie lists, costume ideas, round structure ideas, anything…" style="font-size:15px; line-height:1.6;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Filter Tags</label>
+          <div id="night-modal-tags" style="display:flex; gap:6px; flex-wrap:wrap; min-height:32px; align-items:center;">
+            <span style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags available — add some via Manage Filters</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banner / Header Image</label>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
+            <input type="text" id="night-banner-color" placeholder="Background color (e.g. #2D1B4E)" style="width:180px;" oninput="handleNightBannerColorInput(this.value)">
+            <button class="btn btn-sm btn-danger" id="night-banner-clear" onclick="clearNightBanner()" style="display:none;">Remove</button>
+          </div>
+          <input type="text" id="night-banner-url" placeholder="Paste image URL…" oninput="handleNightBannerUrl(this.value)">
+          <div id="banner-preview" style="display:none; margin-top:0.75rem; aspect-ratio:4/5; max-width:200px; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
+            <img id="night-banner-img" style="width:100%; height:100%; object-fit:cover; display:none;" src="" alt="" onerror="this.style.opacity=0.2">
+            <div id="banner-preview-inner" style="width:100%; height:100%; background:transparent; display:flex; align-items:center; justify-content:center; position:absolute; inset:0;">
+              <span id="banner-preview-label" style="font-family:'Cinzel',serif; color:var(--gold); font-size:1rem; text-align:center; padding:0 1rem; text-shadow:0 1px 6px rgba(0,0,0,0.8);"></span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Night Enhancements</label>
+          <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:0.5rem; font-style:italic;">Decor, prizes, food/drinks, activities, vibe notes — anything that makes this night special.</p>
+          <div id="enhancements-list" style="display:grid; gap:6px; margin-bottom:8px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="enhancement-input" placeholder="e.g. Serve popcorn in little tins, Prizes are adult toys…" onkeydown="if(event.key==='Enter'){event.preventDefault();addEnhancement();}">
+            <button class="btn btn-sm" onclick="addEnhancement()" style="flex-shrink:0;">+ Add</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags <span style="color:var(--text-dim); font-size:0.72rem; font-style:italic; font-family:'Crimson Text',serif; text-transform:none; letter-spacing:0;">comma separated</span></label>
+          <input type="text" id="night-tags-input" placeholder="e.g. Witches, Dark, Halloween, 90s…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Categories for This Night</label>
+          <input type="search" id="night-cat-search" placeholder="Filter categories…" oninput="filterNightCatSelector()" style="margin-bottom:0.5rem;">
+          <div class="cat-selector" id="night-cat-selector"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="night-modal-delete-btn" onclick="deleteNightFromModal()" style="display:none; margin-right:auto;">Delete Night</button>
+      <button class="btn btn-ghost" onclick="closeNightModal()">Cancel</button>
+      <button class="btn" onclick="saveNight()">Save Night</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NIGHT TAGS MODAL ═══ -->
+<div class="modal-backdrop" id="night-tags-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Night Filters</span>
+      <button class="modal-close" onclick="closeNightTagsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">These filter tags appear on the Themed Nights page. Assign tags to a night in the Edit modal.</p>
+      <div id="night-tags-list" style="display:grid; gap:6px; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="night-tag-input" placeholder="Add a filter tag… e.g. Halloween" onkeydown="if(event.key==='Enter'){event.preventDefault();addNightTag();}">
+        <button class="btn btn-sm" onclick="addNightTag()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeNightTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:rgba(14,12,10,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:spin 2s linear infinite;">
+    <circle cx="24" cy="24" r="20" stroke="rgba(201,168,76,0.2)" stroke-width="2"/>
+    <path d="M24 4 A20 20 0 0 1 44 24" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <p style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.2em;color:#9E8E6A;text-transform:uppercase;">Awakening the Grimoire…</p>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore, collection, doc,
+  getDocs, getDoc, setDoc, updateDoc, deleteDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// ═══════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyAQUq6wKgBHIfaVCjxOXa7fpsJ0qmTocqI",
   authDomain: "belladonnabrainstormtool.firebaseapp.com",
@@ -353,122 +931,1241 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const catsCol = collection(db, 'categories');
+const nightsCol = collection(db, 'nights');
+const nightTagsDoc = doc(db, 'config', 'nightTags');
 
-let publishedNights = [];
+// ═══════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════
+let categories = [];
+let nights = [];
+let nightTags = []; // filter tags for the themed nights tab
+let editingCatIndex = -1;
+let editingNightIndex = -1;
+let pendingImport = [];
+let nightBannerData = null;
+let catBannerData = null;
+let activeNightFilters = new Set();
+let nightFiltersVisible = true;
 
-function esc(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// Slug a name into a safe Firestore doc ID
+function toId(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
+    + '-' + Math.abs(name.split('').reduce((a,c) => (a<<5)-a+c.charCodeAt(0)|0, 0)).toString(36);
 }
 
-async function load() {
+async function loadData() {
+  const loadingEl = document.getElementById('loading-overlay');
+  const loadingMsg = loadingEl.querySelector('p');
+
+  // 8-second timeout so a hung Firebase connection doesn't spin forever
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('timeout')), 8000)
+  );
+
   try {
-    const snap = await getDocs(collection(db, 'nights'));
-    publishedNights = snap.docs
-      .map(d => ({ _id: d.id, ...d.data() }))
-      .filter(n => n.published);
+    const [cSnap, nSnap, tSnap] = await Promise.race([
+      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]),
+      timeout
+    ]);
+    categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
+    nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
+    nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
   } catch(e) {
-    console.error(e);
+    console.error('Firebase load error:', e);
+    const msg = e.message === 'timeout'
+      ? 'Connection timed out. Check Firestore rules are set to allow read/write.'
+      : `Firebase error: ${e.code || e.message}`;
+    // Show error on the loading overlay instead of just spinning
+    loadingMsg.textContent = msg;
+    loadingMsg.style.color = '#C0654F';
+    loadingMsg.style.maxWidth = '320px';
+    loadingMsg.style.textAlign = 'center';
+    loadingMsg.style.letterSpacing = '0';
+    loadingMsg.style.textTransform = 'none';
+    loadingMsg.style.fontSize = '0.85rem';
+    // Add a "Continue Offline" button
+    const btn = document.createElement('button');
+    btn.textContent = 'Continue Offline';
+    btn.style.cssText = 'margin-top:1rem;padding:0.5rem 1.2rem;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;border-radius:4px;';
+    btn.onclick = () => {
+      loadingEl.style.display = 'none';
+      renderLibrary();
+    };
+    loadingEl.appendChild(btn);
+    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
+    return;
   }
+  loadingEl.style.display = 'none';
+  renderLibrary();
+}
 
-  document.getElementById('loading').style.display = 'none';
+async function compressBanner(dataUrl, maxW=800, quality=0.7) {
+  if (!dataUrl || !dataUrl.startsWith('data:')) return dataUrl; // URL string, pass through
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
 
-  if (!publishedNights.length) {
-    document.getElementById('empty').style.display = 'block';
+async function saveCat(cat) {
+  if (!cat._id) cat._id = toId(cat.name);
+  const data = { ...cat };
+  delete data._id;
+  if (data.bannerData && data.bannerData.startsWith('data:')) {
+    data.bannerData = await compressBanner(data.bannerData);
+  }
+  try {
+    await setDoc(doc(db, 'categories', cat._id), data);
+    cat._id = cat._id;
+  } catch(e) {
+    console.error('saveCat error:', e);
+    throw new Error(e.code === 'permission-denied'
+      ? 'Permission denied — check Firestore rules'
+      : e.message || 'Firestore write failed');
+  }
+}
+
+async function deleteCat(cat) {
+  if (cat._id) await deleteDoc(doc(db, 'categories', cat._id));
+}
+
+async function saveNightDoc(night) {
+  if (!night._id) night._id = toId(night.name);
+  const data = { ...night };
+  delete data._id;
+  if (data.bannerData && data.bannerData.startsWith('data:')) {
+    data.bannerData = await compressBanner(data.bannerData, 1000, 0.75);
+  }
+  try {
+    await setDoc(doc(db, 'nights', night._id), data);
+  } catch(e) {
+    console.error('saveNightDoc error:', e);
+    throw new Error(e.code === 'permission-denied'
+      ? 'Permission denied — check Firestore rules'
+      : e.message || 'Firestore write failed');
+  }
+}
+
+async function deleteNightDoc(night) {
+  if (night._id) await deleteDoc(doc(db, 'nights', night._id));
+}
+
+async function saveNightTags() {
+  await setDoc(nightTagsDoc, { tags: nightTags });
+}
+
+async function batchSaveCats(cats) {
+  const CHUNK = 400;
+  for (let i = 0; i < cats.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    cats.slice(i, i + CHUNK).forEach(cat => {
+      if (!cat._id) cat._id = toId(cat.name);
+      const { _id, ...data } = cat;
+      batch.set(doc(db, 'categories', _id), data);
+    });
+    await batch.commit();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (t.textContent.toLowerCase().includes(name === 'library' ? 'librar' : name === 'nights' ? 'night' : 'import')) t.classList.add('active');
+  });
+  if (name === 'library') renderLibrary();
+  if (name === 'nights') renderNights();
+}
+
+// ═══════════════════════════════════════════════
+// LIBRARY
+// ═══════════════════════════════════════════════
+function populateFilters() {
+  const types = [...new Set(categories.map(c => c.type).filter(Boolean))].sort();
+  const themes = [...new Set(categories.map(c => c.theme).filter(Boolean))].sort();
+  const tags = [...new Set(categories.flatMap(c => (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean)))].sort();
+  const tSel = document.getElementById('lib-filter-type');
+  const thSel = document.getElementById('lib-filter-theme');
+  const tagSel = document.getElementById('lib-filter-tag');
+  const tVal = tSel.value, thVal = thSel.value, tagVal = tagSel.value;
+  tSel.innerHTML = '<option value="">All Types</option>' + types.map(t => `<option value="${esc(t)}" ${t===tVal?'selected':''}>${esc(t)}</option>`).join('');
+  thSel.innerHTML = '<option value="">All Themes</option>' + themes.map(t => `<option value="${esc(t)}" ${t===thVal?'selected':''}>${esc(t)}</option>`).join('');
+  tagSel.innerHTML = '<option value="">All Tags</option>' + tags.map(t => `<option value="${esc(t)}" ${t===tagVal?'selected':''}>${esc(t)}</option>`).join('');
+
+  const dl = document.getElementById('type-datalist');
+  if (dl) dl.innerHTML = types.map(t => `<option value="${esc(t)}">`).join('');
+}
+
+function isBingo(cat) {
+  return (cat.type || '').toLowerCase().includes('bingo');
+}
+
+function renderLibrary() {
+  populateFilters();
+  const typeF = document.getElementById('lib-filter-type').value;
+  const themeF = document.getElementById('lib-filter-theme').value;
+  const tagF = document.getElementById('lib-filter-tag').value;
+  const showBingo = document.getElementById('show-bingo').checked;
+
+  let filtered = categories.filter(c => {
+    if (!showBingo && isBingo(c)) return false;
+    if (typeF && c.type !== typeF) return false;
+    if (themeF && c.theme !== themeF) return false;
+    if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
+    return true;
+  });
+
+  const bingoCount = categories.filter(isBingo).length;
+  const visibleTotal = showBingo ? categories.length : categories.length - bingoCount;
+  document.getElementById('lib-results-meta').textContent =
+    filtered.length === visibleTotal
+      ? `${filtered.length} categories${!showBingo && bingoCount ? ` · ${bingoCount} bingo hidden` : ''}`
+      : `${filtered.length} of ${visibleTotal} categories${!showBingo && bingoCount ? ` · ${bingoCount} bingo hidden` : ''}`;
+
+  document.getElementById('lib-empty').style.display = (categories.length === 0 || (!showBingo && categories.every(isBingo))) ? 'block' : 'none';
+  document.getElementById('category-grid').innerHTML = filtered.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('');
+}
+
+function categoryCardHTML(cat, idx, highlight) {
+  const showsHtml = (cat.shows || []).map(s => {
+    const isMatch = highlight && s.toLowerCase().includes(highlight.toLowerCase());
+    return `<span class="show-tag${isMatch ? ' highlight' : ''}">${esc(s)}</span>`;
+  }).join('<span style="color:var(--text-dim)"> · </span>');
+
+  const bannerHtml = cat.bannerData
+    ? `<div style="height:110px; overflow:hidden; border-radius:4px 4px 0 0; position:relative; background:var(--surface2); margin:-1.1rem -1.3rem 0.9rem;">
+        <img src="${cat.bannerData}" style="width:100%; height:100%; object-fit:cover; display:block;" alt="">
+      </div>`
+    : '';
+
+  return `<div class="category-card"
+    draggable="true"
+    ondragstart="onCatDragStart(event,${idx})"
+    ondragend="onCatDragEnd(event)"
+    ondragover="onCatDragOver(event,${idx})"
+    ondragleave="onCatDragLeave(event)"
+    ondrop="onCatDrop(event,${idx})"
+    style="${cat.bannerData ? 'padding-top:0;' : ''}">
+    ${bannerHtml}
+    <div class="category-card-header"><div class="category-card-name">${esc(cat.name)}</div></div>
+    <div style="margin-bottom:0.5rem; display:flex; align-items:center; gap:8px; flex-wrap:nowrap;">
+      ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
+      ${cat.theme ? `<span style="font-size:0.78rem; font-weight:700; color:var(--text); letter-spacing:0.02em;">${esc(cat.theme)}</span>` : ''}
+    </div>
+    ${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:0.6rem;">${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.68rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+    <div class="category-shows">${showsHtml || '<span style="color:var(--text-dim); font-style:italic;">No shows listed</span>'}</div>
+    ${cat.notes ? `<p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.5rem; font-style:italic;">${esc(cat.notes)}</p>` : ''}
+    <div class="category-card-actions">
+      <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem; border-radius:3px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
+      <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════
+function runSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  const searchResults = document.getElementById('search-results');
+  const searchMeta = document.getElementById('search-results-meta');
+  const filterGrid = document.getElementById('filter-and-grid');
+
+  if (!q) {
+    searchResults.style.display = 'none';
+    searchMeta.style.display = 'none';
+    filterGrid.style.display = 'block';
     return;
   }
 
-  const grid = document.getElementById('nights-grid');
-  grid.style.display = 'grid';
-  grid.innerHTML = publishedNights.map((n, i) => {
-    const bgColor = n.bannerColor ? `background:${n.bannerColor};` : '';
-    const bannerImg = n.bannerData
-      ? `<img src="${n.bannerData}" alt="${esc(n.name)}">`
-      : '';
-    const catPreview = (n.categoryIds || []).slice(0, 5).map(id =>
-      `<span>${esc(id)}</span>`
-    ).join('');
-    const more = (n.categoryIds || []).length > 5
-      ? `<span style="color:var(--text-dim); font-style:italic;">+${(n.categoryIds||[]).length - 5} more…</span>` : '';
+  filterGrid.style.display = 'none';
 
-    return `<div class="night-card" onclick="openDetail(${i})">
-      <div class="night-banner" style="${bgColor}">
+  const ql = q.toLowerCase();
+  // Search always includes bingo categories
+  const matches = categories.filter(c =>
+    (c.shows || []).some(s => s.toLowerCase().includes(ql)) ||
+    c.name.toLowerCase().includes(ql) ||
+    (c.theme && c.theme.toLowerCase().includes(ql)) ||
+    (c.type && c.type.toLowerCase().includes(ql)) ||
+    (c.tags && c.tags.toLowerCase().includes(ql))
+  );
+
+  const bingoMatches = matches.filter(isBingo).length;
+  searchMeta.style.display = 'block';
+  searchMeta.textContent = matches.length > 0
+    ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} matching "${q}"${bingoMatches ? ` (${bingoMatches} bingo)` : ''}`
+    : `No categories found for "${q}"`;
+
+  searchResults.style.display = matches.length > 0 ? 'grid' : 'none';
+  searchResults.innerHTML = matches.map(c => categoryCardHTML(c, categories.indexOf(c), q)).join('');
+}
+
+// ═══════════════════════════════════════════════
+// CATEGORY MODAL
+// ═══════════════════════════════════════════════
+function openAddCategoryModal() {
+  editingCatIndex = -1;
+  catBannerData = null;
+  document.getElementById('cat-modal-title').textContent = 'Add Category';
+  document.getElementById('cat-name').value = '';
+  document.getElementById('cat-type').value = '';
+  document.getElementById('cat-theme').value = '';
+  document.getElementById('cat-shows').value = '';
+  document.getElementById('cat-notes').value = '';
+  document.getElementById('cat-tags').value = '';
+  document.getElementById('cat-banner-url').value = '';
+  setCatBannerPreview(null);
+  document.getElementById('cat-modal-delete-btn').style.display = 'none';
+  document.getElementById('cat-modal').classList.add('open');
+}
+
+function editCategory(idx) {
+  editingCatIndex = idx;
+  const c = categories[idx];
+  catBannerData = c.bannerData || null;
+  document.getElementById('cat-banner-url').value = (c.bannerData && !c.bannerData.startsWith('data:')) ? c.bannerData : '';
+  document.getElementById('cat-modal-title').textContent = 'Edit Category';
+  document.getElementById('cat-name').value = c.name || '';
+  document.getElementById('cat-type').value = c.type || '';
+  document.getElementById('cat-theme').value = c.theme || '';
+  document.getElementById('cat-shows').value = (c.shows || []).join('\n');
+  document.getElementById('cat-notes').value = c.notes || '';
+  document.getElementById('cat-tags').value = c.tags || '';
+  setCatBannerPreview(c.bannerData || null);
+  document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
+  document.getElementById('cat-modal').classList.add('open');
+}
+
+function closeCatModal() {
+  document.getElementById('cat-modal').classList.remove('open');
+}
+
+function setCatBannerPreview(src) {
+  const preview = document.getElementById('cat-banner-preview');
+  const img = document.getElementById('cat-banner-img');
+  const clearBtn = document.getElementById('cat-banner-clear');
+  if (src) {
+    img.src = src;
+    preview.style.display = 'block';
+    clearBtn.style.display = 'inline-flex';
+  } else {
+    img.src = '';
+    preview.style.display = 'none';
+    clearBtn.style.display = 'none';
+    document.getElementById('cat-banner-url').value = '';
+  }
+}
+
+function handleCatBannerUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    catBannerData = ev.target.result;
+    document.getElementById('cat-banner-url').value = '';
+    setCatBannerPreview(catBannerData);
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function handleCatBannerUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed) {
+    catBannerData = trimmed;
+    setCatBannerPreview(trimmed);
+  } else {
+    catBannerData = null;
+    document.getElementById('cat-banner-preview').style.display = 'none';
+    document.getElementById('cat-banner-clear').style.display = 'none';
+  }
+}
+
+function clearCatBanner() {
+  catBannerData = null;
+  setCatBannerPreview(null);
+}
+
+async function saveCategoryFromModal() {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) { toast('Category name is required', 'error'); return; }
+
+  const showsRaw = document.getElementById('cat-shows').value;
+  const shows = showsRaw.split(/[\n|]/).map(s => s.trim()).filter(Boolean);
+
+  const isEdit = editingCatIndex >= 0;
+  const existing = isEdit ? categories[editingCatIndex] : {};
+  const cat = {
+    ...(existing._id ? { _id: existing._id } : {}),
+    name,
+    type: document.getElementById('cat-type').value.trim(),
+    theme: document.getElementById('cat-theme').value.trim(),
+    shows,
+    notes: document.getElementById('cat-notes').value.trim(),
+    tags: document.getElementById('cat-tags').value.trim(),
+    bannerData: catBannerData || null
+  };
+
+  try {
+    await saveCat(cat);
+    if (isEdit) categories[editingCatIndex] = cat;
+    else categories.push(cat);
+    toast(isEdit ? 'Category updated' : 'Category added');
+  } catch(e) {
+    toast(e.message || 'Save failed — check connection', 'error'); return;
+  }
+  closeCatModal();
+  renderLibrary();
+}
+
+async function deleteCategory(idx) {
+  if (!confirm(`Delete "${categories[idx].name}"?`)) return;
+  try {
+    await deleteCat(categories[idx]);
+    categories.splice(idx, 1);
+    toast('Category deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  renderLibrary();
+}
+
+async function deleteCategoryFromModal() {
+  if (editingCatIndex < 0) return;
+  const cat = categories[editingCatIndex];
+  if (!confirm(`Delete "${cat.name}"? This cannot be undone.`)) return;
+  try {
+    await deleteCat(cat);
+    categories.splice(editingCatIndex, 1);
+    toast('Category deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  closeCatModal();
+  renderLibrary();
+}
+
+// ═══════════════════════════════════════════════
+// THEMED NIGHTS
+// ═══════════════════════════════════════════════
+function renderNights() {
+  renderNightFilterChips();
+  const grid = document.getElementById('nights-grid');
+  const filtered = activeNightFilters.size > 0
+    ? nights.filter(n => [...activeNightFilters].every(f => (n.filterTags || []).includes(f)))
+    : nights;
+  const empty = document.getElementById('nights-empty');
+  empty.style.display = filtered.length === 0 ? 'block' : 'none';
+  grid.innerHTML = filtered.map((n, i) => {
+    const realIdx = nights.indexOf(n);
+    i = realIdx;
+    const bgColor = n.bannerColor ? `background:${n.bannerColor};` : `background:var(--surface2);`;
+    const bannerImg = n.bannerData
+      ? `<img src="${n.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">`
+      : '';
+    const catNames = (n.categoryIds || []);
+    const catListHtml = catNames.length
+      ? catNames.map(id => `<span style="display:block; padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.88rem; color:var(--text-muted); line-height:1.3;">${esc(id)}</span>`).join('')
+      : `<span style="font-size:0.82rem; color:var(--text-dim); font-style:italic;">No categories yet</span>`;
+    return `<div class="night-card"
+      draggable="true"
+      ondragstart="onNightDragStart(event,${i})"
+      ondragend="onNightDragEnd(event)"
+      ondragover="onNightDragOver(event,${i})"
+      ondragleave="onNightDragLeave(event)"
+      ondrop="onNightDrop(event,${i})">
+      <div class="night-banner" style="${bgColor}" onclick="openNightDetail(${i})">
         ${bannerImg}
       </div>
-      <div class="night-info">
-        <div class="night-name">${esc(n.name)}</div>
-        <div class="night-cats">${catPreview}${more}</div>
+      <div class="night-card-body" onclick="openNightDetail(${i})">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.35rem;">
+          <div class="night-card-name" style="margin-bottom:0;">${esc(n.name)}</div>
+          ${n.published ? `<span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;background:rgba(42,107,58,0.2);color:#7DC996;border:1px solid rgba(42,107,58,0.4);padding:2px 7px;border-radius:3px;flex-shrink:0;">Published</span>` : ''}
+        </div>
+        ${(n.nightTagsList||[]).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0.5rem;">${(n.nightTagsList||[]).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+        <div style="margin-top:0.6rem; max-height:160px; overflow-y:auto;">${catListHtml}</div>
+      </div>
+      <div class="night-card-footer" onclick="event.stopPropagation()">
+        <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
+        <button class="btn btn-sm btn-ghost" onclick="editNight(${i})">Edit</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function openDetail(i) {
-  const n = publishedNights[i];
+function openNightDetail(idx) {
+  const night = nights[idx];
+  const nightCats = (night.categoryIds || [])
+    .map(id => categories.find(c => c.name === id))
+    .filter(Boolean);
 
-  // Banner
-  const bannerEl = document.getElementById('detail-banner');
-  const bgColor = n.bannerColor ? `background:${n.bannerColor};` : '';
-  bannerEl.style.cssText = bgColor;
-  bannerEl.innerHTML = n.bannerData ? `<img src="${n.bannerData}" alt="${esc(n.name)}">` : '';
+  const bannerBg = night.bannerColor ? `background:${night.bannerColor};` : '';
+  const bannerImg = night.bannerData ? `<img src="${night.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">` : '';
 
-  // Name
-  document.getElementById('detail-name').textContent = n.name;
+  const detail = document.getElementById('night-detail-view');
+  const list = document.getElementById('nights-list-view');
+  list.style.display = 'none';
+  detail.style.display = 'block';
 
-  // Tags
-  const tagsEl = document.getElementById('detail-tags');
-  const tags = n.nightTagsList || [];
-  if (tags.length && tagsEl) {
-    tagsEl.innerHTML = tags.map(t => `<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.7rem;padding:2px 9px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;">${esc(t)}</span>`).join('');
-    tagsEl.style.display = 'flex';
-  } else if (tagsEl) {
-    tagsEl.style.display = 'none';
-  }
+  const typeBreakdown = {};
+  nightCats.forEach(c => { if (c.type) typeBreakdown[c.type] = (typeBreakdown[c.type] || 0) + 1; });
 
-  // Description
-  const descSection = document.getElementById('detail-description-section');
-  const descEl = document.getElementById('detail-description');
-  if (n.description) {
-    descEl.textContent = n.description;
-    descSection.style.display = 'block';
+  const enhList = (night.enhancements || []);
+
+  detail.innerHTML = `
+    <button class="back-btn" onclick="closeNightDetail()">← Back to Nights</button>
+    <div class="night-detail-banner" style="${bannerBg}">
+      ${bannerImg}
+      <div class="night-detail-banner-text">${esc(night.name)}</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><span class="stat-num">${nightCats.length}</span><span class="stat-label">Categories</span></div>
+      ${Object.entries(typeBreakdown).map(([t,n]) => `<div class="stat-box"><span class="stat-num">${n}</span><span class="stat-label">${esc(t)}</span></div>`).join('')}
+      ${enhList.length ? `<div class="stat-box"><span class="stat-num">${enhList.length}</span><span class="stat-label">Enhancements</span></div>` : ''}
+    </div>
+    ${(night.nightTagsList||[]).length ? `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;">${(night.nightTagsList||[]).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.72rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+    ${night.description ? `
+    <div class="section-title">Venue Description</div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:1rem; color:var(--text-muted); line-height:1.7;">${esc(night.description)}</div>` : ''}
+    ${night.adminNotes ? `
+    <div class="section-title" style="color:#C0654F;">
+      <span style="font-size:0.65rem; background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.3); color:#C0654F; padding:1px 7px; border-radius:3px; margin-right:6px;">Private</span>Admin Notes
+    </div>
+    <div style="background:rgba(30,18,14,0.8); border:1px solid rgba(139,58,42,0.25); border-radius:5px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:0.95rem; color:var(--text-muted); line-height:1.8; white-space:pre-wrap;">${esc(night.adminNotes)}</div>` : ''}
+    ${enhList.length ? `
+    <div class="section-title">Night Enhancements</div>
+    <div style="display:grid; gap:8px; margin-bottom:2rem;">
+      ${enhList.map(e => `
+        <div style="display:flex; align-items:flex-start; gap:12px; background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:0.75rem 1rem;">
+          <span style="color:var(--gold); font-size:1rem; margin-top:1px; flex-shrink:0;">✦</span>
+          <span style="font-size:1rem; color:var(--text); line-height:1.5;">${esc(e)}</span>
+        </div>`).join('')}
+    </div>` : ''}
+    <div class="section-title">Categories in This Night</div>
+    <div class="category-grid">
+      ${nightCats.length ? nightCats.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('') : '<p style="color:var(--text-dim); font-style:italic;">No categories assigned to this night.</p>'}
+    </div>
+  `;
+}
+
+function closeNightDetail() {
+  document.getElementById('nights-list-view').style.display = 'block';
+  document.getElementById('night-detail-view').style.display = 'none';
+}
+
+function openNewNightModal() {
+  editingNightIndex = -1;
+  nightBannerData = null;
+  document.getElementById('night-modal-title').textContent = 'New Themed Night';
+  document.getElementById('night-name').value = '';
+  document.getElementById('night-banner-color').value = '';
+  document.getElementById('night-banner-url').value = '';
+  setNightBannerPreview(null);
+  document.getElementById('night-published').checked = false;
+  document.getElementById('night-description').value = '';
+  document.getElementById('night-admin-notes').value = '';
+  document.getElementById('night-tags-input').value = '';
+  populateNightModalTags([]);
+  renderEnhancements([]);
+  populateNightCatSelector([]);
+  document.getElementById('night-modal-delete-btn').style.display = 'none';
+  document.getElementById('night-modal').classList.add('open');
+}
+
+function editNight(idx) {
+  editingNightIndex = idx;
+  const n = nights[idx];
+  nightBannerData = n.bannerData || null;
+  document.getElementById('night-modal-title').textContent = 'Edit Night';
+  document.getElementById('night-name').value = n.name || '';
+  document.getElementById('night-banner-color').value = n.bannerColor || '';
+  document.getElementById('night-banner-url').value = (n.bannerData && !n.bannerData.startsWith('data:')) ? n.bannerData : '';
+  setNightBannerPreview(n.bannerData || null, n.bannerColor || null, n.name);
+  document.getElementById('night-published').checked = !!n.published;
+  document.getElementById('night-description').value = n.description || '';
+  document.getElementById('night-admin-notes').value = n.adminNotes || '';
+  document.getElementById('night-tags-input').value = (n.nightTagsList || []).join(', ');
+  populateNightModalTags(n.filterTags || []);
+  renderEnhancements(n.enhancements || []);
+  populateNightCatSelector(n.categoryIds || []);
+  document.getElementById('night-modal-delete-btn').style.display = 'inline-flex';
+  document.getElementById('night-modal').classList.add('open');
+}
+
+function closeNightModal() {
+  document.getElementById('night-modal').classList.remove('open');
+}
+
+function setNightBannerPreview(imgSrc, color, label) {
+  const preview = document.getElementById('banner-preview');
+  const img = document.getElementById('night-banner-img');
+  const inner = document.getElementById('banner-preview-inner');
+  const lbl = document.getElementById('banner-preview-label');
+  const clearBtn = document.getElementById('night-banner-clear');
+  lbl.textContent = label || document.getElementById('night-name').value || 'Preview';
+  if (imgSrc) {
+    img.src = imgSrc;
+    img.style.display = 'block';
+    inner.style.background = 'transparent';
+    preview.style.background = 'var(--surface2)';
+    clearBtn.style.display = 'inline-flex';
+  } else if (color) {
+    img.style.display = 'none';
+    img.src = '';
+    inner.style.background = 'transparent';
+    preview.style.background = color;
+    clearBtn.style.display = 'inline-flex';
   } else {
-    descSection.style.display = 'none';
+    img.style.display = 'none';
+    img.src = '';
+    inner.style.background = 'transparent';
+    preview.style.background = 'var(--surface2)';
+    clearBtn.style.display = 'none';
   }
+  preview.style.display = (imgSrc || color) ? 'block' : 'none';
+}
 
-  // Categories
-  const cats = n.categoryIds || [];
-  document.getElementById('detail-cats').innerHTML = cats.length
-    ? cats.map(id => `<div class="detail-cat-item">${esc(id)}</div>`).join('')
-    : `<div class="detail-cat-item" style="color:var(--text-dim); font-style:italic;">No categories listed</div>`;
+function clearNightBanner() {
+  nightBannerData = null;
+  document.getElementById('night-banner-url').value = '';
+  document.getElementById('night-banner-color').value = '';
+  setNightBannerPreview(null, null, null);
+}
 
-  // Enhancements
-  const enhancements = n.enhancements || [];
-  const enhSection = document.getElementById('detail-enhancements-section');
-  if (enhancements.length) {
-    document.getElementById('detail-enhancements').innerHTML =
-      enhancements.map(e => `<div class="detail-enhance-item">${esc(e)}</div>`).join('');
-    enhSection.style.display = 'block';
+function handleBannerUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    nightBannerData = ev.target.result;
+    document.getElementById('night-banner-url').value = '';
+    setNightBannerPreview(nightBannerData, null, null);
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleNightBannerUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed) {
+    nightBannerData = trimmed;
+    setNightBannerPreview(trimmed, null, null);
   } else {
-    enhSection.style.display = 'none';
+    nightBannerData = null;
+    const color = document.getElementById('night-banner-color').value.trim();
+    setNightBannerPreview(null, color || null, null);
+  }
+}
+
+function handleNightBannerColorInput(color) {
+  if (!nightBannerData) {
+    setNightBannerPreview(null, color || null, null);
+    if (!color) document.getElementById('banner-preview').style.display = 'none';
+  }
+}
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'night-name') {
+    document.getElementById('banner-preview-label').textContent = e.target.value;
+  }
+});
+
+function populateNightCatSelector(selectedIds) {
+  const sel = document.getElementById('night-cat-selector');
+  sel.innerHTML = categories.map(c =>
+    `<label class="cat-select-item${selectedIds.includes(c.name) ? ' selected' : ''}">
+      <input type="checkbox" value="${esc(c.name)}" ${selectedIds.includes(c.name) ? 'checked' : ''} onchange="this.closest('label').classList.toggle('selected',this.checked)">
+      ${c.bannerData ? `<img src="${c.bannerData}" style="width:48px; height:32px; object-fit:cover; border-radius:3px; flex-shrink:0;" alt="">` : ''}
+      <span class="cat-select-name">${esc(c.name)}${c.type ? ` <span class="badge badge-type" style="font-size:0.65rem;">${esc(c.type)}</span>` : ''}</span>
+    </label>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ENHANCEMENTS
+// ═══════════════════════════════════════════════
+let _enhancements = [];
+
+function renderEnhancements(items) {
+  _enhancements = [...items];
+  const list = document.getElementById('enhancements-list');
+  list.innerHTML = _enhancements.map((item, i) =>
+    `<div class="enhancement-item" data-value="${esc(item)}" style="display:flex; align-items:center; gap:8px; background:var(--surface3); border:1px solid var(--border); border-radius:4px; padding:0.45rem 0.75rem;">
+      <span style="flex:1; font-size:0.92rem; color:var(--text);">${esc(item)}</span>
+      <button onclick="removeEnhancement(${i})" style="background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1rem; line-height:1; padding:0; transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function addEnhancement() {
+  const input = document.getElementById('enhancement-input');
+  const val = input.value.trim();
+  if (!val) return;
+  _enhancements.push(val);
+  renderEnhancements(_enhancements);
+  input.value = '';
+  input.focus();
+}
+
+function removeEnhancement(idx) {
+  _enhancements.splice(idx, 1);
+  renderEnhancements(_enhancements);
+}
+
+function filterNightCatSelector() {
+  const q = document.getElementById('night-cat-search').value.toLowerCase();
+  document.querySelectorAll('#night-cat-selector .cat-select-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function saveNight() {
+  const name = document.getElementById('night-name').value.trim();
+  if (!name) { toast('Night name is required', 'error'); return; }
+
+  const checked = [...document.querySelectorAll('#night-cat-selector input[type="checkbox"]:checked')].map(cb => cb.value);
+  const color = document.getElementById('night-banner-color').value.trim();
+  const isEdit = editingNightIndex >= 0;
+  const existing = isEdit ? nights[editingNightIndex] : {};
+
+  const enhancements = [...document.querySelectorAll('#enhancements-list .enhancement-item')].map(el => el.dataset.value).filter(Boolean);
+  const filterTags = getSelectedNightModalTags();
+
+  const night = {
+    ...(existing._id ? { _id: existing._id } : {}),
+    name,
+    bannerData: nightBannerData || null,
+    bannerColor: color,
+    categoryIds: checked,
+    enhancements,
+    filterTags,
+    published: document.getElementById('night-published').checked,
+    description: document.getElementById('night-description').value.trim(),
+    adminNotes: document.getElementById('night-admin-notes').value.trim(),
+    nightTagsList: document.getElementById('night-tags-input').value.split(',').map(t=>t.trim()).filter(Boolean)
+  };
+
+  try {
+    await saveNightDoc(night);
+    if (isEdit) nights[editingNightIndex] = night;
+    else nights.push(night);
+    toast(isEdit ? 'Night updated' : 'Themed night created');
+  } catch(e) {
+    toast(e.message || 'Save failed — check connection', 'error'); return;
+  }
+  closeNightModal();
+  renderNights();
+}
+
+async function deleteNight(idx) {
+  if (!confirm(`Delete "${nights[idx].name}"?`)) return;
+  try {
+    await deleteNightDoc(nights[idx]);
+    nights.splice(idx, 1);
+    toast('Night deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  renderNights();
+}
+
+async function deleteNightFromModal() {
+  if (editingNightIndex < 0) return;
+  const night = nights[editingNightIndex];
+  if (!confirm(`Delete "${night.name}"? This cannot be undone.`)) return;
+  try {
+    await deleteNightDoc(night);
+    nights.splice(editingNightIndex, 1);
+    toast('Night deleted');
+  } catch(e) {
+    toast('Delete failed — check connection', 'error'); return;
+  }
+  closeNightModal();
+  renderNights();
+}
+
+// ═══════════════════════════════════════════════
+// CSV IMPORT
+// ═══════════════════════════════════════════════
+const dropZone = document.getElementById('file-drop');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) parseCSVFile(file);
+});
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (file) parseCSVFile(file);
+}
+
+function parseCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const parsed = parseCSV(e.target.result);
+    if (!parsed.length) { toast('No data found in CSV', 'error'); return; }
+    pendingImport = parsed;
+    showImportPreview(parsed);
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVRow(lines[0]).map(h => h.toLowerCase().trim());
+
+  // Detect which named format this file matches:
+  // FORMAT A (trivia): Category | Sub-Category | Themes/Keywords | Key Examples/Notes
+  // FORMAT B (bingo):  Category | Title         | Themes/Keywords
+  // FORMAT C (generic): Type | Name | Theme | Shows  (fallback)
+
+  const hasSub   = headers.some(h => h.includes('sub'));
+  const hasTitle = headers.some(h => h === 'title');
+  const hasCat   = headers.some(h => h === 'category' || (h.includes('cat') && !h.includes('sub')));
+
+  let rName, rType, rTheme, rShows;
+
+  if (hasSub && hasCat) {
+    // FORMAT A — trivia spreadsheet
+    rType  = headers.findIndex(h => h === 'category' || (h.includes('cat') && !h.includes('sub')));
+    rName  = headers.findIndex(h => h.includes('sub'));
+    rTheme = headers.findIndex(h => h.includes('theme') || h.includes('keyword'));
+    rShows = headers.findIndex(h => h.includes('example') || h.includes('note') || h.includes('key'));
+  } else if (hasTitle && hasCat) {
+    // FORMAT B — bingo spreadsheet
+    rType  = headers.findIndex(h => h === 'category' || (h.includes('cat') && !h.includes('sub')));
+    rName  = headers.findIndex(h => h === 'title');
+    rTheme = headers.findIndex(h => h.includes('theme') || h.includes('keyword'));
+    rShows = -1; // bingo has no shows column
+  } else {
+    // FORMAT C — generic fallback
+    rType  = headers.findIndex(h => h === 'type') >= 0 ? headers.findIndex(h => h === 'type') : 0;
+    rName  = headers.findIndex(h => h === 'name') >= 0 ? headers.findIndex(h => h === 'name') : 1;
+    rTheme = headers.findIndex(h => h.includes('theme')) >= 0 ? headers.findIndex(h => h.includes('theme')) : 2;
+    rShows = headers.findIndex(h => h.includes('show') || h.includes('example'));
   }
 
-  document.getElementById('detail-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Safe fallbacks if any index is still -1
+  if (rName  < 0) rName  = 1;
+  if (rType  < 0) rType  = 0;
+  if (rTheme < 0) rTheme = 2;
+
+  return lines.slice(1).map(line => {
+    const cols = parseCSVRow(line);
+    const showsRaw = rShows >= 0 ? (cols[rShows] || '') : '';
+    const shows = showsRaw.split(/[|,]/).map(s => s.trim()).filter(s => s.length > 1);
+    return {
+      name:  (cols[rName]  || '').trim(),
+      type:  (cols[rType]  || '').trim(),
+      theme: (cols[rTheme] || '').trim(),
+      notes: '',
+      shows
+    };
+  }).filter(c => c.name);
 }
 
-function closeDetail() {
-  document.getElementById('detail-overlay').classList.remove('open');
-  document.body.style.overflow = '';
+function parseCSVRow(row) {
+  const cols = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      if (inQuote && row[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      cols.push(cur.trim()); cur = '';
+    } else cur += ch;
+  }
+  cols.push(cur.trim());
+  return cols;
 }
 
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('detail-overlay')) closeDetail();
+function showImportPreview(data) {
+  const preview = document.getElementById('import-preview');
+  const content = document.getElementById('import-preview-content');
+  preview.style.display = 'block';
+
+  content.innerHTML = `<p style="color:var(--text-muted); margin-bottom:1rem; font-size:0.95rem;">Found <strong style="color:var(--gold)">${data.length}</strong> categories to import.</p>
+  <div class="category-grid">${data.slice(0, 6).map(c => categoryCardHTML(c, -1, '')).join('')}</div>
+  ${data.length > 6 ? `<p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.75rem; font-style:italic;">…and ${data.length - 6} more</p>` : ''}`;
 }
 
-window.openDetail = openDetail;
-window.closeDetail = closeDetail;
-window.handleOverlayClick = handleOverlayClick;
+function confirmImport() {
+  const btn = document.getElementById('confirm-import-btn');
+  const mode = btn.dataset.mode || 'append';
 
-load();
+  if (mode === 'ask' || !btn.dataset.mode) {
+    const existing = categories.length;
+    if (existing > 0) {
+      btn.textContent = 'Replace All';
+      btn.dataset.mode = 'replace';
+      const appendBtn = document.createElement('button');
+      appendBtn.className = 'btn';
+      appendBtn.textContent = 'Add to Existing';
+      appendBtn.onclick = () => doImport('append');
+      btn.parentNode.insertBefore(appendBtn, btn);
+      return;
+    }
+  }
+
+  doImport('append');
+}
+
+async function doImport(mode) {
+  const btn = document.getElementById('confirm-import-btn');
+  btn.textContent = 'Importing…';
+  btn.disabled = true;
+  try {
+    if (mode === 'replace') {
+      // Delete existing first
+      const batch = writeBatch(db);
+      categories.forEach(c => { if (c._id) batch.delete(doc(db, 'categories', c._id)); });
+      await batch.commit();
+      categories = [...pendingImport];
+    } else {
+      categories = [...categories, ...pendingImport];
+    }
+    await batchSaveCats(categories);
+    toast(`Imported ${pendingImport.length} categories`, 'success');
+  } catch(e) {
+    toast('Import failed — check connection', 'error');
+  }
+  renderLibrary();
+  document.getElementById('import-preview').style.display = 'none';
+  pendingImport = [];
+  btn.textContent = 'Import All';
+  btn.disabled = false;
+  delete btn.dataset.mode;
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════
+function exportCSV() {
+  const rows = [['Name','Type','Theme','Shows','Notes']];
+  categories.forEach(c => rows.push([c.name, c.type||'', c.theme||'', (c.shows||[]).join(' | '), c.notes||'']));
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  download('belladonna-categories.csv', csv, 'text/csv');
+}
+
+function exportJSON() {
+  download('belladonna-data.json', JSON.stringify({categories, nights}, null, 2), 'application/json');
+}
+
+function download(filename, content, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type: mime}));
+  a.download = filename;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════
+// NIGHT FILTER TAGS
+// ═══════════════════════════════════════════════
+
+function renderNightFilterChips() {
+  const bar = document.getElementById('night-filter-chips');
+  bar.style.display = nightFiltersVisible ? 'flex' : 'none';
+  const allActive = activeNightFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearNightFilters()">All</button>`
+    + nightTags.map((t, i) =>
+      `<button class="filter-chip${activeNightFilters.has(t) ? ' active' : ''}"
+        draggable="true"
+        ondragstart="onFilterDragStart(event,${i})"
+        ondragover="event.preventDefault()"
+        ondrop="onFilterDrop(event,${i})"
+        onclick="toggleNightFilter('${esc(t)}')">${esc(t)}</button>`
+    ).join('');
+  const btn = document.getElementById('filter-visibility-btn');
+  if (btn) btn.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+}
+
+function clearNightFilters() {
+  activeNightFilters.clear();
+  renderNightFilterChips();
+  renderNights();
+}
+
+function toggleNightFilter(tag) {
+  if (activeNightFilters.has(tag)) activeNightFilters.delete(tag);
+  else activeNightFilters.add(tag);
+  renderNightFilterChips();
+  renderNights();
+}
+
+function toggleNightFilterVisibility() {
+  nightFiltersVisible = !nightFiltersVisible;
+  renderNightFilterChips();
+}
+
+let _dragFilterIdx = null;
+function onFilterDragStart(e, i) { _dragFilterIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+async function onFilterDrop(e, i) {
+  e.preventDefault();
+  if (_dragFilterIdx === null || _dragFilterIdx === i) return;
+  const moved = nightTags.splice(_dragFilterIdx, 1)[0];
+  nightTags.splice(i, 0, moved);
+  _dragFilterIdx = null;
+  await saveNightTags();
+  renderNightFilterChips();
+}
+
+function openNightTagsModal() {
+  renderNightTagsList();
+  document.getElementById('night-tag-input').value = '';
+  document.getElementById('night-tags-modal').classList.add('open');
+}
+
+function closeNightTagsModal() {
+  document.getElementById('night-tags-modal').classList.remove('open');
+  renderNightFilterChips();
+  renderNights();
+}
+
+function renderNightTagsList() {
+  const list = document.getElementById('night-tags-list');
+  if (!nightTags.length) {
+    list.innerHTML = `<p style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags yet.</p>`;
+    return;
+  }
+  list.innerHTML = nightTags.map((t, i) =>
+    `<div id="tag-row-${i}" draggable="true"
+        ondragstart="onTagListDragStart(event,${i})"
+        ondragover="onTagListDragOver(event,${i})"
+        ondragleave="onTagListDragLeave(event)"
+        ondrop="onTagListDrop(event,${i})"
+        style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.4rem 0.75rem; transition:border-color 0.15s;">
+      <span style="color:var(--text-dim);cursor:grab;font-size:1rem;user-select:none;" title="Drag to reorder">⠿</span>
+      <span id="night-tag-label-${i}" style="flex:1; font-size:0.92rem; color:var(--text);">${esc(t)}</span>
+      <input type="text" id="night-tag-edit-${i}" value="${esc(t)}" style="display:none; flex:1; padding:0.2rem 0.5rem; font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveEditNightTag(${i})">
+      <button onclick="startEditNightTag(${i})" id="night-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveEditNightTag(${i})" id="night-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteNightTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function startEditNightTag(i) {
+  document.getElementById(`night-tag-label-${i}`).style.display = 'none';
+  document.getElementById(`night-tag-edit-${i}`).style.display = 'block';
+  document.getElementById(`night-tag-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`night-tag-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`night-tag-edit-${i}`).focus();
+}
+
+async function saveEditNightTag(i) {
+  const val = document.getElementById(`night-tag-edit-${i}`).value.trim();
+  if (!val) return;
+  // Update any nights that used the old tag
+  const oldTag = nightTags[i];
+  nights.forEach(n => {
+    if ((n.filterTags || []).includes(oldTag)) {
+      n.filterTags = n.filterTags.map(t => t === oldTag ? val : t);
+    }
+  });
+  nightTags[i] = val;
+  await saveNightTags();
+  renderNightTagsList();
+}
+
+async function addNightTag() {
+  const input = document.getElementById('night-tag-input');
+  const val = input.value.trim();
+  if (!val || nightTags.includes(val)) return;
+  nightTags.push(val);
+  await saveNightTags();
+  input.value = '';
+  renderNightTagsList();
+}
+
+async function deleteNightTag(i) {
+  const tag = nightTags[i];
+  nightTags.splice(i, 1);
+  await saveNightTags();
+  if (activeNightFilter === tag) activeNightFilter = '';
+  renderNightTagsList();
+}
+
+function populateNightModalTags(selectedTags) {
+  const container = document.getElementById('night-modal-tags');
+  if (!nightTags.length) {
+    container.innerHTML = `<span style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags available — add some via Manage Filters</span>`;
+    return;
+  }
+  container.innerHTML = nightTags.map(t => {
+    const active = (selectedTags || []).includes(t);
+    return `<button type="button" onclick="toggleNightModalTag(this,'${esc(t)}')" class="filter-chip${active ? ' active' : ''}">${esc(t)}</button>`;
+  }).join('');
+}
+
+function toggleNightModalTag(el, tag) {
+  el.classList.toggle('active');
+}
+
+function getSelectedNightModalTags() {
+  return [...document.querySelectorAll('#night-modal-tags .filter-chip.active')].map(el => el.textContent.trim());
+}
+
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// DRAG: CATEGORY REORDER
+// ═══════════════════════════════════════════════
+let _catDragIdx = null;
+function onCatDragStart(e, idx) {
+  _catDragIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    document.querySelectorAll('#category-grid .category-card').forEach((c,i) => {
+      if (i === idx) c.style.opacity = '0.4';
+    });
+  }, 0);
+}
+function onCatDragEnd() {
+  document.querySelectorAll('#category-grid .category-card').forEach(c => { c.style.opacity=''; c.style.borderColor=''; });
+  _catDragIdx = null;
+}
+function onCatDragOver(e, idx) {
+  e.preventDefault();
+  if (_catDragIdx === null || _catDragIdx === idx) return;
+  e.currentTarget.style.borderColor = 'var(--gold)';
+}
+function onCatDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+async function onCatDrop(e, idx) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = '';
+  if (_catDragIdx === null || _catDragIdx === idx) return;
+  const moved = categories.splice(_catDragIdx, 1)[0];
+  categories.splice(idx, 0, moved);
+  _catDragIdx = null;
+  renderLibrary();
+  try {
+    const batch = writeBatch(db);
+    categories.forEach((cat, i) => { if (cat._id) batch.set(doc(db,'categories',cat._id), {...cat, position:i}, {merge:true}); });
+    await batch.commit();
+  } catch(e) { console.warn('Order save failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// DRAG: NIGHT CARD REORDER
+// ═══════════════════════════════════════════════
+let _nightDragIdx = null;
+function onNightDragStart(e, i) {
+  _nightDragIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    document.querySelectorAll('#nights-grid .night-card')[i].style.opacity = '0.4';
+  }, 0);
+}
+function onNightDragEnd() {
+  document.querySelectorAll('#nights-grid .night-card').forEach(c => { c.style.opacity=''; c.style.outline=''; });
+  _nightDragIdx = null;
+}
+function onNightDragOver(e, i) {
+  e.preventDefault();
+  if (_nightDragIdx === null || _nightDragIdx === i) return;
+  e.currentTarget.style.outline = '2px solid var(--gold)';
+}
+function onNightDragLeave(e) { e.currentTarget.style.outline = ''; }
+async function onNightDrop(e, i) {
+  e.preventDefault();
+  e.currentTarget.style.outline = '';
+  if (_nightDragIdx === null || _nightDragIdx === i) return;
+  const moved = nights.splice(_nightDragIdx, 1)[0];
+  nights.splice(i, 0, moved);
+  _nightDragIdx = null;
+  renderNights();
+  try {
+    const batch = writeBatch(db);
+    nights.forEach((n, idx) => { if (n._id) batch.set(doc(db,'nights',n._id), {...n, position:idx}, {merge:true}); });
+    await batch.commit();
+  } catch(e) { console.warn('Night order save failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// DRAG: TAG LIST REORDER (Manage Filters modal)
+// ═══════════════════════════════════════════════
+let _tagListDragIdx = null;
+function onTagListDragStart(e, i) { _tagListDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+function onTagListDragOver(e, i) {
+  e.preventDefault();
+  if (_tagListDragIdx === i) return;
+  const row = document.getElementById(`tag-row-${i}`);
+  if (row) row.style.borderColor = 'var(--gold)';
+}
+function onTagListDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+async function onTagListDrop(e, i) {
+  e.preventDefault();
+  const row = document.getElementById(`tag-row-${i}`);
+  if (row) row.style.borderColor = '';
+  if (_tagListDragIdx === null || _tagListDragIdx === i) return;
+  const moved = nightTags.splice(_tagListDragIdx, 1)[0];
+  nightTags.splice(i, 0, moved);
+  _tagListDragIdx = null;
+  await saveNightTags();
+  renderNightTagsList();
+}
+
+// ═══════════════════════════════════════════════
+// EXPOSE TO WINDOW (required for type=module inline onclick)
+// ═══════════════════════════════════════════════
+Object.assign(window, {
+  switchView, renderLibrary, runSearch,
+  openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
+  closeCatModal, saveCategoryFromModal,
+  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
+  openNightDetail, closeNightDetail, openNewNightModal,
+  editNight, deleteNight, deleteNightFromModal, closeNightModal, saveNight,
+  handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
+  openNightTagsModal, closeNightTagsModal,
+  addNightTag, deleteNightTag, startEditNightTag, saveEditNightTag,
+  clearNightFilters, toggleNightFilter, toggleNightFilterVisibility,
+  toggleNightModalTag,
+  onFilterDragStart, onFilterDrop,
+  onCatDragStart, onCatDragEnd, onCatDragOver, onCatDragLeave, onCatDrop,
+  onNightDragStart, onNightDragEnd, onNightDragOver, onNightDragLeave, onNightDrop,
+  onTagListDragStart, onTagListDragOver, onTagListDragLeave, onTagListDrop,
+  addEnhancement, removeEnhancement
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+loadData();
 </script>
 </body>
 </html>
