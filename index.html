@@ -817,6 +817,17 @@
           <p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this night appears on the public venue view.</p>
         </div>
         <div class="form-group">
+          <label class="form-label">Venue Description <span style="color:var(--text-dim); font-weight:400; font-style:italic; font-size:0.75rem; letter-spacing:0;">— visible to venues</span></label>
+          <textarea id="night-description" rows="3" placeholder="A short blurb about this night that venues will see. e.g. A witchy evening of occult trivia, spooky sing-alongs, and cauldron-worthy drinks…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex; align-items:center; gap:8px;">
+            Admin Notes
+            <span style="font-size:0.65rem; color:var(--text-dim); background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.3); color:#C0654F; padding:1px 7px; border-radius:3px; letter-spacing:0.08em; font-family:'Crimson Text',serif; text-transform:uppercase; font-style:normal;">Private</span>
+          </label>
+          <textarea id="night-admin-notes" rows="6" placeholder="Your private brainstorming space. Vibe references, movie lists, costume ideas, round structure ideas, anything…" style="font-size:15px; line-height:1.6;"></textarea>
+        </div>
+        <div class="form-group">
           <label class="form-label">Filter Tags</label>
           <div id="night-modal-tags" style="display:flex; gap:6px; flex-wrap:wrap; min-height:32px; align-items:center;">
             <span style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags available — add some via Manage Filters</span>
@@ -1374,6 +1385,14 @@ function openNightDetail(idx) {
       ${Object.entries(typeBreakdown).map(([t,n]) => `<div class="stat-box"><span class="stat-num">${n}</span><span class="stat-label">${esc(t)}</span></div>`).join('')}
       ${enhList.length ? `<div class="stat-box"><span class="stat-num">${enhList.length}</span><span class="stat-label">Enhancements</span></div>` : ''}
     </div>
+    ${night.description ? `
+    <div class="section-title">Venue Description</div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:1rem; color:var(--text-muted); line-height:1.7;">${esc(night.description)}</div>` : ''}
+    ${night.adminNotes ? `
+    <div class="section-title" style="color:#C0654F;">
+      <span style="font-size:0.65rem; background:rgba(139,58,42,0.15); border:1px solid rgba(139,58,42,0.3); color:#C0654F; padding:1px 7px; border-radius:3px; margin-right:6px;">Private</span>Admin Notes
+    </div>
+    <div style="background:rgba(30,18,14,0.8); border:1px solid rgba(139,58,42,0.25); border-radius:5px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:0.95rem; color:var(--text-muted); line-height:1.8; white-space:pre-wrap;">${esc(night.adminNotes)}</div>` : ''}
     ${enhList.length ? `
     <div class="section-title">Night Enhancements</div>
     <div style="display:grid; gap:8px; margin-bottom:2rem;">
@@ -1404,6 +1423,8 @@ function openNewNightModal() {
   document.getElementById('night-banner-url').value = '';
   setNightBannerPreview(null);
   document.getElementById('night-published').checked = false;
+  document.getElementById('night-description').value = '';
+  document.getElementById('night-admin-notes').value = '';
   populateNightModalTags([]);
   renderEnhancements([]);
   populateNightCatSelector([]);
@@ -1421,6 +1442,8 @@ function editNight(idx) {
   document.getElementById('night-banner-url').value = (n.bannerData && !n.bannerData.startsWith('data:')) ? n.bannerData : '';
   setNightBannerPreview(n.bannerData || null, n.bannerColor || null, n.name);
   document.getElementById('night-published').checked = !!n.published;
+  document.getElementById('night-description').value = n.description || '';
+  document.getElementById('night-admin-notes').value = n.adminNotes || '';
   populateNightModalTags(n.filterTags || []);
   renderEnhancements(n.enhancements || []);
   populateNightCatSelector(n.categoryIds || []);
@@ -1574,7 +1597,9 @@ async function saveNight() {
     categoryIds: checked,
     enhancements,
     filterTags,
-    published: document.getElementById('night-published').checked
+    published: document.getElementById('night-published').checked,
+    description: document.getElementById('night-description').value.trim(),
+    adminNotes: document.getElementById('night-admin-notes').value.trim()
   };
 
   try {
