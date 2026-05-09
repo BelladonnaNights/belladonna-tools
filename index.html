@@ -670,8 +670,16 @@
   <!-- ═══ THEMED NIGHTS VIEW ═══ -->
   <div class="view" id="view-nights">
     <div id="nights-list-view">
-      <div style="display:flex; justify-content:flex-end; margin-bottom:1.5rem;">
-        <button class="btn" onclick="openNewNightModal()">+ New Themed Night</button>
+      <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <div style="flex:1; min-width:0;">
+          <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button class="filter-chip active" data-filter="" onclick="setNightFilter(this,'')">All</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage Filters</button>
+          <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
+        </div>
       </div>
       <div id="nights-grid" class="nights-grid"></div>
       <div id="nights-empty" class="empty-state" style="display:none">
@@ -802,6 +810,12 @@
           <input type="text" id="night-name" placeholder="e.g. Coven Night, Spooky Season Spectacular…">
         </div>
         <div class="form-group">
+          <label class="form-label">Filter Tags</label>
+          <div id="night-modal-tags" style="display:flex; gap:6px; flex-wrap:wrap; min-height:32px; align-items:center;">
+            <span style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags available — add some via Manage Filters</span>
+          </div>
+        </div>
+        <div class="form-group">
           <label class="form-label">Banner / Header Image</label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
             <input type="text" id="night-banner-color" placeholder="Background color (e.g. #2D1B4E)" style="width:180px;" oninput="handleNightBannerColorInput(this.value)">
@@ -839,6 +853,27 @@
   </div>
 </div>
 
+<!-- ═══ NIGHT TAGS MODAL ═══ -->
+<div class="modal-backdrop" id="night-tags-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Night Filters</span>
+      <button class="modal-close" onclick="closeNightTagsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">These filter tags appear on the Themed Nights page. Assign tags to a night in the Edit modal.</p>
+      <div id="night-tags-list" style="display:grid; gap:6px; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="night-tag-input" placeholder="Add a filter tag… e.g. Halloween" onkeydown="if(event.key==='Enter'){event.preventDefault();addNightTag();}">
+        <button class="btn btn-sm" onclick="addNightTag()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeNightTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -856,7 +891,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc,
-  getDocs, setDoc, deleteDoc, writeBatch
+  getDocs, getDoc, setDoc, deleteDoc, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ═══════════════════════════════════════════════
@@ -875,17 +910,20 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const catsCol = collection(db, 'categories');
 const nightsCol = collection(db, 'nights');
+const nightTagsDoc = doc(db, 'config', 'nightTags');
 
 // ═══════════════════════════════════════════════
 // DATA STORE
 // ═══════════════════════════════════════════════
 let categories = [];
 let nights = [];
+let nightTags = []; // filter tags for the themed nights tab
 let editingCatIndex = -1;
 let editingNightIndex = -1;
 let pendingImport = [];
 let nightBannerData = null;
 let catBannerData = null;
+let activeNightFilter = '';
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -895,9 +933,10 @@ function toId(name) {
 
 async function loadData() {
   try {
-    const [cSnap, nSnap] = await Promise.all([getDocs(catsCol), getDocs(nightsCol)]);
+    const [cSnap, nSnap, tSnap] = await Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
   } catch(e) {
     console.error('Firebase load error:', e);
     toast('Could not connect to database', 'error');
@@ -965,6 +1004,10 @@ async function saveNightDoc(night) {
 
 async function deleteNightDoc(night) {
   if (night._id) await deleteDoc(doc(db, 'nights', night._id));
+}
+
+async function saveNightTags() {
+  await setDoc(nightTagsDoc, { tags: nightTags });
 }
 
 async function batchSaveCats(cats) {
@@ -1258,10 +1301,16 @@ async function deleteCategoryFromModal() {
 // THEMED NIGHTS
 // ═══════════════════════════════════════════════
 function renderNights() {
+  renderNightFilterChips();
   const grid = document.getElementById('nights-grid');
+  const filtered = activeNightFilter
+    ? nights.filter(n => (n.filterTags || []).includes(activeNightFilter))
+    : nights;
   const empty = document.getElementById('nights-empty');
-  empty.style.display = nights.length === 0 ? 'block' : 'none';
-  grid.innerHTML = nights.map((n, i) => {
+  empty.style.display = filtered.length === 0 ? 'block' : 'none';
+  grid.innerHTML = filtered.map((n, i) => {
+    const realIdx = nights.indexOf(n);
+    i = realIdx;
     const bgColor = n.bannerColor ? `background:${n.bannerColor};` : `background:var(--surface2);`;
     const bannerImg = n.bannerData
       ? `<img src="${n.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">`
@@ -1344,6 +1393,7 @@ function openNewNightModal() {
   document.getElementById('night-banner-color').value = '';
   document.getElementById('night-banner-url').value = '';
   setNightBannerPreview(null);
+  populateNightModalTags([]);
   renderEnhancements([]);
   populateNightCatSelector([]);
   document.getElementById('night-modal-delete-btn').style.display = 'none';
@@ -1359,6 +1409,7 @@ function editNight(idx) {
   document.getElementById('night-banner-color').value = n.bannerColor || '';
   document.getElementById('night-banner-url').value = (n.bannerData && !n.bannerData.startsWith('data:')) ? n.bannerData : '';
   setNightBannerPreview(n.bannerData || null, n.bannerColor || null, n.name);
+  populateNightModalTags(n.filterTags || []);
   renderEnhancements(n.enhancements || []);
   populateNightCatSelector(n.categoryIds || []);
   document.getElementById('night-modal-delete-btn').style.display = 'inline-flex';
@@ -1501,6 +1552,7 @@ async function saveNight() {
   const existing = isEdit ? nights[editingNightIndex] : {};
 
   const enhancements = [...document.querySelectorAll('#enhancements-list .enhancement-item')].map(el => el.dataset.value).filter(Boolean);
+  const filterTags = getSelectedNightModalTags();
 
   const night = {
     ...(existing._id ? { _id: existing._id } : {}),
@@ -1508,7 +1560,8 @@ async function saveNight() {
     bannerData: nightBannerData || null,
     bannerColor: color,
     categoryIds: checked,
-    enhancements
+    enhancements,
+    filterTags
   };
 
   try {
@@ -1746,6 +1799,115 @@ function toast(msg, type = 'success') {
 }
 
 // ═══════════════════════════════════════════════
+// NIGHT FILTER TAGS
+// ═══════════════════════════════════════════════
+
+function renderNightFilterChips() {
+  const bar = document.getElementById('night-filter-chips');
+  bar.innerHTML = `<button class="filter-chip${activeNightFilter === '' ? ' active' : ''}" data-filter="" onclick="setNightFilter(this,'')">All</button>`
+    + nightTags.map(t =>
+      `<button class="filter-chip${activeNightFilter === t ? ' active' : ''}" data-filter="${esc(t)}" onclick="setNightFilter(this,'${esc(t)}')">${esc(t)}</button>`
+    ).join('');
+}
+
+function setNightFilter(el, tag) {
+  activeNightFilter = tag;
+  document.querySelectorAll('#night-filter-chips .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderNights();
+}
+
+function openNightTagsModal() {
+  renderNightTagsList();
+  document.getElementById('night-tag-input').value = '';
+  document.getElementById('night-tags-modal').classList.add('open');
+}
+
+function closeNightTagsModal() {
+  document.getElementById('night-tags-modal').classList.remove('open');
+  renderNightFilterChips();
+  renderNights();
+}
+
+function renderNightTagsList() {
+  const list = document.getElementById('night-tags-list');
+  if (!nightTags.length) {
+    list.innerHTML = `<p style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags yet.</p>`;
+    return;
+  }
+  list.innerHTML = nightTags.map((t, i) =>
+    `<div style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.4rem 0.75rem;">
+      <span id="night-tag-label-${i}" style="flex:1; font-size:0.92rem; color:var(--text);">${esc(t)}</span>
+      <input type="text" id="night-tag-edit-${i}" value="${esc(t)}" style="display:none; flex:1; padding:0.2rem 0.5rem; font-size:0.9rem;">
+      <button onclick="startEditNightTag(${i})" id="night-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveEditNightTag(${i})" id="night-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteNightTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function startEditNightTag(i) {
+  document.getElementById(`night-tag-label-${i}`).style.display = 'none';
+  document.getElementById(`night-tag-edit-${i}`).style.display = 'block';
+  document.getElementById(`night-tag-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`night-tag-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`night-tag-edit-${i}`).focus();
+}
+
+async function saveEditNightTag(i) {
+  const val = document.getElementById(`night-tag-edit-${i}`).value.trim();
+  if (!val) return;
+  // Update any nights that used the old tag
+  const oldTag = nightTags[i];
+  nights.forEach(n => {
+    if ((n.filterTags || []).includes(oldTag)) {
+      n.filterTags = n.filterTags.map(t => t === oldTag ? val : t);
+    }
+  });
+  nightTags[i] = val;
+  await saveNightTags();
+  renderNightTagsList();
+}
+
+async function addNightTag() {
+  const input = document.getElementById('night-tag-input');
+  const val = input.value.trim();
+  if (!val || nightTags.includes(val)) return;
+  nightTags.push(val);
+  await saveNightTags();
+  input.value = '';
+  renderNightTagsList();
+}
+
+async function deleteNightTag(i) {
+  const tag = nightTags[i];
+  nightTags.splice(i, 1);
+  await saveNightTags();
+  if (activeNightFilter === tag) activeNightFilter = '';
+  renderNightTagsList();
+}
+
+function populateNightModalTags(selectedTags) {
+  const container = document.getElementById('night-modal-tags');
+  if (!nightTags.length) {
+    container.innerHTML = `<span style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags available — add some via Manage Filters</span>`;
+    return;
+  }
+  container.innerHTML = nightTags.map(t => {
+    const active = (selectedTags || []).includes(t);
+    return `<button type="button" onclick="toggleNightModalTag(this,'${esc(t)}')" class="filter-chip${active ? ' active' : ''}">${esc(t)}</button>`;
+  }).join('');
+}
+
+function toggleNightModalTag(el, tag) {
+  el.classList.toggle('active');
+}
+
+function getSelectedNightModalTags() {
+  return [...document.querySelectorAll('#night-modal-tags .filter-chip.active')].map(el => el.textContent.trim());
+}
+
+// ═══════════════════════════════════════════════
 // EXPOSE TO WINDOW (required for type=module inline onclick)
 // ═══════════════════════════════════════════════
 Object.assign(window, {
@@ -1761,7 +1923,10 @@ Object.assign(window, {
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
   handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
   deleteCategoryFromModal,
-  deleteNightFromModal
+  deleteNightFromModal,
+  openNightTagsModal, closeNightTagsModal,
+  addNightTag, deleteNightTag, startEditNightTag, saveEditNightTag,
+  setNightFilter, toggleNightModalTag
 });
 
 // ═══════════════════════════════════════════════
