@@ -287,7 +287,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 1.1rem 1.3rem;
+    padding: 1.4rem 1.3rem 1.2rem;
     transition: border-color 0.2s;
     position: relative;
   }
@@ -327,7 +327,7 @@
   .category-card-actions {
     display: flex;
     gap: 6px;
-    margin-top: 0.9rem;
+    margin-top: 1.2rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--border);
   }
@@ -970,7 +970,7 @@ async function loadData() {
       timeout
     ]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
-    nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
   } catch(e) {
     console.error('Firebase load error:', e);
@@ -1153,7 +1153,14 @@ function categoryCardHTML(cat, idx, highlight) {
       </div>`
     : '';
 
-  return `<div class="category-card" style="${cat.bannerData ? 'padding-top:0;' : ''}">
+  return `<div class="category-card"
+    draggable="true"
+    ondragstart="onCatDragStart(event,${idx})"
+    ondragend="onCatDragEnd(event)"
+    ondragover="onCatDragOver(event,${idx})"
+    ondragleave="onCatDragLeave(event)"
+    ondrop="onCatDrop(event,${idx})"
+    style="${cat.bannerData ? 'padding-top:0;' : ''}">
     ${bannerHtml}
     <div class="category-card-header"><div class="category-card-name">${esc(cat.name)}</div></div>
     <div style="margin-bottom:0.5rem; display:flex; align-items:center; gap:8px; flex-wrap:nowrap;">
@@ -1164,6 +1171,7 @@ function categoryCardHTML(cat, idx, highlight) {
     <div class="category-shows">${showsHtml || '<span style="color:var(--text-dim); font-style:italic;">No shows listed</span>'}</div>
     ${cat.notes ? `<p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.5rem; font-style:italic;">${esc(cat.notes)}</p>` : ''}
     <div class="category-card-actions">
+      <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem; border-radius:3px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
       <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
     </div>
   </div>`;
@@ -1374,11 +1382,17 @@ function renderNights() {
     const catListHtml = catNames.length
       ? catNames.map(id => `<span style="display:block; padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.88rem; color:var(--text-muted); line-height:1.3;">${esc(id)}</span>`).join('')
       : `<span style="font-size:0.82rem; color:var(--text-dim); font-style:italic;">No categories yet</span>`;
-    return `<div class="night-card" onclick="openNightDetail(${i})">
-      <div class="night-banner" style="${bgColor}">
+    return `<div class="night-card"
+      draggable="true"
+      ondragstart="onNightDragStart(event,${i})"
+      ondragend="onNightDragEnd(event)"
+      ondragover="onNightDragOver(event,${i})"
+      ondragleave="onNightDragLeave(event)"
+      ondrop="onNightDrop(event,${i})">
+      <div class="night-banner" style="${bgColor}" onclick="openNightDetail(${i})">
         ${bannerImg}
       </div>
-      <div class="night-card-body">
+      <div class="night-card-body" onclick="openNightDetail(${i})">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.35rem;">
           <div class="night-card-name" style="margin-bottom:0;">${esc(n.name)}</div>
           ${n.published ? `<span style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;background:rgba(42,107,58,0.2);color:#7DC996;border:1px solid rgba(42,107,58,0.4);padding:2px 7px;border-radius:3px;flex-shrink:0;">Published</span>` : ''}
@@ -1387,6 +1401,7 @@ function renderNights() {
         <div style="margin-top:0.6rem; max-height:160px; overflow-y:auto;">${catListHtml}</div>
       </div>
       <div class="night-card-footer" onclick="event.stopPropagation()">
+        <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
         <button class="btn btn-sm btn-ghost" onclick="editNight(${i})">Edit</button>
       </div>
     </div>`;
@@ -2066,6 +2081,42 @@ async function onCatDrop(e, idx) {
 }
 
 // ═══════════════════════════════════════════════
+// DRAG: NIGHT CARD REORDER
+// ═══════════════════════════════════════════════
+let _nightDragIdx = null;
+function onNightDragStart(e, i) {
+  _nightDragIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    document.querySelectorAll('#nights-grid .night-card')[i].style.opacity = '0.4';
+  }, 0);
+}
+function onNightDragEnd() {
+  document.querySelectorAll('#nights-grid .night-card').forEach(c => { c.style.opacity=''; c.style.outline=''; });
+  _nightDragIdx = null;
+}
+function onNightDragOver(e, i) {
+  e.preventDefault();
+  if (_nightDragIdx === null || _nightDragIdx === i) return;
+  e.currentTarget.style.outline = '2px solid var(--gold)';
+}
+function onNightDragLeave(e) { e.currentTarget.style.outline = ''; }
+async function onNightDrop(e, i) {
+  e.preventDefault();
+  e.currentTarget.style.outline = '';
+  if (_nightDragIdx === null || _nightDragIdx === i) return;
+  const moved = nights.splice(_nightDragIdx, 1)[0];
+  nights.splice(i, 0, moved);
+  _nightDragIdx = null;
+  renderNights();
+  try {
+    const batch = writeBatch(db);
+    nights.forEach((n, idx) => { if (n._id) batch.set(doc(db,'nights',n._id), {...n, position:idx}, {merge:true}); });
+    await batch.commit();
+  } catch(e) { console.warn('Night order save failed:', e); }
+}
+
+// ═══════════════════════════════════════════════
 // DRAG: TAG LIST REORDER (Manage Filters modal)
 // ═══════════════════════════════════════════════
 let _tagListDragIdx = null;
@@ -2106,6 +2157,7 @@ Object.assign(window, {
   toggleNightModalTag,
   onFilterDragStart, onFilterDrop,
   onCatDragStart, onCatDragEnd, onCatDragOver, onCatDragLeave, onCatDrop,
+  onNightDragStart, onNightDragEnd, onNightDragOver, onNightDragLeave, onNightDrop,
   onTagListDragStart, onTagListDragOver, onTagListDragLeave, onTagListDrop,
   addEnhancement, removeEnhancement
 });
