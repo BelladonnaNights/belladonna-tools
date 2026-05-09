@@ -622,6 +622,7 @@
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchView('library')">Library</button>
     <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
 </header>
@@ -690,6 +691,19 @@
       </div>
     </div>
     <div id="night-detail-view" style="display:none"></div>
+  </div>
+
+  <!-- ═══ MINI GAMES VIEW ═══ -->
+  <div class="view" id="view-minigames">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:1.5rem;">
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
+    </div>
+    <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+    <div id="minigames-empty" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">🎲</div>
+      <h3>No Mini Games Yet</h3>
+      <p>Add categories with Type "Mini Game" and mark them Published.</p>
+    </div>
   </div>
 
   <!-- ═══ IMPORT VIEW ═══ -->
@@ -778,6 +792,13 @@
           <input type="text" id="cat-notes" placeholder="Any extra info about this category">
         </div>
         <div class="form-group">
+          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+            <input type="checkbox" id="cat-published" style="accent-color:var(--gold); width:18px; height:18px; cursor:pointer; flex-shrink:0;">
+            <span style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published to Mini Games</span>
+          </label>
+          <p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked and Type contains "mini game", this appears on the Mini Games tab and venue page.</p>
+        </div>
+        <div class="form-group">
           <label class="form-label">Banner Image</label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
             <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
@@ -863,7 +884,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Select Categories for This Night</label>
-          <input type="search" id="night-cat-search" placeholder="Filter categories…" oninput="filterNightCatSelector()" style="margin-bottom:0.5rem;">
+          <input type="search" id="night-cat-search" placeholder="Filter categories…" style="margin-bottom:0.5rem;">
           <div class="cat-selector" id="night-cat-selector"></div>
         </div>
       </div>
@@ -1085,11 +1106,14 @@ function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
+  const labelMap = { library: 'librar', nights: 'night', minigames: 'mini', import: 'import' };
   document.querySelectorAll('.nav-tab').forEach(t => {
-    if (t.textContent.toLowerCase().includes(name === 'library' ? 'librar' : name === 'nights' ? 'night' : 'import')) t.classList.add('active');
+    const key = labelMap[name] || name;
+    if (t.textContent.toLowerCase().includes(key)) t.classList.add('active');
   });
   if (name === 'library') renderLibrary();
   if (name === 'nights') renderNights();
+  if (name === 'minigames') renderMiniGames();
 }
 
 // ═══════════════════════════════════════════════
@@ -1113,6 +1137,37 @@ function populateFilters() {
 
 function isBingo(cat) {
   return (cat.type || '').toLowerCase().includes('bingo');
+}
+
+function isMiniGame(cat) {
+  return (cat.type || '').toLowerCase().includes('mini');
+}
+
+function renderMiniGames() {
+  const grid = document.getElementById('minigames-grid');
+  const empty = document.getElementById('minigames-empty');
+  const games = categories.filter(c => isMiniGame(c) && c.published);
+
+  empty.style.display = games.length === 0 ? 'block' : 'none';
+  grid.innerHTML = games.map(c => {
+    const bgColor = '';
+    const bannerHtml = c.bannerData
+      ? `<div style="aspect-ratio:4/5; width:100%; overflow:hidden; border-radius:6px 6px 0 0; position:relative; background:var(--surface2);">
+          <img src="${c.bannerData}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">
+        </div>`
+      : `<div style="aspect-ratio:4/5; width:100%; background:var(--surface2); border-radius:6px 6px 0 0; display:flex; align-items:center; justify-content:center;">
+          <span style="font-size:2.5rem; opacity:0.3;">🎲</span>
+        </div>`;
+    const idx = categories.indexOf(c);
+    return `<div class="category-card" style="padding:0; overflow:hidden; cursor:pointer;" onclick="editCategory(${idx})">
+      ${bannerHtml}
+      <div style="padding:1rem 1.1rem 1.1rem;">
+        <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
+        ${c.theme ? `<div style="font-size:0.78rem; font-weight:700; color:var(--text); margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
+        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderLibrary() {
@@ -1246,6 +1301,7 @@ function editCategory(idx) {
   document.getElementById('cat-shows').value = (c.shows || []).join('\n');
   document.getElementById('cat-notes').value = c.notes || '';
   document.getElementById('cat-tags').value = c.tags || '';
+  document.getElementById('cat-published').checked = !!c.published;
   setCatBannerPreview(c.bannerData || null);
   document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('cat-modal').classList.add('open');
@@ -1318,6 +1374,7 @@ async function saveCategoryFromModal() {
     shows,
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
+    published: document.getElementById('cat-published').checked,
     bannerData: catBannerData || null
   };
 
@@ -2144,7 +2201,7 @@ async function onTagListDrop(e, i) {
 // EXPOSE TO WINDOW (required for type=module inline onclick)
 // ═══════════════════════════════════════════════
 Object.assign(window, {
-  switchView, renderLibrary, runSearch,
+  switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   closeCatModal, saveCategoryFromModal,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl,
@@ -2167,6 +2224,10 @@ Object.assign(window, {
 // INIT
 // ═══════════════════════════════════════════════
 loadData();
+document.addEventListener('DOMContentLoaded', () => {
+  const s = document.getElementById('night-cat-search');
+  if (s) s.addEventListener('input', filterNightCatSelector);
+});
 </script>
 </body>
 </html>
