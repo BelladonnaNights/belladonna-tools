@@ -115,10 +115,11 @@ body::before{
   flex:1;
   width:100%;max-width:1400px;
   display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:12px 28px 20px;
-  gap:clamp(14px,2vh,26px);
+  align-items:center;justify-content:flex-start;
+  padding:clamp(16px,3vh,32px) 28px clamp(24px,4vh,40px);
+  gap:clamp(12px,1.8vh,22px);
   position:relative;z-index:1;
+  overflow-y:auto;
 }
 
 /* ornament line */
@@ -292,9 +293,16 @@ body::before{
 /* ─── RESULT CARD ──────────────────────────────── */
 .result-reveal{
   width:100%;max-width:860px;
-  display:none;animation:revealIn .55s cubic-bezier(.22,1,.36,1);
+  opacity:0;pointer-events:none;
+  transform:scale(.93) translateY(12px);
+  transition:opacity .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1);
+  max-height:0;overflow:hidden;
 }
-.result-reveal.vis{display:block;}
+.result-reveal.vis{
+  opacity:1;pointer-events:auto;
+  transform:scale(1) translateY(0);
+  max-height:400px;
+}
 @keyframes revealIn{from{opacity:0;transform:scale(.9) translateY(14px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .result-card{
   background:linear-gradient(135deg,#16130a,#0d0b04);
@@ -664,11 +672,14 @@ let adminCatSel = null;
 const REPS   = 12;   // how many full copies of the list we pre-render
 const VIS    = 7;    // visible slots — must match --vis CSS var
 const BULBS  = 11;
-// Read actual rendered slot height from CSS var (avoids clamp() mismatch)
+// Read actual rendered slot height from a real drum-slot element
 function getSlotH() {
+  const slot = document.querySelector('.drum-slot');
+  if (slot) return slot.getBoundingClientRect().height;
+  // Fallback: parse --slot-h CSS var (works when value is plain px)
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--slot-h').trim();
-  // CSS value may be e.g. "96px" — parse to number
-  return parseFloat(raw) || 72;
+  const px  = parseFloat(raw);
+  return isNaN(px) ? 72 : px;
 }
 
 // Per-drum state: current translateY of the strip (negative = scrolled down)
@@ -716,14 +727,10 @@ function buildDrum(n, items) {
 }
 
 /* Given the current translateY of strip n, which item index is centred? */
-function centredIndex(n, items) {
-  // Centre of the visible window is at pixel SLOT_H * Math.floor(VIS/2) from strip top
-  // Strip top is at -drumY[n] relative to clip top (drumY is negative)
-  // So centre pixel in strip coords = -drumY[n] + Math.floor(VIS/2) * SLOT_H
-  const centrePixel = -drumY[n] + Math.floor(VIS / 2) * getSlotH();
-  // Which slot does that pixel fall in?
-  const absoluteSlot = Math.round(centrePixel / getSlotH());
-  // Map to item index via modulo
+function centredIndex(n, items, slotH) {
+  if (!slotH) slotH = getSlotH();
+  const centrePixel  = -drumY[n] + Math.floor(VIS / 2) * slotH;
+  const absoluteSlot = Math.round(centrePixel / slotH);
   return ((absoluteSlot % items.length) + items.length) % items.length;
 }
 
@@ -786,8 +793,8 @@ function spinDrum(n, items, cb) {
       animId = null;
       stopBulbs();
 
-      // Read winner directly: centred item at targetY
-      const landed = centredIndex(n, items);
+      // Read winner directly: centred item at targetY (use same slotH as spin)
+      const landed = centredIndex(n, items, slotH);
       cb(landed);
     }
   }
@@ -894,7 +901,7 @@ function showResult(cat, song) {
   document.getElementById('rCat').textContent = cat;
   document.getElementById('rSong').textContent = song;
   const el = document.getElementById('resultReveal');
-  el.classList.remove('vis'); void el.offsetWidth; el.classList.add('vis');
+  el.classList.add('vis');
   flashAllBulbs();
   document.getElementById('spinAgainBtn').style.display = '';
 }
