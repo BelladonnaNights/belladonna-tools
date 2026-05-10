@@ -16,7 +16,7 @@
   --gold-dim:rgba(201,168,76,.10); --gold-glow:rgba(201,168,76,.35);
   --danger:#c05050; --danger-bg:rgba(192,80,80,.12); --danger-border:rgba(192,80,80,.3);
   /* drum sizing — overridden in fullscreen */
-  --slot-h:clamp(68px,8vh,92px); --drum-w:clamp(280px,38vw,480px); --vis:7;
+  --slot-h:clamp(64px,7.5vh,88px); --drum-w:clamp(260px,36vw,460px); --vis:7;
 }
 
 /* TV / fullscreen overrides */
@@ -178,7 +178,9 @@ body::before{
   gap:clamp(16px,3vw,56px);flex-wrap:nowrap;width:100%;
   overflow:visible;
 }
-.wheel-unit{display:flex;flex-direction:column;align-items:center;gap:10px;}
+/* Both wheel columns start at same top edge */
+.wheel-unit{display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;}
+
 .wheel-unit-lbl{
   font-family:'Cinzel',serif;font-size:clamp(.8rem,1.1vw,1rem);
   letter-spacing:.24em;text-transform:uppercase;color:var(--text3);
@@ -256,6 +258,7 @@ body::before{
   border-radius:20px;padding:5px 18px;
   opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s;
   height:30px;display:flex;align-items:center;white-space:nowrap;
+  position:absolute;top:-38px;left:50%;translate:-50% 0;
 }
 .chosen-badge.vis{opacity:1;transform:translateY(0);}
 
@@ -462,6 +465,10 @@ body::before{
 </div><!-- /stage -->
 
 <script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot }
+  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
 /* ═══════════════════════════════════════════════════════
    DATA  — edit to change wheel contents
    ═══════════════════════════════════════════════════════ */
@@ -508,9 +515,6 @@ const DATA = {
 /* ═══════════════════════════════════════════════════════
    FIREBASE — real-time sync
    ═══════════════════════════════════════════════════════ */
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot }
-  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 /* ── LOGO — paste any image URL here to show your logo ── */
 const LOGO_URL = 'https://pub-a781dd4cae6646b3b20927c7a2476f93.r2.dev/logo.png';
@@ -1044,6 +1048,20 @@ function esc(s) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   EXPOSE to window (required because script is type=module)
+   ═══════════════════════════════════════════════════════ */
+window.spinWheel      = spinWheel;
+window.resetGame      = resetGame;
+window.toggleAdmin    = toggleAdmin;
+window.toggleFullscreen = toggleFullscreen;
+window.adminAddCat    = adminAddCat;
+window.adminAddSong   = adminAddSong;
+window.adminDelCat    = adminDelCat;
+window.adminDelSong   = adminDelSong;
+window.selectAdminCat = selectAdminCat;
+window.exportHTML     = exportHTML;
+
+/* ═══════════════════════════════════════════════════════
    INIT  (async — waits for Firestore before rendering)
    ═══════════════════════════════════════════════════════ */
 (async () => {
@@ -1059,9 +1077,7 @@ function esc(s) {
   check();
   startRealtimeSync();
 })();
-</script>
 
-<script>
 /* ─── FULLSCREEN ─────────────────────────────────── */
 function toggleFullscreen() {
   const btn = document.getElementById('fsBtn');
@@ -1079,13 +1095,10 @@ function onFsChange() {
   const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
   const btn  = document.getElementById('fsBtn');
   btn.textContent = isFs ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
-  // Toggle CSS var overrides for bigger drums
   document.documentElement.classList.toggle('fs', isFs);
-  // Rebuild drums at new size
   buildDrum(1, cats);
   const d2items = chosenCat ? (songMap[chosenCat] || []) : [];
   buildDrum(2, d2items);
-  // Re-apply lock/badge state
   if (phase === 2) {
     document.getElementById('dlock').classList.add('hidden');
     document.getElementById('chosenBadge').classList.add('vis');
@@ -1094,8 +1107,6 @@ function onFsChange() {
 
 document.addEventListener('fullscreenchange', onFsChange);
 document.addEventListener('webkitfullscreenchange', onFsChange);
-
-// Double-click anywhere (not on a button/input) to toggle fullscreen
 document.addEventListener('dblclick', (e) => {
   if (['BUTTON','INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
   toggleFullscreen();
