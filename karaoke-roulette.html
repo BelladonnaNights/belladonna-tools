@@ -16,7 +16,7 @@
   --gold-dim:rgba(201,168,76,.10); --gold-glow:rgba(201,168,76,.35);
   --danger:#c05050; --danger-bg:rgba(192,80,80,.12); --danger-border:rgba(192,80,80,.3);
   /* drum sizing — overridden in fullscreen */
-  --slot-h:clamp(72px,8.5vh,96px); --drum-w:clamp(340px,28vw,480px); --vis:7;
+  --slot-h:clamp(68px,8vh,92px); --drum-w:clamp(280px,38vw,480px); --vis:7;
 }
 
 /* TV / fullscreen overrides */
@@ -175,7 +175,8 @@ body::before{
 /* ─── WHEELS STAGE ─────────────────────────────── */
 .wheels-stage{
   display:flex;align-items:flex-start;justify-content:center;
-  gap:clamp(32px,5vw,80px);flex-wrap:wrap;width:100%;
+  gap:clamp(16px,3vw,56px);flex-wrap:nowrap;width:100%;
+  overflow:visible;
 }
 .wheel-unit{display:flex;flex-direction:column;align-items:center;gap:10px;}
 .wheel-unit-lbl{
@@ -657,9 +658,14 @@ let adminCatSel = null;
    ═══════════════════════════════════════════════════════ */
 
 const REPS   = 12;   // how many full copies of the list we pre-render
-const SLOT_H = 72;   // px — must match --slot-h CSS var base value
 const VIS    = 7;    // visible slots — must match --vis CSS var
 const BULBS  = 11;
+// Read actual rendered slot height from CSS var (avoids clamp() mismatch)
+function getSlotH() {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--slot-h').trim();
+  // CSS value may be e.g. "96px" — parse to number
+  return parseFloat(raw) || 72;
+}
 
 // Per-drum state: current translateY of the strip (negative = scrolled down)
 const drumY = { 1: 0, 2: 0 };
@@ -700,7 +706,7 @@ function buildDrum(n, items) {
   // Start the strip so the MIDDLE of the visible window shows items[0]
   // The centre row index (0-based from top of strip) = Math.floor(VIS/2)
   // We want strip top to be above the drum-clip by that many rows
-  const startY = -Math.floor(VIS / 2) * SLOT_H;
+  const startY = -Math.floor(VIS / 2) * getSlotH();
   drumY[n] = startY;
   strip.style.transform = `translateY(${startY}px)`;
 }
@@ -710,9 +716,9 @@ function centredIndex(n, items) {
   // Centre of the visible window is at pixel SLOT_H * Math.floor(VIS/2) from strip top
   // Strip top is at -drumY[n] relative to clip top (drumY is negative)
   // So centre pixel in strip coords = -drumY[n] + Math.floor(VIS/2) * SLOT_H
-  const centrePixel = -drumY[n] + Math.floor(VIS / 2) * SLOT_H;
+  const centrePixel = -drumY[n] + Math.floor(VIS / 2) * getSlotH();
   // Which slot does that pixel fall in?
-  const absoluteSlot = Math.round(centrePixel / SLOT_H);
+  const absoluteSlot = Math.round(centrePixel / getSlotH());
   // Map to item index via modulo
   return ((absoluteSlot % items.length) + items.length) % items.length;
 }
@@ -726,8 +732,9 @@ function spinDrum(n, items, cb) {
   const winIdx  = Math.floor(Math.random() * count);
 
   // Current absolute slot at centre
-  const centrePixel   = -drumY[n] + Math.floor(VIS / 2) * SLOT_H;
-  const currentSlot   = Math.round(centrePixel / SLOT_H);
+  const slotH = getSlotH();
+  const centrePixel   = -drumY[n] + Math.floor(VIS / 2) * slotH;
+  const currentSlot   = Math.round(centrePixel / slotH);
 
   // Target absolute slot: go forward enough full loops, then land on winIdx
   // We want target such that target % count === winIdx
@@ -740,7 +747,7 @@ function spinDrum(n, items, cb) {
   const targetSlot    = baseSlot + extra;
 
   // Convert target slot to target translateY
-  const targetY = -(targetSlot * SLOT_H - Math.floor(VIS / 2) * SLOT_H);
+  const targetY = -(targetSlot * slotH - Math.floor(VIS / 2) * slotH);
 
   const startY  = drumY[n];
   const dist    = targetY - startY;   // will be negative (strip moves up)
