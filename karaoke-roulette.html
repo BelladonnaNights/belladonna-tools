@@ -1230,8 +1230,19 @@ function openAdminPanel() {
   btn.textContent = '✕ Close';
   renderAdminCatList();
   renderAdminPane();
-  document.getElementById('aCatInput').onkeydown  = e => { if(e.key==='Enter') adminAddCat(); };
-  document.getElementById('aSongInput').onkeydown = e => { if(e.key==='Enter') adminAddSong(); };
+  // Wire category input — remove old listener first to avoid duplicates
+  const catInp = document.getElementById('aCatInput');
+  catInp.replaceWith(catInp.cloneNode(true)); // clone removes all listeners
+  document.getElementById('aCatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') adminAddCat();
+  });
+  // Song input is inside a pane that may re-render; wire it via delegation on the pane
+  const pane = document.getElementById('adminPane');
+  pane._songKeyHandler && pane.removeEventListener('keydown', pane._songKeyHandler);
+  pane._songKeyHandler = e => {
+    if (e.key === 'Enter' && e.target.id === 'aSongInput') adminAddSong();
+  };
+  pane.addEventListener('keydown', pane._songKeyHandler);
 }
 
 /* ── Password prompt ── */
@@ -1294,12 +1305,26 @@ function renderAdminCatList() {
     el.innerHTML = '<div class="song-empty" style="padding:12px 16px;">No categories yet.</div>';
     return;
   }
-  el.innerHTML = cats.map((c) => `
-    <div class="cat-row${adminCatSel===c?' selected':''}" onclick="selectAdminCat('${esc(c)}')">
+  el.innerHTML = cats.map((c, i) => `
+    <div class="cat-row${adminCatSel===c?' selected':''}" data-ci="${i}">
       <span class="cat-row-name">${esc(c)}</span>
       <span class="cat-count">${(songMap[c]||[]).length}</span>
-      <button class="cat-del" onclick="event.stopPropagation();adminDelCat('${esc(c)}')" title="Delete category">✕</button>
+      <button class="cat-del" data-del-ci="${i}" title="Delete category">✕</button>
     </div>`).join('');
+
+  el.querySelectorAll('.cat-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const i = parseInt(row.dataset.ci);
+      if (!isNaN(i)) selectAdminCat(cats[i]);
+    });
+  });
+  el.querySelectorAll('.cat-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.delCi);
+      if (!isNaN(i)) adminDelCat(cats[i]);
+    });
+  });
 }
 
 function selectAdminCat(cat) {
@@ -1370,23 +1395,38 @@ function renderAdminSongList() {
     return;
   }
   list.innerHTML = songs.map((s, i) => `
-    <div class="song-row">
+    <div class="song-row" data-si="${i}">
       <span class="song-num">${i+1}</span>
-      <input class="song-row-name" value="${esc(s)}"
-        onchange="adminEditSong('${esc(adminCatSel)}',${i},this.value)"
-        onblur="adminEditSong('${esc(adminCatSel)}',${i},this.value)"/>
-      <button class="song-del" onclick="adminDelSong('${esc(adminCatSel)}',${i})" title="Remove">✕</button>
+      <input class="song-row-name" value="${esc(s)}" data-si="${i}"/>
+      <button class="song-del" data-del-si="${i}" title="Remove">✕</button>
     </div>`).join('');
+
+  const cat = adminCatSel;
+  list.querySelectorAll('.song-row-name').forEach(inp => {
+    const si = parseInt(inp.dataset.si);
+    inp.addEventListener('change', () => adminEditSong(cat, si, inp.value));
+    inp.addEventListener('blur',   () => adminEditSong(cat, si, inp.value));
+  });
+  list.querySelectorAll('.song-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const si = parseInt(btn.dataset.delSi);
+      if (!isNaN(si)) adminDelSong(cat, si);
+    });
+  });
 }
 
 function adminAddCat() {
   const inp = document.getElementById('aCatInput');
   const v = inp.value.trim();
-  if (!v || cats.includes(v)) { inp.focus(); return; }
+  if (!v) { inp.focus(); return; }
+  if (cats.includes(v)) { inp.select(); return; } // already exists — highlight
   cats.push(v); songMap[v] = [];
   adminCatSel = v; adminTab = 'list';
   inp.value = ''; inp.focus();
   renderAdminCatList(); renderAdminPane();
+  // Scroll cat list to bottom so new entry is visible
+  const cl = document.getElementById('aCatList');
+  cl.scrollTop = cl.scrollHeight;
   buildDrum(1, cats); saveData(); check();
 }
 
@@ -1409,6 +1449,9 @@ function adminAddSong() {
   songMap[adminCatSel].push(v);
   inp.value = ''; inp.focus();
   renderAdminCatList(); renderAdminSongList();
+  // Scroll song list to bottom so new entry is visible
+  const sl = document.getElementById('aSongList');
+  sl.scrollTop = sl.scrollHeight;
   if (chosenCat === adminCatSel) buildDrum(2, songMap[adminCatSel]);
   saveData(); check();
 }
