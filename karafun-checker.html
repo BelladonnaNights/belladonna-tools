@@ -659,36 +659,54 @@ function fuzzyContains(haystack, needle) {
   return nWords.filter(w => hWords.has(w)).length / nWords.length >= 0.7;
 }
 
+function splitOnDash(query) {
+  // Handle hyphen (-), en dash (–), em dash (—) with optional surrounding spaces
+  const match = query.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+  if (match) return [match[1].trim(), match[2].trim()];
+  return null;
+}
+
+function scoreTitle(catTitle, inputTitle) {
+  if (!inputTitle) return 0;
+  if (catTitle === inputTitle) return 100;
+  if (catTitle.includes(inputTitle) && inputTitle.length > 3) return 65;
+  if (inputTitle.includes(catTitle) && catTitle.length > 3) return 55;
+  if (fuzzyContains(catTitle, inputTitle)) return 35;
+  return 0;
+}
+
+function scoreArtist(catArtist, inputArtist) {
+  if (!inputArtist) return 0;
+  if (catArtist === inputArtist) return 50;
+  if (catArtist.includes(inputArtist) || inputArtist.includes(catArtist)) return 30;
+  if (fuzzyContains(catArtist, inputArtist)) return 15;
+  return -15;
+}
+
 function matchSong(query) {
-  let inputArtist = '', inputTitle = '';
-  const dashIdx = query.indexOf(' - ');
-  if (dashIdx > 0) {
-    inputArtist = norm(query.slice(0, dashIdx));
-    inputTitle = norm(query.slice(dashIdx + 3));
-  } else {
-    inputTitle = norm(query);
+  const candidates = [];
+  const parts = splitOnDash(query);
+  if (parts) {
+    // Try both "Title - Artist" and "Artist - Title" orderings
+    candidates.push({ inputTitle: norm(parts[0]), inputArtist: norm(parts[1]) });
+    candidates.push({ inputTitle: norm(parts[1]), inputArtist: norm(parts[0]) });
   }
+  // Always try whole string as title-only fallback
+  candidates.push({ inputTitle: norm(query), inputArtist: '' });
 
   let bestScore = 0, bestMatch = null;
 
   for (const song of catalog) {
     const catArtist = norm(song.artist);
     const catTitle = norm(song.title);
-    let score = 0;
 
-    if (catTitle === inputTitle) score += 100;
-    else if (catTitle.includes(inputTitle) && inputTitle.length > 3) score += 65;
-    else if (inputTitle.includes(catTitle) && catTitle.length > 3) score += 55;
-    else if (fuzzyContains(catTitle, inputTitle)) score += 35;
-
-    if (inputArtist && score > 0) {
-      if (catArtist === inputArtist) score += 50;
-      else if (catArtist.includes(inputArtist) || inputArtist.includes(catArtist)) score += 25;
-      else if (fuzzyContains(catArtist, inputArtist)) score += 10;
-      else score -= 15;
+    for (const { inputTitle, inputArtist } of candidates) {
+      const ts = scoreTitle(catTitle, inputTitle);
+      if (ts === 0) continue;
+      const as = inputArtist ? scoreArtist(catArtist, inputArtist) : 0;
+      const total = ts + as;
+      if (total > bestScore) { bestScore = total; bestMatch = song; }
     }
-
-    if (score > bestScore) { bestScore = score; bestMatch = song; }
   }
 
   if (bestScore >= 35) return { status: 'found', match: bestMatch, score: bestScore };
