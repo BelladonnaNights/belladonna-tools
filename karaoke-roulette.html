@@ -640,7 +640,7 @@ body::before{
         <div class="drum-ptr"></div>
         <div class="bulb-strip" id="b1R"></div>
       </div>
-      <button class="spin-btn" id="sb1" onclick="spinWheel(1)" disabled>Spin Category</button>
+      <button class="spin-btn" id="sb1" onclick="window.spinWheel(1)" disabled>Spin Category</button>
     </div>
 
     <!-- WHEEL 2 -->
@@ -660,7 +660,7 @@ body::before{
         <div class="drum-ptr"></div>
         <div class="bulb-strip" id="b2R"></div>
       </div>
-      <button class="spin-btn" id="sb2" onclick="spinWheel(2)" disabled>Spin Song</button>
+      <button class="spin-btn" id="sb2" onclick="window.spinWheel(2)" disabled>Spin Song</button>
     </div>
 
   </div>
@@ -1218,7 +1218,7 @@ function spinDrum(n, items, cb) {
 /* ═══════════════════════════════════════════════════════
    SPIN ENTRY POINTS
    ═══════════════════════════════════════════════════════ */
-function spinWheel(n) {
+window.spinWheel = function spinWheel(n) {
   if (spinning) return;
   const items = n === 1 ? cats : (songMap[chosenCat] || []);
   if (!items.length || (n === 1 && items.length < 2)) return;
@@ -1711,7 +1711,6 @@ function esc(s) {
 /* ═══════════════════════════════════════════════════════
    EXPOSE to window (required because script is type=module)
    ═══════════════════════════════════════════════════════ */
-window.spinWheel      = spinWheel;
 window.resetGame      = resetGame;
 window.toggleAdmin    = toggleAdmin;
 window.toggleFullscreen = toggleFullscreen;
@@ -1748,6 +1747,10 @@ window.pwCancel       = pwCancel;
 
   // Wire all admin buttons (no inline onclick needed)
   wireAdminButtons();
+
+  // Spin buttons — wired in module scope, no onclick= attribute needed
+  document.getElementById('sb1').addEventListener('click', () => spinWheel(1));
+  document.getElementById('sb2').addEventListener('click', () => spinWheel(2));
 
   // Audio toggle button
   function setAudioUI(enabled) {
