@@ -652,46 +652,54 @@ function resetCSV() {
   document.getElementById('csvFile').value = '';
 }
 
-function fuzzyContains(haystack, needle) {
-  const hWords = new Set(haystack.split(' ').filter(w => w.length > 2));
-  const nWords = needle.split(' ').filter(w => w.length > 2);
-  if (!nWords.length) return false;
-  return nWords.filter(w => hWords.has(w)).length / nWords.length >= 0.7;
-}
-
 function splitOnDash(query) {
-  // Handle hyphen (-), en dash (–), em dash (—) with optional surrounding spaces
-  const match = query.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+  const match = query.match(/^(.+?)\s*[-\u2013\u2014]\s*(.+)$/);
   if (match) return [match[1].trim(), match[2].trim()];
   return null;
 }
 
+// Every meaningful word in needle must appear in haystack
+function wordsMatch(haystack, needle) {
+  const hWords = new Set(haystack.split(' ').filter(w => w.length > 1));
+  const nWords = needle.split(' ').filter(w => w.length > 1);
+  if (!nWords.length) return false;
+  const matched = nWords.filter(w => hWords.has(w)).length;
+  // All words must match
+  return matched === nWords.length;
+}
+
 function scoreTitle(catTitle, inputTitle) {
   if (!inputTitle) return 0;
+  // Exact match
   if (catTitle === inputTitle) return 100;
-  if (catTitle.includes(inputTitle) && inputTitle.length > 3) return 65;
-  if (inputTitle.includes(catTitle) && catTitle.length > 3) return 55;
-  if (fuzzyContains(catTitle, inputTitle)) return 35;
+  // One fully contains the other (e.g. subtitle variants), but titles must be similar length
+  const lenRatio = Math.min(catTitle.length, inputTitle.length) / Math.max(catTitle.length, inputTitle.length);
+  if (lenRatio >= 0.7) {
+    if (catTitle.includes(inputTitle) || inputTitle.includes(catTitle)) return 70;
+  }
+  // All words in the input appear in the catalog title AND length is similar
+  if (lenRatio >= 0.6 && wordsMatch(catTitle, inputTitle) && wordsMatch(inputTitle, catTitle)) return 50;
   return 0;
 }
 
 function scoreArtist(catArtist, inputArtist) {
   if (!inputArtist) return 0;
   if (catArtist === inputArtist) return 50;
-  if (catArtist.includes(inputArtist) || inputArtist.includes(catArtist)) return 30;
-  if (fuzzyContains(catArtist, inputArtist)) return 15;
-  return -15;
+  // Allow one fully containing the other (e.g. "Brooks Dunn" vs "Brooks & Dunn")
+  const lenRatio = Math.min(catArtist.length, inputArtist.length) / Math.max(catArtist.length, inputArtist.length);
+  if (lenRatio >= 0.7 && (catArtist.includes(inputArtist) || inputArtist.includes(catArtist))) return 35;
+  if (wordsMatch(catArtist, inputArtist) && wordsMatch(inputArtist, catArtist)) return 30;
+  return -30; // penalise hard if artist provided but doesn't match at all
 }
 
 function matchSong(query) {
   const candidates = [];
   const parts = splitOnDash(query);
   if (parts) {
-    // Try both "Title - Artist" and "Artist - Title" orderings
     candidates.push({ inputTitle: norm(parts[0]), inputArtist: norm(parts[1]) });
     candidates.push({ inputTitle: norm(parts[1]), inputArtist: norm(parts[0]) });
   }
-  // Always try whole string as title-only fallback
+  // Title-only fallback (no artist penalty)
   candidates.push({ inputTitle: norm(query), inputArtist: '' });
 
   let bestScore = 0, bestMatch = null;
@@ -709,7 +717,8 @@ function matchSong(query) {
     }
   }
 
-  if (bestScore >= 35) return { status: 'found', match: bestMatch, score: bestScore };
+  // Must score at least 50 to be considered a match
+  if (bestScore >= 50) return { status: 'found', match: bestMatch, score: bestScore };
   return { status: 'notfound', match: null, score: 0 };
 }
 
