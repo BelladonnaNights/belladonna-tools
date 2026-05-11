@@ -13,7 +13,6 @@
     --surface2: #1e1e24;
     --border: #2a2a35;
     --accent: #e8ff47;
-    --accent2: #ff5f6d;
     --accent3: #47d4ff;
     --text: #f0f0f5;
     --text-muted: #6b6b80;
@@ -22,8 +21,6 @@
     --found-bg: #0d2a1a;
     --notfound: #ff5f6d;
     --notfound-bg: #2a0d12;
-    --uncertain: #ffb347;
-    --uncertain-bg: #2a1a0d;
     --radius: 10px;
     --radius-sm: 6px;
   }
@@ -38,18 +35,11 @@
     overflow-x: hidden;
   }
 
-  /* Animated noise/scanline background */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background-image: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255,255,255,0.012) 2px,
-      rgba(255,255,255,0.012) 4px
-    );
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 4px);
     pointer-events: none;
     z-index: 0;
   }
@@ -61,24 +51,10 @@
     transform: translateX(-50%);
     width: 100%;
     height: 500px;
-    background: conic-gradient(
-      from 200deg at 20% 0%,
-      transparent 0deg,
-      rgba(232, 255, 71, 0.04) 20deg,
-      transparent 40deg
-    ),
-    conic-gradient(
-      from 160deg at 50% 0%,
-      transparent 0deg,
-      rgba(255, 95, 109, 0.05) 25deg,
-      transparent 50deg
-    ),
-    conic-gradient(
-      from 120deg at 80% 0%,
-      transparent 0deg,
-      rgba(71, 212, 255, 0.04) 20deg,
-      transparent 40deg
-    );
+    background:
+      conic-gradient(from 200deg at 20% 0%, transparent 0deg, rgba(232,255,71,0.04) 20deg, transparent 40deg),
+      conic-gradient(from 160deg at 50% 0%, transparent 0deg, rgba(255,95,109,0.05) 25deg, transparent 50deg),
+      conic-gradient(from 120deg at 80% 0%, transparent 0deg, rgba(71,212,255,0.04) 20deg, transparent 40deg);
     pointer-events: none;
     z-index: 0;
     animation: sway 8s ease-in-out infinite;
@@ -97,10 +73,9 @@
     padding: 40px 20px 60px;
   }
 
-  /* Header */
   .header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     animation: fadeDown 0.6s ease both;
   }
 
@@ -123,10 +98,9 @@
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 28px;
-    filter: grayscale(0.3);
   }
 
-  .mic-icon .pulse-ring {
+  .pulse-ring {
     position: absolute;
     inset: -4px;
     border: 2px solid var(--accent);
@@ -135,8 +109,8 @@
     animation: pulse-ring 2.5s ease-out infinite;
   }
 
-  .mic-icon .pulse-ring:nth-child(2) { animation-delay: 0.8s; }
-  .mic-icon .pulse-ring:nth-child(3) { animation-delay: 1.6s; }
+  .pulse-ring:nth-child(2) { animation-delay: 0.8s; }
+  .pulse-ring:nth-child(3) { animation-delay: 1.6s; }
 
   @keyframes pulse-ring {
     0% { transform: scale(1); opacity: 0.6; }
@@ -152,10 +126,7 @@
     margin-bottom: 6px;
   }
 
-  h1 span {
-    color: var(--accent);
-    position: relative;
-  }
+  h1 span { color: var(--accent); }
 
   .tagline {
     font-size: 14px;
@@ -164,49 +135,113 @@
     text-transform: uppercase;
   }
 
-  /* Card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 16px;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  .card:nth-child(2) { animation-delay: 0.1s; }
-
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-16px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .hint-bar {
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 12px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .step:nth-child(2) { animation-delay: 0.08s; }
+  .step:nth-child(3) { animation-delay: 0.16s; }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step.active .step-num { background: var(--accent); border-color: var(--accent); color: #0d0d0f; }
+  .step.done .step-num { background: var(--found-bg); border-color: var(--found); color: var(--found); }
+
+  .step-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .step-subtitle { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+  .upload-area {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg);
+    position: relative;
+  }
+
+  .upload-area:hover, .upload-area.dragover {
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.03);
+  }
+
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+  .upload-hint { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+  .catalog-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--accent3);
+    text-decoration: none;
+    margin-top: 14px;
+    padding: 8px 14px;
+    border: 1px solid rgba(71, 212, 255, 0.25);
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+  }
+
+  .catalog-link:hover { background: rgba(71, 212, 255, 0.07); border-color: rgba(71, 212, 255, 0.5); }
+
+  .csv-loaded {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 13px;
-    color: var(--text-muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    background: var(--found-bg);
+    border: 1px solid var(--found);
     border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--found);
     font-family: 'DM Mono', monospace;
-  }
-
-  .hint-bar code {
-    color: var(--accent);
-    background: rgba(232, 255, 71, 0.1);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 12px;
   }
 
   label {
@@ -238,10 +273,29 @@
   textarea:focus { outline: none; border-color: var(--accent); }
   textarea::placeholder { color: var(--text-dim); }
 
+  .hint-bar {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    margin-bottom: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .hint-bar code {
+    color: var(--accent);
+    background: rgba(232, 255, 71, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
   .btn-row {
     display: flex;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 14px;
     flex-wrap: wrap;
     align-items: center;
   }
@@ -262,7 +316,7 @@
 
   button:hover { background: var(--border); transform: translateY(-1px); }
   button:active { transform: translateY(0) scale(0.98); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
   .btn-check {
     background: var(--accent);
@@ -274,47 +328,18 @@
     letter-spacing: 0.05em;
   }
 
-  .btn-check:hover { background: #d4eb3c; border-color: #d4eb3c; box-shadow: 0 0 20px rgba(232, 255, 71, 0.3); }
-
-  .btn-check.loading {
-    background: var(--surface2);
-    color: var(--text-muted);
-    border-color: var(--border);
-    box-shadow: none;
+  .btn-check:hover:not(:disabled) {
+    background: #d4eb3c;
+    border-color: #d4eb3c;
+    box-shadow: 0 0 20px rgba(232, 255, 71, 0.3);
   }
 
-  #statusMsg {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-left: auto;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* Progress */
-  .progress-wrap {
-    height: 3px;
-    background: var(--surface2);
-    border-radius: 2px;
-    margin: 16px 0 0;
-    overflow: hidden;
-    display: none;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent3));
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    box-shadow: 0 0 8px rgba(232, 255, 71, 0.5);
-  }
-
-  /* Stats */
   .stats-grid {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin-bottom: 16px;
-    display: none;
+    margin-bottom: 12px;
+    animation: fadeUp 0.3s ease both;
   }
 
   .stat {
@@ -335,7 +360,6 @@
 
   .stat.s-found .stat-num { color: var(--found); }
   .stat.s-missing .stat-num { color: var(--notfound); }
-  .stat.s-uncertain .stat-num { color: var(--uncertain); }
 
   .stat-label {
     font-size: 10px;
@@ -346,114 +370,90 @@
     margin-top: 4px;
   }
 
-  /* Results */
+  .filter-row {
+    display: none;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .filter-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .filter-btn:hover { background: var(--surface2); transform: none; }
+  .filter-btn.active { background: var(--surface2); color: var(--text); border-color: var(--text-muted); }
+
   .results-header {
+    display: none;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 10px;
-    display: none;
+    margin-bottom: 8px;
   }
 
-  .results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .results-list { display: flex; flex-direction: column; gap: 5px; }
 
   .result-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 11px 16px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    animation: fadeUp 0.3s ease both;
-    transition: border-color 0.3s;
+    animation: fadeUp 0.2s ease both;
   }
 
   .result-item.r-found { border-left: 3px solid var(--found); background: var(--found-bg); }
   .result-item.r-notfound { border-left: 3px solid var(--notfound); background: var(--notfound-bg); }
-  .result-item.r-uncertain { border-left: 3px solid var(--uncertain); background: var(--uncertain-bg); }
-  .result-item.r-checking { opacity: 0.55; }
 
-  .result-icon {
-    flex-shrink: 0;
-    font-size: 20px;
-    line-height: 1.3;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin-top: 3px;
-  }
-
+  .result-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
   .result-body { flex: 1; min-width: 0; }
 
   .result-title {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text);
-    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .result-detail {
-    font-size: 12px;
+  .result-match {
+    font-size: 11px;
     color: var(--text-muted);
     font-family: 'DM Mono', monospace;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 2px;
   }
 
-  .result-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--accent3);
-    text-decoration: none;
-    margin-top: 4px;
-    opacity: 0.85;
-    transition: opacity 0.15s;
-  }
-
-  .result-link:hover { opacity: 1; text-decoration: underline; }
+  .result-match.exact { color: var(--found); }
 
   .badge {
-    display: inline-block;
+    flex-shrink: 0;
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 4px;
-    margin-left: 8px;
-    vertical-align: middle;
   }
 
-  .badge-found { background: rgba(61, 220, 132, 0.15); color: var(--found); }
-  .badge-notfound { background: rgba(255, 95, 109, 0.15); color: var(--notfound); }
-  .badge-uncertain { background: rgba(255, 179, 71, 0.15); color: var(--uncertain); }
+  .badge-found { background: rgba(61,220,132,0.15); color: var(--found); }
+  .badge-notfound { background: rgba(255,95,109,0.15); color: var(--notfound); }
 
-  /* Footer */
   .footer {
     text-align: center;
     margin-top: 40px;
@@ -466,17 +466,14 @@
   .footer a { color: var(--text-muted); text-decoration: none; }
   .footer a:hover { color: var(--accent); }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
   @media (max-width: 480px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .btn-row { flex-direction: column; }
     button { width: 100%; }
-    #statusMsg { margin-left: 0; }
   }
 </style>
 </head>
@@ -493,59 +490,289 @@
       <div class="pulse-ring"></div>
     </div>
     <h1>KARAFUN<br><span>SONG CHECKER</span></h1>
-    <p class="tagline">Verify your roulette list before the party starts</p>
+    <p class="tagline">Bulk-check your roulette list against the KaraFun catalog</p>
   </div>
 
-  <div class="card">
+  <!-- Step 1 -->
+  <div class="step active" id="step1">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">Load the KaraFun catalog</div>
+      <div class="step-subtitle" id="csvStatus">No catalog loaded</div>
+    </div>
+
+    <div id="uploadArea">
+      <div class="upload-area" id="dropZone">
+        <input type="file" id="csvFile" accept=".csv" onchange="loadCSV(this.files[0])">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">Drop the KaraFun CSV here, or click to browse</div>
+        <div class="upload-hint">karafun_catalog.csv — re-download occasionally to keep it fresh</div>
+      </div>
+      <div style="text-align:center; margin-top: 12px;">
+        <a class="catalog-link" href="https://www.karafun.com/karaoke-song-list.html" target="_blank">
+          ↗ Download the KaraFun CSV catalog
+        </a>
+      </div>
+    </div>
+
+    <div id="csvLoaded" style="display:none;">
+      <div class="csv-loaded">
+        <span>✅</span>
+        <span id="csvLoadedMsg">Catalog loaded</span>
+        <button onclick="resetCSV()" style="margin-left:auto; font-size:12px; padding:4px 10px; color:var(--text-muted);">Change file</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" id="step2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">Paste your song list</div>
+    </div>
+
     <div class="hint-bar">
-      One song per line &nbsp;·&nbsp; Format: <code>Artist - Song Title</code> or just <code>Song Title</code> &nbsp;·&nbsp; Max 20 songs
+      One song per line &nbsp;·&nbsp; <code>Artist - Song Title</code> or just <code>Song Title</code> &nbsp;·&nbsp; No limit on songs
     </div>
-    <label for="songInput">Your song list</label>
+
+    <label for="songInput">Your songs</label>
     <textarea id="songInput" placeholder="Journey - Don't Stop Believin'&#10;Bohemian Rhapsody&#10;Adele - Rolling in the Deep&#10;Whitney Houston - I Will Always Love You&#10;Sweet Caroline"></textarea>
+
     <div class="btn-row">
-      <button class="btn-check" id="checkBtn" onclick="startCheck()">▶ Check Songs</button>
-      <button onclick="loadExample()">Load Examples</button>
+      <button class="btn-check" id="checkBtn" onclick="checkSongs()" disabled>▶ Check Songs</button>
+      <button onclick="loadExample()">Load examples</button>
       <button onclick="clearAll()">Clear</button>
-      <span id="statusMsg"></span>
-    </div>
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-fill" id="progressBar" style="width:0%"></div>
     </div>
   </div>
 
+  <!-- Stats -->
   <div class="stats-grid" id="statsGrid">
-    <div class="stat">
-      <div class="stat-num" id="statTotal">0</div>
-      <div class="stat-label">Total</div>
-    </div>
-    <div class="stat s-found">
-      <div class="stat-num" id="statFound">0</div>
-      <div class="stat-label">Found</div>
-    </div>
-    <div class="stat s-missing">
-      <div class="stat-num" id="statMissing">0</div>
-      <div class="stat-label">Missing</div>
-    </div>
-    <div class="stat s-uncertain">
-      <div class="stat-num" id="statUncertain">0</div>
-      <div class="stat-label">Uncertain</div>
-    </div>
+    <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total</div></div>
+    <div class="stat s-found"><div class="stat-num" id="statFound">0</div><div class="stat-label">Found</div></div>
+    <div class="stat s-missing"><div class="stat-num" id="statMissing">0</div><div class="stat-label">Not found</div></div>
+    <div class="stat"><div class="stat-num" id="statPct">—</div><div class="stat-label">Match rate</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-row" id="filterRow">
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('found', this)">✅ Found</button>
+    <button class="filter-btn" onclick="setFilter('notfound', this)">❌ Not found</button>
   </div>
 
   <div class="results-header" id="resultsHeader">Results</div>
   <div class="results-list" id="resultsList"></div>
 
-  <div class="footer">
-    <a href="https://www.karafun.com/karaoke/" target="_blank">Browse the full KaraFun catalog ↗</a>
-    &nbsp;&nbsp;·&nbsp;&nbsp;
-    <a href="https://www.karafun.com/karaoke-song-list.html" target="_blank">Download CSV catalog ↗</a>
+  <div class="footer" style="margin-top:32px;">
+    <a href="https://www.karafun.com/karaoke/" target="_blank">Browse full KaraFun catalog ↗</a>
   </div>
 
 </div>
 
 <script>
-let checking = false;
-let results = [];
+let catalog = [];
+let allResults = [];
+let activeFilter = 'all';
+
+function norm(s) {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[''`´]/g, "'")
+    .replace(/[^a-z0-9' ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function detectSep(line) {
+  return (line.match(/;/g) || []).length >= (line.match(/,/g) || []).length ? ';' : ',';
+}
+
+function splitCSVLine(line, sep) {
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQuote = !inQuote; }
+    else if (c === sep && !inQuote) { result.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  let sep = ';', artistCol = -1, titleCol = -1, headerIdx = 0;
+
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    const line = lines[i];
+    sep = detectSep(line);
+    const cols = splitCSVLine(line, sep).map(c => c.replace(/^"|"$/g, '').trim().toLowerCase());
+    const aIdx = cols.findIndex(c => c === 'artist' || c === 'artiste' || c.includes('artist'));
+    const tIdx = cols.findIndex(c => c === 'title' || c === 'titre' || c === 'song' || c === 'track');
+    if (aIdx >= 0 && tIdx >= 0) { headerIdx = i; artistCol = aIdx; titleCol = tIdx; break; }
+  }
+
+  const results = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const cols = splitCSVLine(line, sep);
+    if (cols.length > Math.max(artistCol, titleCol)) {
+      const artist = cols[artistCol].replace(/^"|"$/g, '').trim();
+      const title = cols[titleCol].replace(/^"|"$/g, '').trim();
+      if (title) results.push({ artist, title });
+    }
+  }
+  return results;
+}
+
+function loadCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    catalog = parseCSV(e.target.result);
+    if (catalog.length === 0) {
+      alert('Could not read the CSV. Make sure you downloaded the full catalog CSV from karafun.com/karaoke-song-list.html');
+      return;
+    }
+    document.getElementById('uploadArea').style.display = 'none';
+    document.getElementById('csvLoaded').style.display = 'block';
+    document.getElementById('csvLoadedMsg').textContent = `${catalog.length.toLocaleString()} songs loaded — ${file.name}`;
+    document.getElementById('csvStatus').textContent = `${catalog.length.toLocaleString()} songs`;
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step1').classList.add('done');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('checkBtn').disabled = false;
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function resetCSV() {
+  catalog = [];
+  document.getElementById('uploadArea').style.display = 'block';
+  document.getElementById('csvLoaded').style.display = 'none';
+  document.getElementById('csvStatus').textContent = 'No catalog loaded';
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').classList.remove('done');
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('csvFile').value = '';
+}
+
+function fuzzyContains(haystack, needle) {
+  const hWords = new Set(haystack.split(' ').filter(w => w.length > 2));
+  const nWords = needle.split(' ').filter(w => w.length > 2);
+  if (!nWords.length) return false;
+  return nWords.filter(w => hWords.has(w)).length / nWords.length >= 0.7;
+}
+
+function matchSong(query) {
+  let inputArtist = '', inputTitle = '';
+  const dashIdx = query.indexOf(' - ');
+  if (dashIdx > 0) {
+    inputArtist = norm(query.slice(0, dashIdx));
+    inputTitle = norm(query.slice(dashIdx + 3));
+  } else {
+    inputTitle = norm(query);
+  }
+
+  let bestScore = 0, bestMatch = null;
+
+  for (const song of catalog) {
+    const catArtist = norm(song.artist);
+    const catTitle = norm(song.title);
+    let score = 0;
+
+    if (catTitle === inputTitle) score += 100;
+    else if (catTitle.includes(inputTitle) && inputTitle.length > 3) score += 65;
+    else if (inputTitle.includes(catTitle) && catTitle.length > 3) score += 55;
+    else if (fuzzyContains(catTitle, inputTitle)) score += 35;
+
+    if (inputArtist && score > 0) {
+      if (catArtist === inputArtist) score += 50;
+      else if (catArtist.includes(inputArtist) || inputArtist.includes(catArtist)) score += 25;
+      else if (fuzzyContains(catArtist, inputArtist)) score += 10;
+      else score -= 15;
+    }
+
+    if (score > bestScore) { bestScore = score; bestMatch = song; }
+  }
+
+  if (bestScore >= 35) return { status: 'found', match: bestMatch, score: bestScore };
+  return { status: 'notfound', match: null, score: 0 };
+}
+
+function checkSongs() {
+  const songs = document.getElementById('songInput').value
+    .split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!songs.length) return;
+
+  allResults = songs.map(song => ({ input: song, ...matchSong(song) }));
+  activeFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  renderResults();
+}
+
+function renderResults() {
+  const found = allResults.filter(r => r.status === 'found').length;
+  const missing = allResults.filter(r => r.status === 'notfound').length;
+  const total = allResults.length;
+  const pct = total > 0 ? Math.round((found / total) * 100) : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statFound').textContent = found;
+  document.getElementById('statMissing').textContent = missing;
+  document.getElementById('statPct').textContent = pct + '%';
+  document.getElementById('statsGrid').style.display = 'grid';
+  document.getElementById('resultsHeader').style.display = 'block';
+  document.getElementById('filterRow').style.display = 'flex';
+
+  const list = document.getElementById('resultsList');
+  list.innerHTML = '';
+
+  const filtered = activeFilter === 'all' ? allResults : allResults.filter(r => r.status === activeFilter);
+
+  filtered.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'result-item ' + (r.status === 'found' ? 'r-found' : 'r-notfound');
+    div.style.animationDelay = Math.min(i * 0.02, 0.4) + 's';
+
+    let matchLine = '';
+    if (r.status === 'found' && r.match) {
+      const inputTitleNorm = norm(r.input.includes(' - ') ? r.input.split(' - ')[1] : r.input);
+      const isExact = norm(r.match.title) === inputTitleNorm;
+      matchLine = `<div class="result-match${isExact ? ' exact' : ''}">
+        Matched: ${escHtml(r.match.artist)} — ${escHtml(r.match.title)}${isExact ? ' ✓' : ''}
+      </div>`;
+    }
+
+    div.innerHTML = `
+      <div class="result-icon">${r.status === 'found' ? '✅' : '❌'}</div>
+      <div class="result-body">
+        <div class="result-title">${escHtml(r.input)}</div>
+        ${matchLine}
+      </div>
+      <span class="badge ${r.status === 'found' ? 'badge-found' : 'badge-notfound'}">
+        ${r.status === 'found' ? 'In catalog' : 'Not found'}
+      </span>`;
+    list.appendChild(div);
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:14px;">No songs in this filter.</div>`;
+  }
+}
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResults();
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function loadExample() {
   document.getElementById('songInput').value = `Journey - Don't Stop Believin'
@@ -557,7 +784,7 @@ Bon Jovi - Livin' on a Prayer
 ABBA - Dancing Queen
 The Killers - Mr. Brightside
 Rick Astley - Never Gonna Give You Up
-Total Eclipse of the Heart`;
+Bonnie Tyler - Total Eclipse of the Heart`;
 }
 
 function clearAll() {
@@ -565,142 +792,19 @@ function clearAll() {
   document.getElementById('resultsList').innerHTML = '';
   document.getElementById('resultsHeader').style.display = 'none';
   document.getElementById('statsGrid').style.display = 'none';
-  document.getElementById('progressWrap').style.display = 'none';
-  document.getElementById('statusMsg').textContent = '';
-  results = [];
+  document.getElementById('filterRow').style.display = 'none';
+  allResults = [];
 }
 
-function parseSongs(text) {
-  return text.split('\n').map(l => l.trim()).filter(l => l.length > 0).slice(0, 20);
-}
-
-function updateStats() {
-  const found = results.filter(r => r.status === 'found').length;
-  const missing = results.filter(r => r.status === 'notfound').length;
-  const uncertain = results.filter(r => r.status === 'uncertain').length;
-  document.getElementById('statTotal').textContent = results.length;
-  document.getElementById('statFound').textContent = found;
-  document.getElementById('statMissing').textContent = missing;
-  document.getElementById('statUncertain').textContent = uncertain;
-}
-
-function addPendingItem(song, index) {
-  const div = document.createElement('div');
-  div.id = 'result-' + index;
-  div.className = 'result-item r-checking';
-  div.innerHTML = `
-    <div class="result-icon"><div class="spinner"></div></div>
-    <div class="result-body">
-      <div class="result-title">${escapeHtml(song)}</div>
-      <div class="result-detail">Checking catalog…</div>
-    </div>`;
-  document.getElementById('resultsList').appendChild(div);
-}
-
-function renderItem(song, status, detail, link, index) {
-  const el = document.getElementById('result-' + index);
-  if (!el) return;
-  const icons = { found: '✅', notfound: '❌', uncertain: '⚠️' };
-  const classes = { found: 'r-found', notfound: 'r-notfound', uncertain: 'r-uncertain' };
-  const badges = { found: 'Available', notfound: 'Not found', uncertain: 'Uncertain' };
-  const badgeClasses = { found: 'badge-found', notfound: 'badge-notfound', uncertain: 'badge-uncertain' };
-  el.className = 'result-item ' + (classes[status] || '');
-  el.innerHTML = `
-    <div class="result-icon">${icons[status] || '❓'}</div>
-    <div class="result-body">
-      <div class="result-title">${escapeHtml(song)}<span class="badge ${badgeClasses[status] || ''}">${badges[status] || ''}</span></div>
-      ${detail ? `<div class="result-detail">${escapeHtml(detail)}</div>` : ''}
-      ${link ? `<a class="result-link" href="${link}" target="_blank">↗ View on KaraFun</a>` : ''}
-    </div>`;
-}
-
-function escapeHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-async function checkSong(song) {
-  const prompt = `Check if the song "${song}" is available in the KaraFun karaoke catalog at karafun.com.
-Search for it on https://www.karafun.com/karaoke/ and return ONLY a JSON object with these fields:
-- status: "found", "notfound", or "uncertain"
-- detail: a brief note (e.g. "Available as 'Don't Stop Believin\\'' by Journey" or "Not found in catalog" or "Found multiple versions")
-- url: direct karafun.com URL to the song page if found, otherwise null
-
-Return ONLY the JSON object, no markdown, no other text.`;
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  if (!resp.ok) throw new Error('API error ' + resp.status);
-  const data = await resp.json();
-  const textBlock = data.content && data.content.find(b => b.type === 'text');
-  if (!textBlock) return { status: 'uncertain', detail: 'No response from API', url: null };
-
-  try {
-    const cleaned = textBlock.text.replace(/```json|```/g, '').trim();
-    const start = cleaned.indexOf('{');
-    const end = cleaned.lastIndexOf('}');
-    return JSON.parse(cleaned.slice(start, end + 1));
-  } catch {
-    const t = textBlock.text.toLowerCase();
-    if (t.includes('not found') || t.includes('not available')) return { status: 'notfound', detail: 'Not found in KaraFun catalog', url: null };
-    if (t.includes('found') || t.includes('available')) return { status: 'found', detail: 'Found in KaraFun catalog', url: 'https://www.karafun.com/karaoke/' };
-    return { status: 'uncertain', detail: textBlock.text.slice(0, 100), url: null };
-  }
-}
-
-async function startCheck() {
-  if (checking) return;
-  const songs = parseSongs(document.getElementById('songInput').value);
-  if (!songs.length) { document.getElementById('statusMsg').textContent = 'Enter at least one song.'; return; }
-
-  checking = true;
-  results = songs.map(s => ({ song: s, status: 'pending' }));
-  const checkBtn = document.getElementById('checkBtn');
-  checkBtn.disabled = true;
-  checkBtn.classList.add('loading');
-  checkBtn.textContent = '⏳ Checking…';
-
-  document.getElementById('resultsList').innerHTML = '';
-  document.getElementById('resultsHeader').style.display = 'block';
-  document.getElementById('statsGrid').style.display = 'grid';
-  document.getElementById('progressWrap').style.display = 'block';
-  document.getElementById('statTotal').textContent = songs.length;
-  document.getElementById('statFound').textContent = '0';
-  document.getElementById('statMissing').textContent = '0';
-  document.getElementById('statUncertain').textContent = '0';
-
-  songs.forEach((s, i) => addPendingItem(s, i));
-
-  for (let i = 0; i < songs.length; i++) {
-    document.getElementById('statusMsg').textContent = `${i + 1} / ${songs.length}`;
-    document.getElementById('progressBar').style.width = Math.round((i / songs.length) * 100) + '%';
-    try {
-      const res = await checkSong(songs[i]);
-      results[i] = { song: songs[i], ...res };
-      renderItem(songs[i], res.status, res.detail, res.url, i);
-    } catch (e) {
-      results[i] = { song: songs[i], status: 'uncertain', detail: 'Error — try again', url: null };
-      renderItem(songs[i], 'uncertain', 'Error — try again', null, i);
-    }
-    updateStats();
-  }
-
-  document.getElementById('progressBar').style.width = '100%';
-  const found = results.filter(r => r.status === 'found').length;
-  document.getElementById('statusMsg').textContent = `Done! ${found}/${songs.length} found`;
-  checkBtn.disabled = false;
-  checkBtn.classList.remove('loading');
-  checkBtn.textContent = '▶ Check Songs';
-  checking = false;
-}
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) loadCSV(file);
+});
 </script>
 </body>
 </html>
