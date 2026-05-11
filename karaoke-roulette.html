@@ -701,11 +701,11 @@ body::before{
 
 <!-- ═══ ADMIN MODAL ══════════════════════════════════ -->
 <div class="admin-panel" id="adminPanel">
-  <div class="admin-backdrop" onclick="toggleAdmin()"></div>
+  <div class="admin-backdrop" id="adminBackdrop"></div>
   <div class="admin-modal">
     <div class="admin-header">
       <div class="admin-title">⚙ Admin — Configure Wheels</div>
-      <button class="admin-close" onclick="toggleAdmin()">✕</button>
+      <button class="admin-close" id="adminCloseBtn">✕</button>
     </div>
     <div class="admin-body">
       <!-- Sidebar: category list -->
@@ -714,7 +714,7 @@ body::before{
         <div class="cat-list" id="aCatList"></div>
         <div class="sidebar-add">
           <input type="text" id="aCatInput" placeholder="New category…" autocomplete="off"/>
-          <button class="gbtn sm" onclick="adminAddCat()">Add</button>
+          <button class="gbtn sm" id="aCatAddBtn">Add</button>
         </div>
       </div>
       <!-- Main pane: song editor -->
@@ -722,8 +722,8 @@ body::before{
         <div class="pane-head" id="paneHead">
           <span class="pane-cat-name" id="paneCatName">← Select a category</span>
           <div class="pane-tabs" id="paneTabs" style="display:none;">
-            <button class="ptab active" id="tabList" onclick="switchTab('list')">Song List</button>
-            <button class="ptab" id="tabBulk" onclick="switchTab('bulk')">Bulk Paste</button>
+            <button class="ptab active" id="tabList">Song List</button>
+            <button class="ptab" id="tabBulk">Bulk Paste</button>
           </div>
         </div>
         <!-- List tab -->
@@ -731,7 +731,7 @@ body::before{
           <div class="song-list-wrap" id="aSongList"></div>
           <div class="song-add-row" id="songAddRow" style="display:none;">
             <input type="text" id="aSongInput" placeholder="Add a song and press Enter…" autocomplete="off"/>
-            <button class="gbtn sm" onclick="adminAddSong()">Add</button>
+            <button class="gbtn sm" id="aSongAddBtn">Add</button>
           </div>
         </div>
         <!-- Bulk tab -->
@@ -740,20 +740,20 @@ body::before{
             <div class="bulk-hint">Paste or type songs below — <strong>one per line</strong>. These will <strong>replace</strong> the current list for this category.</div>
             <textarea class="bulk-ta" id="bulkTA" placeholder="Song Title – Artist&#10;Another Song – Artist&#10;…one per line"></textarea>
             <div class="bulk-actions">
-              <button class="gbtn" onclick="adminBulkImport()">✓ Save All Songs</button>
-              <button class="gbtn" onclick="adminBulkClear()">Clear</button>
+              <button class="gbtn" id="bulkSaveBtn">✓ Save All Songs</button>
+              <button class="gbtn" id="bulkClearBtn">Clear</button>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="admin-footer">
-      <button class="gbtn" onclick="exportHTML()" id="exportBtn" style="display:flex;align-items:center;gap:7px;">
+      <button class="gbtn" id="exportBtn" style="display:flex;align-items:center;gap:7px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export HTML
       </button>
-      <button class="gbtn danger" onclick="adminClearAll()">Clear All</button>
-      <button class="gbtn" onclick="toggleAdmin()">Done</button>
+      <button class="gbtn danger" id="clearAllBtn">Clear All</button>
+      <button class="gbtn" id="adminDoneBtn">Done</button>
     </div>
   </div>
 </div>
@@ -946,6 +946,56 @@ let spinning   = false;
 let adminCatSel = null;
 
 /* ═══════════════════════════════════════════════════════
+   TICK SOUND ENGINE  (Web Audio API — no files needed)
+   ═══════════════════════════════════════════════════════ */
+let _actx = null;
+function getACtx() {
+  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+  return _actx;
+}
+
+function playTick(velocity) {
+  // velocity 0‒1: 0 = slowest (end of spin), 1 = fastest (peak speed)
+  // Pitch and volume both scale with speed so fast ticks sound crisp
+  try {
+    const ctx = getACtx();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+
+    // Short noise burst shaped by an exponential decay envelope
+    // High velocity → sharper attack, higher pitched
+    const decay = 0.008 + (1 - velocity) * 0.022;  // 8–30 ms decay
+    for (let i = 0; i < data.length; i++) {
+      const t = i / ctx.sampleRate;
+      // Band-pass-ish click: mix of a short sine and white noise
+      const sine  = Math.sin(2 * Math.PI * (800 + velocity * 1200) * t);
+      const noise = (Math.random() * 2 - 1);
+      const env   = Math.exp(-t / decay);
+      data[i] = (sine * 0.55 + noise * 0.45) * env;
+    }
+
+    const src  = ctx.createBufferSource();
+    src.buffer = buf;
+
+    // Gentle high-shelf to keep it bright without harshness
+    const eq = ctx.createBiquadFilter();
+    eq.type = 'highshelf';
+    eq.frequency.value = 3000;
+    eq.gain.value = 4;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.28 + velocity * 0.42;  // 0.28–0.70
+
+    src.connect(eq);
+    eq.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  } catch(e) { /* silence errors if audio unavailable */ }
+}
+
+/* ═══════════════════════════════════════════════════════
    DRUM ENGINE
    ───────────────────────────────────────────────────────
    Approach: build a strip of REPS × n real DOM nodes.
@@ -1050,6 +1100,8 @@ function spinDrum(n, items, cb) {
   const dist    = targetY - startY;   // will be negative (strip moves up)
   const dur     = 4000 + Math.random() * 800;  // 4.0–4.8 s
   const t0      = performance.now();
+  // Track which slot is centred for tick detection
+  let lastSlot  = Math.round((-startY + Math.floor(VIS / 2) * slotH) / slotH);
 
   // Smooth ease: accelerate for first 30%, then decelerate gradually for 70%
   function ease(t) {
@@ -1069,6 +1121,18 @@ function spinDrum(n, items, cb) {
     const y   = startY + dist * ease(t);
     drumY[n]  = y;
     strip.style.transform = `translateY(${y}px)`;
+
+    // Tick on every slot boundary crossing
+    const curSlot = Math.round((-y + Math.floor(VIS / 2) * slotH) / slotH);
+    if (curSlot !== lastSlot) {
+      lastSlot = curSlot;
+      // velocity: derivative of ease at t, normalised 0‒1
+      // peak velocity is around t=0.3 (end of ease-in)
+      // Use raw ease difference as a proxy
+      const dt = 0.016 / dur;  // approx one frame worth of t
+      const vel = Math.min(1, Math.abs(ease(Math.min(t + dt, 1)) - ease(Math.max(t - dt, 0))) / (2 * dt) / 1.2);
+      playTick(vel);
+    }
 
     if (t < 1) {
       animId = requestAnimationFrame(frame);
@@ -1223,6 +1287,38 @@ function toggleAdmin() {
   }
 }
 
+/* Wire all admin buttons once after DOM ready — called from INIT */
+function wireAdminButtons() {
+  // Close / backdrop
+  document.getElementById('adminBackdrop').addEventListener('click', toggleAdmin);
+  document.getElementById('adminCloseBtn').addEventListener('click', toggleAdmin);
+  document.getElementById('adminDoneBtn').addEventListener('click', toggleAdmin);
+
+  // Category add
+  document.getElementById('aCatAddBtn').addEventListener('click', adminAddCat);
+  document.getElementById('aCatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') adminAddCat();
+  });
+
+  // Song add — delegation on the pane so it survives re-renders
+  document.getElementById('aSongAddBtn').addEventListener('click', adminAddSong);
+  document.getElementById('adminPane').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'aSongInput') adminAddSong();
+  });
+
+  // Tabs
+  document.getElementById('tabList').addEventListener('click', () => switchTab('list'));
+  document.getElementById('tabBulk').addEventListener('click', () => switchTab('bulk'));
+
+  // Bulk
+  document.getElementById('bulkSaveBtn').addEventListener('click', adminBulkImport);
+  document.getElementById('bulkClearBtn').addEventListener('click', adminBulkClear);
+
+  // Footer
+  document.getElementById('exportBtn').addEventListener('click', exportHTML);
+  document.getElementById('clearAllBtn').addEventListener('click', adminClearAll);
+}
+
 function openAdminPanel() {
   const p   = document.getElementById('adminPanel');
   const btn = document.getElementById('adminToggleBtn');
@@ -1230,19 +1326,7 @@ function openAdminPanel() {
   btn.textContent = '✕ Close';
   renderAdminCatList();
   renderAdminPane();
-  // Wire category input — remove old listener first to avoid duplicates
-  const catInp = document.getElementById('aCatInput');
-  catInp.replaceWith(catInp.cloneNode(true)); // clone removes all listeners
-  document.getElementById('aCatInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') adminAddCat();
-  });
-  // Song input is inside a pane that may re-render; wire it via delegation on the pane
-  const pane = document.getElementById('adminPane');
-  pane._songKeyHandler && pane.removeEventListener('keydown', pane._songKeyHandler);
-  pane._songKeyHandler = e => {
-    if (e.key === 'Enter' && e.target.id === 'aSongInput') adminAddSong();
-  };
-  pane.addEventListener('keydown', pane._songKeyHandler);
+  document.getElementById('aCatInput').focus();
 }
 
 /* ── Password prompt ── */
@@ -1592,6 +1676,13 @@ window.pwCancel       = pwCancel;
   buildDrum(2, []);
   check();
   startRealtimeSync();
+
+  // Wire all admin buttons (no inline onclick needed)
+  wireAdminButtons();
+
+  // Warm up AudioContext on first interaction (browser autoplay policy)
+  const _resumeAudio = () => { try { getACtx(); } catch(e) {} document.removeEventListener('click', _resumeAudio); };
+  document.addEventListener('click', _resumeAudio);
 
   // Keyboard support for PIN prompt
   document.addEventListener('keydown', e => {
