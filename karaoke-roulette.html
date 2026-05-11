@@ -395,7 +395,10 @@ body::before{
 .drum-win::after{right:0;border-width:2px 2px 0 0;}
 
 .drum-ptr{
-  position:absolute;right:-32px;top:50%;transform:translateY(-50%);
+  position:absolute;
+  top:50%;
+  right:-30px;
+  transform:translateY(-50%);
   width:0;height:0;
   border-top:17px solid transparent;border-bottom:17px solid transparent;
   border-right:28px solid var(--gold2);
@@ -596,7 +599,7 @@ body::before{
   </div>
   <div class="top-bar-right">
     <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;">⬤ Loading…</span>
-    <button class="tbbtn" class="tbbtn audioToggleBtn">Sound: On</button>
+    <button class="tbbtn audioToggleBtn" id="audioToggleBtn">Sound: On</button>
     <button class="tbbtn" onclick="toggleAdmin()" id="adminToggleBtn">⚙ Admin</button>
     <button class="tbbtn fs-btn audioToggleBtn" id="fsSoundBtn" style="display:none;">Sound: On</button>
     <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
@@ -633,8 +636,8 @@ body::before{
           <div class="drum-clip"><div class="drum" id="drum1"></div></div>
           <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
           <div class="drum-win"></div>
-          <div class="drum-ptr"></div>
         </div>
+        <div class="drum-ptr"></div>
         <div class="bulb-strip" id="b1R"></div>
       </div>
       <button class="spin-btn" id="sb1" onclick="spinWheel(1)" disabled>Spin Category</button>
@@ -650,11 +653,11 @@ body::before{
           <div class="drum-clip"><div class="drum" id="drum2"></div></div>
           <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
           <div class="drum-win"></div>
-          <div class="drum-ptr"></div>
           <div class="drum-lock" id="dlock">
             <div class="lock-lbl">🔒<br>Spin Category<br>First</div>
           </div>
         </div>
+        <div class="drum-ptr"></div>
         <div class="bulb-strip" id="b2R"></div>
       </div>
       <button class="spin-btn" id="sb2" onclick="spinWheel(2)" disabled>Spin Song</button>
@@ -1232,13 +1235,14 @@ function spinWheel(n) {
 
   spinDrum(n, items, (winnerIdx) => {
     spinning = false;
+    check(); // clear spinning flag on both buttons first
     if (n === 1) {
       chosenCat = items[winnerIdx];
       unlockW2();
     } else {
       showResult(chosenCat, items[winnerIdx]);
+      check();
     }
-    check();
   });
 }
 
@@ -1292,6 +1296,9 @@ function unlockW2() {
   b.classList.add('vis');
   document.getElementById('dlock').classList.add('hidden');
   check();
+  // Force-enable sb2 if the category has songs — belt-and-suspenders
+  const hasSongs = (songMap[chosenCat] || []).length > 0;
+  document.getElementById('sb2').disabled = !hasSongs;
 }
 function resetPhase2() {
   phase = 1; chosenCat = null;
