@@ -601,28 +601,21 @@ function splitCSVLine(line, sep) {
 }
 
 function parseCSV(text) {
+  // KaraFun CSV format (no header row):
+  // col 0: rank/number  col 1: title (quoted)  col 2: artist (quoted)
+  // e.g.  17;"Bohemian Rhapsody";Queen;1975;...
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  let sep = ';', artistCol = -1, titleCol = -1, headerIdx = 0;
-
-  for (let i = 0; i < Math.min(5, lines.length); i++) {
-    const line = lines[i];
-    sep = detectSep(line);
-    const cols = splitCSVLine(line, sep).map(c => c.replace(/^"|"$/g, '').trim().toLowerCase());
-    const aIdx = cols.findIndex(c => c === 'artist' || c === 'artiste' || c.includes('artist'));
-    const tIdx = cols.findIndex(c => c === 'title' || c === 'titre' || c === 'song' || c === 'track');
-    if (aIdx >= 0 && tIdx >= 0) { headerIdx = i; artistCol = aIdx; titleCol = tIdx; break; }
-  }
-
   const results = [];
-  for (let i = headerIdx + 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    const cols = splitCSVLine(line, sep);
-    if (cols.length > Math.max(artistCol, titleCol)) {
-      const artist = cols[artistCol].replace(/^"|"$/g, '').trim();
-      const title = cols[titleCol].replace(/^"|"$/g, '').trim();
-      if (title) results.push({ artist, title });
-    }
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const cols = splitCSVLine(trimmed, ';');
+    if (cols.length < 3) continue;
+    // Skip any accidental header row
+    if (cols[1].toLowerCase().includes('title') || cols[1].toLowerCase().includes('titre')) continue;
+    const title = cols[1].replace(/^"|"$/g, '').trim();
+    const artist = cols[2].replace(/^"|"$/g, '').trim();
+    if (title && artist) results.push({ title, artist });
   }
   return results;
 }
