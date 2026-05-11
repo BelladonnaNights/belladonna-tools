@@ -596,8 +596,9 @@ body::before{
   </div>
   <div class="top-bar-right">
     <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;">⬤ Loading…</span>
-    <button class="tbbtn" id="audioToggleBtn" title="Toggle sound">🔊 Sound</button>
+    <button class="tbbtn" class="tbbtn audioToggleBtn">Sound: On</button>
     <button class="tbbtn" onclick="toggleAdmin()" id="adminToggleBtn">⚙ Admin</button>
+    <button class="tbbtn fs-btn audioToggleBtn" id="fsSoundBtn" style="display:none;">Sound: On</button>
     <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
   </div>
 </div>
@@ -971,53 +972,64 @@ let audioEnabled = true;  // toggled by the mute button
 
 function playTick(velocity) {
   if (!audioEnabled) return;
-  // velocity 0‒1: 0 = slowest (end of spin), 1 = fastest
+  // velocity 0-1: 1 = peak speed, 0 = final slow clacks
   try {
     const ctx = getACtx();
     if (ctx.state === 'suspended') ctx.resume();
 
     const sr  = ctx.sampleRate;
-    // Flapper hit: ~60ms — longer at low speed, shorter at high speed
-    const dur = 0.055 - velocity * 0.030;   // 25–55 ms
-    const buf = ctx.createBuffer(1, Math.ceil(sr * dur), sr);
-    const d   = buf.getChannelData(0);
+    // Price is Right big wheel: hard plastic peg strike
+    // Very short — tight clack, minimal sustain, crisp attack
+    const bufLen = Math.ceil(sr * 0.045);
+    const buf    = ctx.createBuffer(1, bufLen, sr);
+    const d      = buf.getChannelData(0);
 
-    // Model: a thin plastic/cardboard flap striking a pin
-    // = low-freq thud (body resonance) + brief mid-freq transient + fast noise burst
-    const f0 = 180 + (1 - velocity) * 80;   // body: 180–260 Hz, lower when slow
-    const f1 = 900 + (1 - velocity) * 300;  // transient: 900–1200 Hz
+    // Two layers:
+    // 1. Sharp impact transient — very fast exponential, mid frequency
+    //    At high speed: higher pitch (peg barely touches, glancing blow)
+    //    At low speed:  lower pitch (peg fully engaged, more resonance)
+    const fImpact = 420 + velocity * 280;   // 420–700 Hz
+    const tImpact = 0.004 + (1-velocity) * 0.006;  // 4–10 ms decay
+
+    // 2. Body resonance — the peg/spoke material ringing briefly
+    const fBody  = 210 + velocity * 120;    // 210–330 Hz
+    const tBody  = 0.008 + (1-velocity) * 0.014;   // 8–22 ms decay
+
+    // 3. Tiny contact noise — the "tick" texture, very brief
+    const tNoise = 0.002;
 
     for (let i = 0; i < d.length; i++) {
-      const t    = i / sr;
-      // Body thump — decays in ~30 ms
-      const thud = Math.sin(2 * Math.PI * f0 * t) * Math.exp(-t / 0.018);
-      // Transient click — decays in ~8 ms
-      const click = Math.sin(2 * Math.PI * f1 * t) * Math.exp(-t / 0.007);
-      // Brief noise burst (the "flap" smack) — decays in ~5 ms
-      const noise  = (Math.random() * 2 - 1) * Math.exp(-t / 0.005);
-      d[i] = thud * 0.60 + click * 0.25 + noise * 0.15;
+      const t = i / sr;
+      const impact  = Math.sin(2 * Math.PI * fImpact * t) * Math.exp(-t / tImpact);
+      const body    = Math.sin(2 * Math.PI * fBody   * t) * Math.exp(-t / tBody);
+      const noise   = (Math.random() * 2 - 1)             * Math.exp(-t / tNoise);
+      d[i] = impact * 0.50 + body * 0.38 + noise * 0.12;
     }
 
     const src = ctx.createBufferSource();
     src.buffer = buf;
 
-    // Low-pass to keep it warm and thuddy, cut harsh highs
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = 2200 - velocity * 600;  // 1600–2200 Hz cutoff
+    // Band-pass centred on the impact freq — keeps it clean and present
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 500;
+    bp.Q.value = 0.8;
 
-    // Slight low-shelf boost for body
-    const ls = ctx.createBiquadFilter();
-    ls.type = 'lowshelf';
-    ls.frequency.value = 300;
-    ls.gain.value = 5;
+    // Gentle compressor to keep fast ticks from clipping
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -12;
+    comp.knee.value = 6;
+    comp.ratio.value = 3;
+    comp.attack.value = 0.001;
+    comp.release.value = 0.05;
 
     const gain = ctx.createGain();
-    gain.gain.value = 0.55 + velocity * 0.35;  // 0.55–0.90
+    // Fast ticks slightly quieter (rapid succession); slow final clacks louder
+    gain.gain.value = 0.60 + (1 - velocity) * 0.30;  // 0.60–0.90
 
-    src.connect(lp);
-    lp.connect(ls);
-    ls.connect(gain);
+    src.connect(bp);
+    bp.connect(comp);
+    comp.connect(gain);
     gain.connect(ctx.destination);
     src.start();
   } catch(e) { /* silence errors if audio unavailable */ }
@@ -1176,20 +1188,24 @@ function spinDrum(n, items, cb) {
       // Identify the winning slot element and highlight it
       const landed = centredIndex(n, items, slotH);
       const slots  = strip.querySelectorAll('.drum-slot');
-      // The centre slot in the visible window
       const centreSlotIdx = Math.round((-targetY + Math.floor(VIS / 2) * slotHInt) / slotHInt);
       const winSlot = slots[centreSlotIdx];
       if (winSlot) {
         winSlot.classList.add('slot-winner');
-        // Pulse the winner highlight
         winSlot.style.transition = 'background .25s ease, color .25s ease, transform .25s ease';
       }
 
-      // 5-second dramatic pause before popup
-      setTimeout(() => {
-        if (winSlot) winSlot.classList.remove('slot-winner');
+      if (n === 2) {
+        // Wheel 2: 5-second dramatic pause before song popup
+        setTimeout(() => {
+          if (winSlot) winSlot.classList.remove('slot-winner');
+          cb(landed);
+        }, 5000);
+      } else {
+        // Wheel 1: instant — category transfers immediately
+        if (winSlot) setTimeout(() => winSlot.classList.remove('slot-winner'), 1200);
         cb(landed);
-      }, 5000);
+      }
     }
   }
 
@@ -1727,11 +1743,16 @@ window.pwCancel       = pwCancel;
   wireAdminButtons();
 
   // Audio toggle button
-  document.getElementById('audioToggleBtn').addEventListener('click', () => {
-    audioEnabled = !audioEnabled;
-    const btn = document.getElementById('audioToggleBtn');
-    btn.textContent = audioEnabled ? '🔊 Sound' : '🔇 Muted';
-    btn.style.opacity = audioEnabled ? '1' : '0.5';
+  function setAudioUI(enabled) {
+    audioEnabled = enabled;
+    document.querySelectorAll('.audioToggleBtn').forEach(btn => {
+      btn.textContent  = enabled ? 'Sound: On' : 'Sound: Off';
+      btn.style.opacity = enabled ? '1' : '0.6';
+      btn.classList.toggle('audio-off', !enabled);
+    });
+  }
+  document.querySelectorAll('.audioToggleBtn').forEach(btn => {
+    btn.addEventListener('click', () => setAudioUI(!audioEnabled));
   });
 
   // Warm up AudioContext on first interaction (browser autoplay policy)
@@ -1765,6 +1786,8 @@ function onFsChange() {
   const btn  = document.getElementById('fsBtn');
   btn.textContent = isFs ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
   document.documentElement.classList.toggle('fs', isFs);
+  // Show FS-only sound button in fullscreen (top bar buttons hidden)
+  document.getElementById('fsSoundBtn').style.display = isFs ? '' : 'none';
   buildDrum(1, cats);
   const d2items = chosenCat ? (songMap[chosenCat] || []) : [];
   buildDrum(2, d2items);
