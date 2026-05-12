@@ -637,22 +637,32 @@
         <span class="search-icon">🔍</span>
         <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()">
       </div>
-      <label style="display:flex; align-items:center; gap:8px; cursor:pointer; white-space:nowrap; user-select:none;">
-        <input type="checkbox" id="show-bingo" onchange="renderLibrary()" style="accent-color:var(--gold); width:16px; height:16px; cursor:pointer; flex-shrink:0;">
-        <span style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Show Bingo</span>
-      </label>
+
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
     <div id="search-results" class="category-grid" style="display:none;"></div>
     <div id="filter-and-grid">
-      <div class="filter-row">
-        <select id="lib-filter-type" onchange="renderLibrary()">
+      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+          <input type="checkbox" id="lib-show-trivia" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Trivia
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+          <input type="checkbox" id="lib-show-bingo" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Bingo
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+          <input type="checkbox" id="lib-show-singa" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Sing-Alongs
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+          <input type="checkbox" id="lib-show-mini" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Mini Games
+        </label>
+        <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
+        <select id="lib-filter-type" onchange="renderLibrary()" style="width:auto;min-width:130px;">
           <option value="">All Types</option>
         </select>
-        <select id="lib-filter-theme" onchange="renderLibrary()">
+        <select id="lib-filter-theme" onchange="renderLibrary()" style="width:auto;min-width:130px;">
           <option value="">All Themes</option>
         </select>
-        <select id="lib-filter-tag" onchange="renderLibrary()">
+        <select id="lib-filter-tag" onchange="renderLibrary()" style="width:auto;min-width:120px;">
           <option value="">All Tags</option>
         </select>
         <div style="margin-left:auto; display:flex; gap:8px;">
@@ -801,7 +811,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Type</label>
-            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist">
+            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist" oninput="updateCatPublishedLabel(this.value)">
             <datalist id="type-datalist"></datalist>
           </div>
         </div>
@@ -826,9 +836,9 @@
         <div class="form-group">
           <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
             <input type="checkbox" id="cat-published" style="accent-color:var(--gold); width:18px; height:18px; cursor:pointer; flex-shrink:0;">
-            <span style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published to Mini Games</span>
+            <span id="cat-published-label" style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published</span>
           </label>
-          <p style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked and Type contains "mini game", this appears on the Mini Games tab and venue page.</p>
+          <p id="cat-published-desc" style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this appears on its tab and the venue page.</p>
         </div>
         <div class="form-group">
           <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide, shown in Library</span></label>
@@ -1281,22 +1291,25 @@ function renderLibrary() {
   const typeF = document.getElementById('lib-filter-type').value;
   const themeF = document.getElementById('lib-filter-theme').value;
   const tagF = document.getElementById('lib-filter-tag').value;
-  const showBingo = document.getElementById('show-bingo').checked;
+  const showTrivia = document.getElementById('lib-show-trivia').checked;
+  const showBingo  = document.getElementById('lib-show-bingo').checked;
+  const showSinga  = document.getElementById('lib-show-singa').checked;
+  const showMini   = document.getElementById('lib-show-mini').checked;
 
   let filtered = categories.filter(c => {
-    if (!showBingo && isBingo(c)) return false;
+    const t = (c.type||'').toLowerCase();
+    if (!showBingo  && isBingo(c))     return false;
+    if (!showSinga  && isSingAlong(c)) return false;
+    if (!showMini   && isMiniGame(c))  return false;
+    if (!showTrivia && !isBingo(c) && !isSingAlong(c) && !isMiniGame(c)) return false;
     if (typeF && c.type !== typeF) return false;
     if (themeF && c.theme !== themeF) return false;
     if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
     return true;
   });
 
-  const bingoCount = categories.filter(isBingo).length;
-  const visibleTotal = showBingo ? categories.length : categories.length - bingoCount;
   document.getElementById('lib-results-meta').textContent =
-    filtered.length === visibleTotal
-      ? `${filtered.length} categories${!showBingo && bingoCount ? ` · ${bingoCount} bingo hidden` : ''}`
-      : `${filtered.length} of ${visibleTotal} categories${!showBingo && bingoCount ? ` · ${bingoCount} bingo hidden` : ''}`;
+    `${filtered.length} of ${categories.length} categories`;
 
   document.getElementById('lib-empty').style.display = (categories.length === 0 || (!showBingo && categories.every(isBingo))) ? 'block' : 'none';
   document.getElementById('category-grid').innerHTML = filtered.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('');
@@ -1366,10 +1379,9 @@ function runSearch() {
     (c.tags && c.tags.toLowerCase().includes(ql))
   );
 
-  const bingoMatches = matches.filter(isBingo).length;
   searchMeta.style.display = 'block';
   searchMeta.textContent = matches.length > 0
-    ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} matching "${q}"${bingoMatches ? ` (${bingoMatches} bingo)` : ''}`
+    ? `${matches.length} categor${matches.length === 1 ? 'y' : 'ies'} matching "${q}"`
     : `No categories found for "${q}"`;
 
   searchResults.style.display = matches.length > 0 ? 'grid' : 'none';
@@ -1410,11 +1422,29 @@ function editCategory(idx) {
   document.getElementById('cat-notes').value = c.notes || '';
   document.getElementById('cat-tags').value = c.tags || '';
   document.getElementById('cat-published').checked = !!c.published;
+  updateCatPublishedLabel(c.type || '');
   document.getElementById('cat-minigame-url').value = c.miniGameImage || '';
   setCatMiniPreview(c.miniGameImage || null);
   setCatBannerPreview(c.bannerData || null);
   document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('cat-modal').classList.add('open');
+}
+
+function updateCatPublishedLabel(type) {
+  const t = (type||'').toLowerCase();
+  const lbl = document.getElementById('cat-published-label');
+  const desc = document.getElementById('cat-published-desc');
+  if (!lbl) return;
+  if (t.includes('mini')) {
+    lbl.textContent = 'Published to Mini Games';
+    desc.textContent = 'When checked, this appears on the Mini Games tab and venue page.';
+  } else if (t.includes('sing')) {
+    lbl.textContent = 'Published to Sing-Alongs';
+    desc.textContent = 'When checked, this appears on the Sing-Alongs tab and venue page.';
+  } else {
+    lbl.textContent = 'Published';
+    desc.textContent = 'When checked, this appears on its tab and the venue page.';
+  }
 }
 
 function closeCatModal() {
@@ -2619,7 +2649,7 @@ Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   closeCatModal, saveCategoryFromModal,
-  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
+  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl, updateCatPublishedLabel,
   openNightDetail, closeNightDetail, openNewNightModal,
   editNight, deleteNight, deleteNightFromModal, closeNightModal, saveNight,
   handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
