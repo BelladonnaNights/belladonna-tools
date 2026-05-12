@@ -63,20 +63,33 @@
   }
   .logo-text {
     font-family: 'Cinzel', serif;
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.1;
+    text-transform: uppercase;
+    display: flex;
+    align-items: baseline;
+    gap: 0.45em;
+    flex-wrap: wrap;
+  }
+  .logo-word-one {
+    color: #FFFFFF;
+    font-weight: 700;
+  }
+  .logo-word-two {
     color: var(--gold);
-    letter-spacing: 0.08em;
-    line-height: 1.2;
+    font-weight: 700;
   }
   .logo-sub {
     font-family: 'Crimson Text', serif;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    letter-spacing: 0.15em;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     display: block;
     font-weight: 400;
+    margin-top: 2px;
   }
   .nav-tabs {
     display: flex;
@@ -614,9 +627,11 @@
 <header class="site-header">
   <div class="logo">
     <img src="logo.png" alt="Belladonna Logo" class="logo-skull" style="width:42px; height:42px; object-fit:contain;">
-    <div class="logo-text">
-      Category Grimoire
-      <span class="logo-sub">Belladonna Audio Alchemies</span>
+    <div>
+      <div class="logo-text">
+        <span class="logo-word-one">Belladonna</span><span class="logo-word-two">Grimoire</span>
+      </div>
+      <span class="logo-sub">Audio Alchemies</span>
     </div>
   </div>
   <nav class="nav-tabs">
@@ -722,7 +737,7 @@
     <div id="minigames-empty" class="empty-state" style="display:none;">
       <div class="empty-state-icon">🎲</div>
       <h3>No Mini Games Yet</h3>
-      <p>Add categories with Type "Mini Game" and mark them Published.</p>
+      <p>Add categories with Type "Mini Game" to see them here.</p>
     </div>
   </div>
 
@@ -744,7 +759,7 @@
     <div id="singalongs-empty" class="empty-state" style="display:none;">
       <div class="empty-state-icon">🎤</div>
       <h3>No Sing-Alongs Yet</h3>
-      <p>Add categories with Type "Sing-Along" and mark them Published.</p>
+      <p>Add categories with Type "Sing-Along" to see them here.</p>
     </div>
   </div>
 
@@ -838,7 +853,7 @@
             <input type="checkbox" id="cat-published" style="accent-color:var(--gold); width:18px; height:18px; cursor:pointer; flex-shrink:0;">
             <span id="cat-published-label" style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published</span>
           </label>
-          <p id="cat-published-desc" style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this appears on its tab and the venue page.</p>
+          <p id="cat-published-desc" style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this appears on the public venue page.</p>
         </div>
         <div class="form-group">
           <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide, shown in Library</span></label>
@@ -1257,7 +1272,7 @@ function renderMiniGames() {
   renderMiniFilterChips();
   const grid = document.getElementById('minigames-grid');
   const empty = document.getElementById('minigames-empty');
-  const games = categories.filter(c => isMiniGame(c) && c.published).filter(c => {
+  const games = categories.filter(c => isMiniGame(c)).filter(c => {
     if (activeMiniFilters.size === 0) return true;
     const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     return [...activeMiniFilters].every(f => catTags.includes(f));
@@ -1437,13 +1452,13 @@ function updateCatPublishedLabel(type) {
   if (!lbl) return;
   if (t.includes('mini')) {
     lbl.textContent = 'Published to Mini Games';
-    desc.textContent = 'When checked, this appears on the Mini Games tab and venue page.';
+    desc.textContent = 'When checked, this appears on the public venue page.';
   } else if (t.includes('sing')) {
     lbl.textContent = 'Published to Sing-Alongs';
-    desc.textContent = 'When checked, this appears on the Sing-Alongs tab and venue page.';
+    desc.textContent = 'When checked, this appears on the public venue page.';
   } else {
     lbl.textContent = 'Published';
-    desc.textContent = 'When checked, this appears on its tab and the venue page.';
+    desc.textContent = 'When checked, this appears on the public venue page.';
   }
 }
 
@@ -2269,7 +2284,7 @@ function renderSingAlongs() {
   renderSingaFilterChips();
   const grid = document.getElementById('singalongs-grid');
   const empty = document.getElementById('singalongs-empty');
-  const games = categories.filter(c => isSingAlong(c) && c.published).filter(c => {
+  const games = categories.filter(c => isSingAlong(c)).filter(c => {
     if (activeSingaFilters.size === 0) return true;
     const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     return [...activeSingaFilters].every(f => catTags.includes(f));
