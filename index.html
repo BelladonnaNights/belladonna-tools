@@ -623,6 +623,7 @@
     <button class="nav-tab active" onclick="switchView('library')">Library</button>
     <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
     <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
+    <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
 </header>
@@ -695,14 +696,45 @@
 
   <!-- ═══ MINI GAMES VIEW ═══ -->
   <div class="view" id="view-minigames">
-    <div style="display:flex; justify-content:flex-end; margin-bottom:1.5rem;">
-      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:0;">
+        <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="filter-chip active" onclick="clearMiniFilters()">All</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
+        <button class="btn btn-sm btn-ghost" id="mini-filter-visibility-btn" onclick="toggleMiniFilterVisibility()">☰ Filters</button>
+        <button class="btn btn-sm btn-ghost" onclick="openMiniTagsModal()">Manage</button>
+        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
+      </div>
     </div>
     <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
     <div id="minigames-empty" class="empty-state" style="display:none;">
       <div class="empty-state-icon">🎲</div>
       <h3>No Mini Games Yet</h3>
       <p>Add categories with Type "Mini Game" and mark them Published.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SING-ALONGS VIEW ═══ -->
+  <div class="view" id="view-singalongs">
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:0;">
+        <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="filter-chip active" onclick="clearSingaFilters()">All</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
+        <button class="btn btn-sm btn-ghost" id="singa-filter-visibility-btn" onclick="toggleSingaFilterVisibility()">☰ Filters</button>
+        <button class="btn btn-sm btn-ghost" onclick="openSingaTagsModal()">Manage</button>
+        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Sing-Along</button>
+      </div>
+    </div>
+    <div id="singalongs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+    <div id="singalongs-empty" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">🎤</div>
+      <h3>No Sing-Alongs Yet</h3>
+      <p>Add categories with Type "Sing-Along" and mark them Published.</p>
     </div>
   </div>
 
@@ -925,6 +957,48 @@
   </div>
 </div>
 
+<!-- ═══ MINI TAGS MODAL ═══ -->
+<div class="modal-backdrop" id="mini-tags-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Mini Game Filters</span>
+      <button class="modal-close" onclick="closeMiniTagsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Filter tags for the Mini Games tab. Assign tags to a mini game via the Tags field in the category edit modal.</p>
+      <div id="mini-tags-list" style="display:grid; gap:6px; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="mini-tag-input" placeholder="Add a filter tag… e.g. Party, Quick Play, Team" onkeydown="if(event.key==='Enter'){event.preventDefault();addMiniTag();}">
+        <button class="btn btn-sm" onclick="addMiniTag()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeMiniTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SING-ALONG TAGS MODAL ═══ -->
+<div class="modal-backdrop" id="singa-tags-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Sing-Along Filters</span>
+      <button class="modal-close" onclick="closeSingaTagsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Filter tags for the Sing-Alongs tab.</p>
+      <div id="singa-tags-list" style="display:grid; gap:6px; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="singa-tag-input" placeholder="Add a filter tag… e.g. Pop, Disney, 90s" onkeydown="if(event.key==='Enter'){event.preventDefault();addSingaTag();}">
+        <button class="btn btn-sm" onclick="addSingaTag()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeSingaTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -962,6 +1036,8 @@ const db = getFirestore(app);
 const catsCol = collection(db, 'categories');
 const nightsCol = collection(db, 'nights');
 const nightTagsDoc = doc(db, 'config', 'nightTags');
+const miniTagsDoc = doc(db, 'config', 'miniTags');
+const singaTagsDoc = doc(db, 'config', 'singaTags');
 
 // ═══════════════════════════════════════════════
 // DATA STORE
@@ -969,6 +1045,8 @@ const nightTagsDoc = doc(db, 'config', 'nightTags');
 let categories = [];
 let nights = [];
 let nightTags = []; // filter tags for the themed nights tab
+let miniTags = []; // filter tags for mini games tab
+let singaTags = []; // filter tags for sing-alongs tab
 let editingCatIndex = -1;
 let editingNightIndex = -1;
 let pendingImport = [];
@@ -976,6 +1054,10 @@ let nightBannerData = null;
 let catBannerData = null;
 let activeNightFilters = new Set();
 let nightFiltersVisible = true;
+let activeMiniFilters = new Set();
+let miniFiltersVisible = true;
+let activeSingaFilters = new Set();
+let singaFiltersVisible = true;
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -993,13 +1075,15 @@ async function loadData() {
   );
 
   try {
-    const [cSnap, nSnap, tSnap] = await Promise.race([
-      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc)]),
+    const [cSnap, nSnap, tSnap, mSnap, sSnap] = await Promise.race([
+      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc), getDoc(miniTagsDoc), getDoc(singaTagsDoc)]),
       timeout
     ]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
+    miniTags = mSnap.exists() ? (mSnap.data().tags || []) : [];
+    singaTags = sSnap.exists() ? (sSnap.data().tags || []) : [];
   } catch(e) {
     console.error('Firebase load error:', e);
     const msg = e.message === 'timeout'
@@ -1022,7 +1106,7 @@ async function loadData() {
       renderLibrary();
     };
     loadingEl.appendChild(btn);
-    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
+    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback']; miniTags = []; singaTags = [];
     return;
   }
   loadingEl.style.display = 'none';
@@ -1093,6 +1177,14 @@ async function saveNightTags() {
   await setDoc(nightTagsDoc, { tags: nightTags });
 }
 
+async function saveMiniTags() {
+  await setDoc(miniTagsDoc, { tags: miniTags });
+}
+
+async function saveSingaTags() {
+  await setDoc(singaTagsDoc, { tags: singaTags });
+}
+
 async function batchSaveCats(cats) {
   const CHUNK = 400;
   for (let i = 0; i < cats.length; i += CHUNK) {
@@ -1113,7 +1205,7 @@ function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  const labelMap = { library: 'librar', nights: 'night', minigames: 'mini', import: 'import' };
+  const labelMap = { library: 'librar', nights: 'night', minigames: 'mini', singalongs: 'sing', import: 'import' };
   document.querySelectorAll('.nav-tab').forEach(t => {
     const key = labelMap[name] || name;
     if (t.textContent.toLowerCase().includes(key)) t.classList.add('active');
@@ -1121,6 +1213,7 @@ function switchView(name) {
   if (name === 'library') renderLibrary();
   if (name === 'nights') renderNights();
   if (name === 'minigames') renderMiniGames();
+  if (name === 'singalongs') renderSingAlongs();
 }
 
 // ═══════════════════════════════════════════════
@@ -1151,9 +1244,14 @@ function isMiniGame(cat) {
 }
 
 function renderMiniGames() {
+  renderMiniFilterChips();
   const grid = document.getElementById('minigames-grid');
   const empty = document.getElementById('minigames-empty');
-  const games = categories.filter(c => isMiniGame(c) && c.published);
+  const games = categories.filter(c => isMiniGame(c) && c.published).filter(c => {
+    if (activeMiniFilters.size === 0) return true;
+    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    return [...activeMiniFilters].every(f => catTags.includes(f));
+  });
 
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
@@ -2130,6 +2228,293 @@ function getSelectedNightModalTags() {
 
 // ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
+// SING-ALONG RENDER + FILTER TAGS
+// ═══════════════════════════════════════════════
+
+function isSingAlong(cat) {
+  return (cat.type || '').toLowerCase().includes('sing');
+}
+
+function renderSingAlongs() {
+  renderSingaFilterChips();
+  const grid = document.getElementById('singalongs-grid');
+  const empty = document.getElementById('singalongs-empty');
+  const games = categories.filter(c => isSingAlong(c) && c.published).filter(c => {
+    if (activeSingaFilters.size === 0) return true;
+    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    return [...activeSingaFilters].every(f => catTags.includes(f));
+  });
+  empty.style.display = games.length === 0 ? 'block' : 'none';
+  grid.innerHTML = games.map(c => {
+    const miniSrc = c.miniGameImage || c.bannerData || null;
+    const bannerHtml = miniSrc
+      ? `<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:6px 6px 0 0;position:relative;background:var(--surface2);">
+          <img src="${miniSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">
+        </div>`
+      : `<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:2.5rem;opacity:0.3;">🎤</span>
+        </div>`;
+    const idx = categories.indexOf(c);
+    return `<div class="category-card" style="padding:0;overflow:hidden;cursor:pointer;" onclick="editCategory(${idx})">
+      ${bannerHtml}
+      <div style="padding:1rem 1.1rem 1.1rem;">
+        <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
+        ${c.theme ? `<div style="font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
+        ${(c.shows||[]).length ? `<div style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:0.5rem;">${(c.shows||[]).map(s=>esc(s)).join('<br>')}</div>` : ''}
+        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSingaFilterChips() {
+  const bar = document.getElementById('singa-filter-chips');
+  if (!bar) return;
+  bar.style.display = singaFiltersVisible ? 'flex' : 'none';
+  const allActive = activeSingaFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearSingaFilters()">All</button>`
+    + singaTags.map((t, i) =>
+      `<button class="filter-chip${activeSingaFilters.has(t) ? ' active' : ''}"
+        draggable="true"
+        ondragstart="onSingaTagDragStart(event,${i})"
+        ondragover="event.preventDefault()"
+        ondrop="onSingaTagDrop(event,${i})"
+        onclick="toggleSingaFilter('${esc(t)}')">${esc(t)}</button>`
+    ).join('');
+  const btn = document.getElementById('singa-filter-visibility-btn');
+  if (btn) btn.style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+}
+
+function clearSingaFilters() { activeSingaFilters.clear(); renderSingaFilterChips(); renderSingAlongs(); }
+function toggleSingaFilter(tag) {
+  if (activeSingaFilters.has(tag)) activeSingaFilters.delete(tag); else activeSingaFilters.add(tag);
+  renderSingaFilterChips(); renderSingAlongs();
+}
+function toggleSingaFilterVisibility() { singaFiltersVisible = !singaFiltersVisible; renderSingaFilterChips(); }
+
+let _dragSingaTagIdx = null;
+function onSingaTagDragStart(e, i) { _dragSingaTagIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+async function onSingaTagDrop(e, i) {
+  e.preventDefault();
+  if (_dragSingaTagIdx === null || _dragSingaTagIdx === i) return;
+  const moved = singaTags.splice(_dragSingaTagIdx, 1)[0];
+  singaTags.splice(i, 0, moved);
+  _dragSingaTagIdx = null;
+  await saveSingaTags();
+  renderSingaFilterChips();
+}
+
+function openSingaTagsModal() { renderSingaTagsList(); document.getElementById('singa-tag-input').value = ''; document.getElementById('singa-tags-modal').classList.add('open'); }
+function closeSingaTagsModal() { document.getElementById('singa-tags-modal').classList.remove('open'); renderSingaFilterChips(); renderSingAlongs(); }
+
+function renderSingaTagsList() {
+  const list = document.getElementById('singa-tags-list');
+  if (!singaTags.length) { list.innerHTML = `<p style="color:var(--text-dim);font-size:0.85rem;font-style:italic;">No filter tags yet.</p>`; return; }
+  list.innerHTML = singaTags.map((t, i) =>
+    `<div id="singa-tag-row-${i}" draggable="true"
+        ondragstart="onSingaTagListDragStart(event,${i})"
+        ondragover="onSingaTagListDragOver(event,${i})"
+        ondragleave="onSingaTagListDragLeave(event)"
+        ondrop="onSingaTagListDrop(event,${i})"
+        style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.4rem 0.75rem;transition:border-color 0.15s;">
+      <span style="color:var(--text-dim);cursor:grab;font-size:1rem;user-select:none;">⠿</span>
+      <span id="singa-tag-label-${i}" style="flex:1;font-size:0.92rem;color:var(--text);">${esc(t)}</span>
+      <input type="text" id="singa-tag-edit-${i}" value="${esc(t)}" style="display:none;flex:1;padding:0.2rem 0.5rem;font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveSingaTagEdit(${i})">
+      <button onclick="startSingaTagEdit(${i})" id="singa-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveSingaTagEdit(${i})" id="singa-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteSingaTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function startSingaTagEdit(i) {
+  document.getElementById(`singa-tag-label-${i}`).style.display = 'none';
+  document.getElementById(`singa-tag-edit-${i}`).style.display = 'block';
+  document.getElementById(`singa-tag-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`singa-tag-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`singa-tag-edit-${i}`).focus();
+}
+async function saveSingaTagEdit(i) {
+  const val = document.getElementById(`singa-tag-edit-${i}`).value.trim();
+  if (!val) return;
+  singaTags[i] = val;
+  await saveSingaTags();
+  renderSingaTagsList();
+}
+async function addSingaTag() {
+  const input = document.getElementById('singa-tag-input');
+  const val = input.value.trim();
+  if (!val || singaTags.includes(val)) return;
+  singaTags.push(val);
+  await saveSingaTags();
+  input.value = '';
+  renderSingaTagsList();
+}
+async function deleteSingaTag(i) {
+  const tag = singaTags[i];
+  singaTags.splice(i, 1);
+  if (activeSingaFilters.has(tag)) activeSingaFilters.delete(tag);
+  await saveSingaTags();
+  renderSingaTagsList();
+}
+
+let _singaTagListDragIdx = null;
+function onSingaTagListDragStart(e, i) { _singaTagListDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+function onSingaTagListDragOver(e, i) { e.preventDefault(); const r = document.getElementById(`singa-tag-row-${i}`); if(r) r.style.borderColor='var(--gold)'; }
+function onSingaTagListDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+async function onSingaTagListDrop(e, i) {
+  e.preventDefault();
+  const r = document.getElementById(`singa-tag-row-${i}`); if(r) r.style.borderColor = '';
+  if (_singaTagListDragIdx === null || _singaTagListDragIdx === i) return;
+  const moved = singaTags.splice(_singaTagListDragIdx, 1)[0];
+  singaTags.splice(i, 0, moved);
+  _singaTagListDragIdx = null;
+  await saveSingaTags();
+  renderSingaTagsList();
+}
+
+// ═══════════════════════════════════════════════
+// MINI GAME FILTER TAGS
+// ═══════════════════════════════════════════════
+
+function renderMiniFilterChips() {
+  const bar = document.getElementById('mini-filter-chips');
+  if (!bar) return;
+  bar.style.display = miniFiltersVisible ? 'flex' : 'none';
+  const allActive = activeMiniFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearMiniFilters()">All</button>`
+    + miniTags.map((t, i) =>
+      `<button class="filter-chip${activeMiniFilters.has(t) ? ' active' : ''}"
+        draggable="true"
+        ondragstart="onMiniTagDragStart(event,${i})"
+        ondragover="event.preventDefault()"
+        ondrop="onMiniTagDrop(event,${i})"
+        onclick="toggleMiniFilter('${esc(t)}')">${esc(t)}</button>`
+    ).join('');
+  const btn = document.getElementById('mini-filter-visibility-btn');
+  if (btn) btn.style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+}
+
+function clearMiniFilters() {
+  activeMiniFilters.clear();
+  renderMiniFilterChips();
+  renderMiniGames();
+}
+
+function toggleMiniFilter(tag) {
+  if (activeMiniFilters.has(tag)) activeMiniFilters.delete(tag);
+  else activeMiniFilters.add(tag);
+  renderMiniFilterChips();
+  renderMiniGames();
+}
+
+function toggleMiniFilterVisibility() {
+  miniFiltersVisible = !miniFiltersVisible;
+  renderMiniFilterChips();
+}
+
+let _dragMiniTagIdx = null;
+function onMiniTagDragStart(e, i) { _dragMiniTagIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+async function onMiniTagDrop(e, i) {
+  e.preventDefault();
+  if (_dragMiniTagIdx === null || _dragMiniTagIdx === i) return;
+  const moved = miniTags.splice(_dragMiniTagIdx, 1)[0];
+  miniTags.splice(i, 0, moved);
+  _dragMiniTagIdx = null;
+  await saveMiniTags();
+  renderMiniFilterChips();
+}
+
+function openMiniTagsModal() {
+  renderMiniTagsList();
+  document.getElementById('mini-tag-input').value = '';
+  document.getElementById('mini-tags-modal').classList.add('open');
+}
+
+function closeMiniTagsModal() {
+  document.getElementById('mini-tags-modal').classList.remove('open');
+  renderMiniFilterChips();
+  renderMiniGames();
+}
+
+function renderMiniTagsList() {
+  const list = document.getElementById('mini-tags-list');
+  if (!miniTags.length) {
+    list.innerHTML = `<p style="color:var(--text-dim); font-size:0.85rem; font-style:italic;">No filter tags yet.</p>`;
+    return;
+  }
+  list.innerHTML = miniTags.map((t, i) =>
+    `<div id="mini-tag-row-${i}" draggable="true"
+        ondragstart="onMiniTagListDragStart(event,${i})"
+        ondragover="onMiniTagListDragOver(event,${i})"
+        ondragleave="onMiniTagListDragLeave(event)"
+        ondrop="onMiniTagListDrop(event,${i})"
+        style="display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:0.4rem 0.75rem; transition:border-color 0.15s;">
+      <span style="color:var(--text-dim);cursor:grab;font-size:1rem;user-select:none;">⠿</span>
+      <span id="mini-tag-label-${i}" style="flex:1; font-size:0.92rem; color:var(--text);">${esc(t)}</span>
+      <input type="text" id="mini-tag-edit-${i}" value="${esc(t)}" style="display:none; flex:1; padding:0.2rem 0.5rem; font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveMiniTagEdit(${i})">
+      <button onclick="startMiniTagEdit(${i})" id="mini-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveMiniTagEdit(${i})" id="mini-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteMiniTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function startMiniTagEdit(i) {
+  document.getElementById(`mini-tag-label-${i}`).style.display = 'none';
+  document.getElementById(`mini-tag-edit-${i}`).style.display = 'block';
+  document.getElementById(`mini-tag-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`mini-tag-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`mini-tag-edit-${i}`).focus();
+}
+
+async function saveMiniTagEdit(i) {
+  const val = document.getElementById(`mini-tag-edit-${i}`).value.trim();
+  if (!val) return;
+  miniTags[i] = val;
+  await saveMiniTags();
+  renderMiniTagsList();
+}
+
+async function addMiniTag() {
+  const input = document.getElementById('mini-tag-input');
+  const val = input.value.trim();
+  if (!val || miniTags.includes(val)) return;
+  miniTags.push(val);
+  await saveMiniTags();
+  input.value = '';
+  renderMiniTagsList();
+}
+
+async function deleteMiniTag(i) {
+  const tag = miniTags[i];
+  miniTags.splice(i, 1);
+  if (activeMiniFilters.has(tag)) activeMiniFilters.delete(tag);
+  await saveMiniTags();
+  renderMiniTagsList();
+}
+
+let _miniTagListDragIdx = null;
+function onMiniTagListDragStart(e, i) { _miniTagListDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+function onMiniTagListDragOver(e, i) {
+  e.preventDefault();
+  const row = document.getElementById(`mini-tag-row-${i}`);
+  if (row) row.style.borderColor = 'var(--gold)';
+}
+function onMiniTagListDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+async function onMiniTagListDrop(e, i) {
+  e.preventDefault();
+  const row = document.getElementById(`mini-tag-row-${i}`);
+  if (row) row.style.borderColor = '';
+  if (_miniTagListDragIdx === null || _miniTagListDragIdx === i) return;
+  const moved = miniTags.splice(_miniTagListDragIdx, 1)[0];
+  miniTags.splice(i, 0, moved);
+  _miniTagListDragIdx = null;
+  await saveMiniTags();
+  renderMiniTagsList();
+}
+
+// ═══════════════════════════════════════════════
 // DRAG: CATEGORY REORDER
 // ═══════════════════════════════════════════════
 let _catDragIdx = null;
@@ -2247,7 +2632,17 @@ Object.assign(window, {
   onNightDragStart, onNightDragEnd, onNightDragOver, onNightDragLeave, onNightDrop,
   onTagListDragStart, onTagListDragOver, onTagListDragLeave, onTagListDrop,
   addEnhancement, removeEnhancement,
-  filterNightCatSelector
+  filterNightCatSelector,
+  clearMiniFilters, toggleMiniFilter, toggleMiniFilterVisibility,
+  openMiniTagsModal, closeMiniTagsModal,
+  addMiniTag, deleteMiniTag, startMiniTagEdit, saveMiniTagEdit,
+  onMiniTagDragStart, onMiniTagDrop,
+  onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
+  renderSingAlongs, clearSingaFilters, toggleSingaFilter, toggleSingaFilterVisibility,
+  openSingaTagsModal, closeSingaTagsModal,
+  addSingaTag, deleteSingaTag, startSingaTagEdit, saveSingaTagEdit,
+  onSingaTagDragStart, onSingaTagDrop,
+  onSingaTagListDragStart, onSingaTagListDragOver, onSingaTagListDragLeave, onSingaTagListDrop
 });
 
 // ═══════════════════════════════════════════════
