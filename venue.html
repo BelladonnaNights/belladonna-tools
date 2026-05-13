@@ -149,6 +149,7 @@
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchTab('trivia')">Trivia</button>
     <button class="nav-tab" onclick="switchTab('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchTab('singalongs')">Sing-Alongs</button>
   </nav>
@@ -165,6 +166,21 @@
       <h2>Nothing Published Yet</h2><p>Check back soon.</p>
     </div>
     <div class="nights-grid" id="nights-grid"></div>
+  </div>
+
+  <div class="view" id="view-trivia">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:0;">
+        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="filter-chip active" onclick="clearTriviaFilters()">All</button>
+        </div>
+      </div>
+      <button id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()"
+        style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;"
+        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+    </div>
+    <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
+    <div class="nights-grid" id="trivia-grid"></div>
   </div>
 
   <div class="view" id="view-minigames">
@@ -250,6 +266,10 @@ let venueSingaTags = [];
 let activeSingaFilters = new Set();
 let singaFiltersVisible = true;
 let publishedSingAlongs = [];
+let venueTriviaTagsList = [];
+let activeTriviaFilters = new Set();
+let triviaFiltersVisible = true;
+let publishedTrivia = [];
 
 function esc(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -260,7 +280,7 @@ function switchTab(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(t => {
-    const lmap = {nights:'night', minigames:'mini', singalongs:'sing'};
+    const lmap = {nights:'night', trivia:'trivia', minigames:'mini', singalongs:'sing'};
     if (t.textContent.toLowerCase().includes(lmap[name]||name)) t.classList.add('active');
   });
 }
@@ -274,11 +294,15 @@ async function load() {
     publishedNights = nightsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
       .filter(n => n.published).sort((a,b) => (a.position??9999) - (b.position??9999));
     publishedMiniGames = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => c.published && (c.type||'').toLowerCase().includes('mini'))
+      .filter(c => (c.publishedTabs||[]).includes('mini') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t))))
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     publishedSingAlongs = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => c.published && (c.type||'').toLowerCase().includes('sing'))
+      .filter(c => (c.publishedTabs||[]).includes('singa') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['sing-along','sing along','singalong','sing-alongs','sing alongs'].includes(t))))
+      .sort((a,b) => (a.position??9999) - (b.position??9999));
+
+    publishedTrivia = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
+      .filter(c => (c.publishedTabs||[]).includes('trivia') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('trivia'))))
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     try {
@@ -289,10 +313,15 @@ async function load() {
       const sSnap = await getDoc(doc(db, 'config', 'singaTags'));
       venueSingaTags = sSnap.exists() ? (sSnap.data().tags || []) : [];
     } catch(e) { venueSingaTags = []; }
+    try {
+      const rvSnap = await getDoc(doc(db, 'config', 'triviaTags'));
+      venueTriviaTagsList = rvSnap.exists() ? (rvSnap.data().tags || []) : [];
+    } catch(e) { venueTriviaTagsList = []; }
   } catch(e) { console.error('Load error:', e); }
 
   document.getElementById('loading').style.display = 'none';
   renderNights();
+  renderTrivia();
   renderMiniGames();
   renderSingAlongs();
 }
@@ -423,7 +452,7 @@ function openMiniDetail(i) {
   document.getElementById('detail-cats-section').style.display = 'block';
   const shows = c.shows || [];
   document.getElementById('detail-cats').innerHTML = shows.length
-    ? shows.map(s=>`<div class="detail-cat-item">${esc(s)}</div>`).join('')
+    ? `<div class="detail-cat-item" style="white-space:normal;color:var(--text-muted);">${shows.map(s=>esc(s)).join(' ')}</div>`
     : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
   document.getElementById('detail-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -436,6 +465,70 @@ function closeDetail() {
 
 function handleOverlayClick(e) {
   if (e.target === document.getElementById('detail-overlay')) closeDetail();
+}
+
+function renderTriviaFilterChips() {
+  const bar = document.getElementById('trivia-filter-chips');
+  if (!bar) return;
+  bar.style.display = triviaFiltersVisible ? 'flex' : 'none';
+  const allActive = activeTriviaFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearTriviaFilters()">All</button>`
+    + venueTriviaTagsList.map(t =>
+      `<button class="filter-chip${activeTriviaFilters.has(t) ? ' active' : ''}" onclick="toggleTriviaFilter('${t.replace(/'/g,"\\'")}'">${t}</button>`
+    ).join('');
+  const btn = document.getElementById('trivia-filter-visibility-btn');
+  if (btn) btn.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+}
+function clearTriviaFilters() { activeTriviaFilters.clear(); renderTriviaFilterChips(); renderTrivia(); }
+function toggleTriviaFilter(tag) {
+  if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag); else activeTriviaFilters.add(tag);
+  renderTriviaFilterChips(); renderTrivia();
+}
+function toggleTriviaFilterVisibility() { triviaFiltersVisible = !triviaFiltersVisible; renderTriviaFilterChips(); }
+
+function renderTrivia() {
+  renderTriviaFilterChips();
+  const grid = document.getElementById('trivia-grid');
+  const empty = document.getElementById('trivia-empty');
+  const filtered = activeTriviaFilters.size > 0
+    ? publishedTrivia.filter(c => {
+        const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+        return [...activeTriviaFilters].every(f => catTags.includes(f));
+      })
+    : publishedTrivia;
+  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map((c, i) => {
+    const realIdx = publishedTrivia.indexOf(c);
+    const bgColor = c.bannerColor ? `background:${c.bannerColor};` : '';
+    const bannerImg = c.bannerData ? `<img src="${c.bannerData}" alt="${esc(c.name)}">` : '';
+    return `<div class="night-card" onclick="openTriviaDetail(${realIdx})">
+      <div class="night-banner" style="${bgColor}background:var(--surface2);">${bannerImg}</div>
+      <div class="night-info">
+        <div class="night-name">${esc(c.name)}</div>
+        ${c.theme ? `<p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.3rem;">${esc(c.theme)}</p>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openTriviaDetail(i) {
+  const c = publishedTrivia[i];
+  const bannerEl = document.getElementById('detail-banner');
+  bannerEl.style.cssText = c.bannerColor ? `background:${c.bannerColor};` : 'background:var(--surface2);';
+  bannerEl.innerHTML = c.bannerData ? `<img src="${c.bannerData}" alt="${esc(c.name)}">` : '';
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-cats-label').textContent = 'Shows & Titles';
+  document.getElementById('detail-tags').style.display = 'none';
+  document.getElementById('detail-description-section').style.display = 'none';
+  document.getElementById('detail-enhancements-section').style.display = 'none';
+  document.getElementById('detail-cats-section').style.display = 'block';
+  const shows = c.shows || [];
+  document.getElementById('detail-cats').innerHTML = shows.length
+    ? shows.map(s=>`<div class="detail-cat-item">${esc(s)}</div>`).join('')
+    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function renderSingaFilterChips() {
@@ -501,7 +594,7 @@ function openSingaDetail(i) {
   document.getElementById('detail-cats-section').style.display = 'block';
   const shows = c.shows || [];
   document.getElementById('detail-cats').innerHTML = shows.length
-    ? shows.map(s=>`<div class="detail-cat-item">${esc(s)}</div>`).join('')
+    ? `<div class="detail-cat-item" style="white-space:normal;color:var(--text-muted);">${shows.map(s=>esc(s)).join(' ')}</div>`
     : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
   document.getElementById('detail-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -515,6 +608,10 @@ window.handleOverlayClick = handleOverlayClick;
 window.clearMiniFilters = clearMiniFilters;
 window.toggleMiniFilter = toggleMiniFilter;
 window.toggleMiniFilterVisibility = toggleMiniFilterVisibility;
+window.clearTriviaFilters = clearTriviaFilters;
+window.toggleTriviaFilter = toggleTriviaFilter;
+window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
+window.openTriviaDetail = openTriviaDetail;
 window.clearSingaFilters = clearSingaFilters;
 window.toggleSingaFilter = toggleSingaFilter;
 window.toggleSingaFilterVisibility = toggleSingaFilterVisibility;
