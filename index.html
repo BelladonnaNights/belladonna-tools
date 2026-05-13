@@ -674,9 +674,12 @@
         <select id="lib-filter-type" onchange="renderLibrary()" style="width:auto;min-width:130px;">
           <option value="">All Types</option>
         </select>
-        <select id="lib-filter-theme" onchange="renderLibrary()" style="width:auto;min-width:130px;">
-          <option value="">All Themes</option>
-        </select>
+        <div style="display:flex; align-items:center; gap:4px;">
+          <select id="lib-filter-theme" onchange="renderLibrary()" style="width:auto;min-width:130px;">
+            <option value="">All Themes</option>
+          </select>
+          <button class="btn btn-sm btn-ghost" onclick="openThemeEditorModal()" title="Edit themes" style="padding:0.35rem 0.6rem; font-size:0.9rem;">✎</button>
+        </div>
         <select id="lib-filter-tag" onchange="renderLibrary()" style="width:auto;min-width:120px;">
           <option value="">All Tags</option>
         </select>
@@ -846,7 +849,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Admin Notes <span style="font-size:0.65rem;color:#C0654F;background:rgba(139,58,42,0.15);border:1px solid rgba(139,58,42,0.3);padding:1px 7px;border-radius:3px;font-family:'Crimson Text',serif;text-transform:uppercase;font-style:normal;letter-spacing:0.08em;">Private</span></label>
-          <input type="text" id="cat-notes" placeholder="Internal notes — not visible anywhere public">
+          <textarea id="cat-notes" rows="6" placeholder="Your private brainstorming space. Vibe references, show lists, round ideas, anything…" style="font-size:15px; line-height:1.6;"></textarea>
         </div>
         <div class="form-group">
           <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
@@ -978,6 +981,23 @@
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeNightTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ THEME EDITOR MODAL ═══ -->
+<div class="modal-backdrop" id="theme-editor-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <span class="modal-title">Edit Themes</span>
+      <button class="modal-close" onclick="closeThemeEditorModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Themes are pulled from your categories. Click any theme to rename it across all categories at once.</p>
+      <div id="theme-editor-list" style="display:grid; gap:6px; max-height:400px; overflow-y:auto;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeThemeEditorModal()">Done</button>
     </div>
   </div>
 </div>
@@ -1265,7 +1285,8 @@ function isBingo(cat) {
 }
 
 function isMiniGame(cat) {
-  return (cat.type || '').toLowerCase().includes('mini');
+  const t = (cat.type || '').toLowerCase();
+  return t === 'mini game' || t === 'mini-game' || t === 'minigame' || t === 'mini games';
 }
 
 function renderMiniGames() {
@@ -2273,11 +2294,71 @@ function getSelectedNightModalTags() {
 
 // ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
+// THEME EDITOR
+// ═══════════════════════════════════════════════
+
+function openThemeEditorModal() {
+  renderThemeEditorList();
+  document.getElementById('theme-editor-modal').classList.add('open');
+}
+
+function closeThemeEditorModal() {
+  document.getElementById('theme-editor-modal').classList.remove('open');
+  renderLibrary();
+}
+
+function renderThemeEditorList() {
+  const themes = [...new Set(categories.map(c => c.theme).filter(Boolean))].sort();
+  const list = document.getElementById('theme-editor-list');
+  if (!themes.length) {
+    list.innerHTML = `<p style="color:var(--text-dim);font-size:0.85rem;font-style:italic;">No themes found. Add themes to your categories first.</p>`;
+    return;
+  }
+  list.innerHTML = themes.map((t, i) => {
+    const count = categories.filter(c => c.theme === t).length;
+    return `<div id="theme-row-${i}" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.4rem 0.75rem;">
+      <span id="theme-label-${i}" style="flex:1;font-size:0.92rem;color:var(--text);">${esc(t)}</span>
+      <span style="font-size:0.78rem;color:var(--text-dim);">${count} cat${count===1?'':'s'}</span>
+      <input type="text" id="theme-input-${i}" value="${esc(t)}" style="display:none;flex:1;padding:0.2rem 0.5rem;font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveThemeEdit(${i},'${esc(t).replace(/'/g,"\\'")}')">
+      <button onclick="startThemeEdit(${i})" id="theme-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveThemeEdit(${i},'${esc(t).replace(/'/g,"\\'")}'" id="theme-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+    </div>`;
+  }).join('');
+}
+
+function startThemeEdit(i) {
+  document.getElementById(`theme-label-${i}`).style.display = 'none';
+  document.getElementById(`theme-input-${i}`).style.display = 'block';
+  document.getElementById(`theme-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`theme-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`theme-input-${i}`).focus();
+}
+
+async function saveThemeEdit(i, oldTheme) {
+  const newTheme = document.getElementById(`theme-input-${i}`).value.trim();
+  if (!newTheme || newTheme === oldTheme) { renderThemeEditorList(); return; }
+  // Update all categories with this theme
+  const toUpdate = categories.filter(c => c.theme === oldTheme);
+  toUpdate.forEach(c => c.theme = newTheme);
+  // Save to Firebase
+  try {
+    const batch = writeBatch(db);
+    toUpdate.forEach(c => {
+      if (c._id) batch.set(doc(db, 'categories', c._id), {...c}, {merge:true});
+    });
+    await batch.commit();
+    toast(`Renamed "${oldTheme}" → "${newTheme}" on ${toUpdate.length} categories`, 'success');
+  } catch(e) { toast('Save failed', 'error'); }
+  renderThemeEditorList();
+}
+
+// ═══════════════════════════════════════════════
 // SING-ALONG RENDER + FILTER TAGS
 // ═══════════════════════════════════════════════
 
 function isSingAlong(cat) {
-  return (cat.type || '').toLowerCase().includes('sing');
+  const t = (cat.type || '').toLowerCase();
+  return t === 'sing-along' || t === 'sing along' || t === 'singalong' || t === 'sing-alongs' || t === 'sing alongs';
 }
 
 function renderSingAlongs() {
@@ -2683,6 +2764,7 @@ Object.assign(window, {
   addMiniTag, deleteMiniTag, startMiniTagEdit, saveMiniTagEdit,
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
+  openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
   renderSingAlongs, clearSingaFilters, toggleSingaFilter, toggleSingaFilterVisibility,
   openSingaTagsModal, closeSingaTagsModal,
   addSingaTag, deleteSingaTag, startSingaTagEdit, saveSingaTagEdit,
