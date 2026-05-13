@@ -302,7 +302,7 @@ async function load() {
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     publishedTrivia = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => (c.publishedTabs||[]).includes('trivia') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('trivia'))))
+      .filter(c => (c.publishedTabs||[]).includes('trivia') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t === 'trivia' || t === 'full trivia')))
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     try {
@@ -500,8 +500,9 @@ function renderTrivia() {
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
     const realIdx = publishedTrivia.indexOf(c);
+    const portraitSrc = c.miniGameImage || c.bannerData || null;
     const bgColor = c.bannerColor ? `background:${c.bannerColor};` : '';
-    const bannerImg = c.bannerData ? `<img src="${c.bannerData}" alt="${esc(c.name)}">` : '';
+    const bannerImg = portraitSrc ? `<img src="${portraitSrc}" alt="${esc(c.name)}">` : '';
     return `<div class="night-card" onclick="openTriviaDetail(${realIdx})">
       <div class="night-banner" style="${bgColor}background:var(--surface2);">${bannerImg}</div>
       <div class="night-info">
@@ -515,8 +516,9 @@ function renderTrivia() {
 function openTriviaDetail(i) {
   const c = publishedTrivia[i];
   const bannerEl = document.getElementById('detail-banner');
+  const triviaSrc = c.miniGameImage || c.bannerData || null;
   bannerEl.style.cssText = c.bannerColor ? `background:${c.bannerColor};` : 'background:var(--surface2);';
-  bannerEl.innerHTML = c.bannerData ? `<img src="${c.bannerData}" alt="${esc(c.name)}">` : '';
+  bannerEl.innerHTML = triviaSrc ? `<img src="${triviaSrc}" alt="${esc(c.name)}">` : '';
   document.getElementById('detail-name').textContent = c.name;
   document.getElementById('detail-cats-label').textContent = 'Shows & Titles';
   document.getElementById('detail-tags').style.display = 'none';
@@ -594,7 +596,7 @@ function openSingaDetail(i) {
   document.getElementById('detail-cats-section').style.display = 'block';
   const shows = c.shows || [];
   document.getElementById('detail-cats').innerHTML = shows.length
-    ? `<div class="detail-cat-item" style="white-space:normal;line-height:1.7;color:var(--text-muted);">${shows.filter(s=>s.trim()).map(s=>esc(s.trim())).join(' ')}</div>`
+    ? `<div style="white-space:pre-wrap;line-height:1.7;color:var(--text-muted);font-size:0.95rem;">${shows.filter(s=>s.trim()).map(s=>esc(s.trim())).join('\n')}</div>`
     : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
   document.getElementById('detail-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
