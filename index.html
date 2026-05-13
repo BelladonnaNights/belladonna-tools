@@ -637,6 +637,7 @@
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchView('library')">Library</button>
     <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchView('trivia')">Trivia</button>
     <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
@@ -720,6 +721,28 @@
       </div>
     </div>
     <div id="night-detail-view" style="display:none"></div>
+  </div>
+
+  <!-- ═══ TRIVIA VIEW ═══ -->
+  <div class="view" id="view-trivia">
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:0;">
+        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="filter-chip active" onclick="clearTriviaFilters()">All</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
+        <button class="btn btn-sm btn-ghost" id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()">☰ Filters</button>
+        <button class="btn btn-sm btn-ghost" onclick="openTriviaTagsModal()">Manage</button>
+        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
+      </div>
+    </div>
+    <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1.25rem;"></div>
+    <div id="trivia-empty" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">🧠</div>
+      <h3>No Trivia Yet</h3>
+      <p>Add categories with Type containing "Trivia" to see them here.</p>
+    </div>
   </div>
 
   <!-- ═══ MINI GAMES VIEW ═══ -->
@@ -829,7 +852,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Type</label>
-            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist" oninput="updateCatPublishedLabel(this.value)">
+            <input type="text" id="cat-type" placeholder="e.g. Trivia, Sing-Along, Book Trivia…" list="type-datalist">
             <datalist id="type-datalist"></datalist>
           </div>
         </div>
@@ -852,11 +875,18 @@
           <textarea id="cat-notes" rows="6" placeholder="Your private brainstorming space. Vibe references, show lists, round ideas, anything…" style="font-size:15px; line-height:1.6;"></textarea>
         </div>
         <div class="form-group">
-          <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-            <input type="checkbox" id="cat-published" style="accent-color:var(--gold); width:18px; height:18px; cursor:pointer; flex-shrink:0;">
-            <span id="cat-published-label" style="font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold);">Published</span>
-          </label>
-          <p id="cat-published-desc" style="font-size:0.8rem; color:var(--text-dim); margin-top:4px;">When checked, this appears on the public venue page.</p>
+          <div class="form-label" style="margin-bottom:0.5rem;">Publish to Venue <span style="color:var(--text-dim);font-size:0.7rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— check any tab this should appear on</span></div>
+          <div id="cat-publish-checkboxes" style="display:flex; gap:1.2rem; flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-trivia" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Trivia
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-mini" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Mini Games
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-singa" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Sing-Alongs
+            </label>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide, shown in Library</span></label>
@@ -1002,6 +1032,27 @@
   </div>
 </div>
 
+<!-- ═══ TRIVIA TAGS MODAL ═══ -->
+<div class="modal-backdrop" id="trivia-tags-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Trivia Filters</span>
+      <button class="modal-close" onclick="closeTriviaTagsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">Filter tags for the Trivia tab.</p>
+      <div id="trivia-tags-list" style="display:grid; gap:6px; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="trivia-tag-input" placeholder="Add a filter tag… e.g. Horror, Pop Culture, Sports" onkeydown="if(event.key==='Enter'){event.preventDefault();addTriviaTag();}">
+        <button class="btn btn-sm" onclick="addTriviaTag()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeTriviaTagsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MINI TAGS MODAL ═══ -->
 <div class="modal-backdrop" id="mini-tags-modal">
   <div class="modal" style="max-width:480px;">
@@ -1083,6 +1134,7 @@ const nightsCol = collection(db, 'nights');
 const nightTagsDoc = doc(db, 'config', 'nightTags');
 const miniTagsDoc = doc(db, 'config', 'miniTags');
 const singaTagsDoc = doc(db, 'config', 'singaTags');
+const triviaTagsDoc = doc(db, 'config', 'triviaTags');
 
 // ═══════════════════════════════════════════════
 // DATA STORE
@@ -1092,6 +1144,7 @@ let nights = [];
 let nightTags = []; // filter tags for the themed nights tab
 let miniTags = []; // filter tags for mini games tab
 let singaTags = []; // filter tags for sing-alongs tab
+let triviaTags = [];
 let editingCatIndex = -1;
 let editingNightIndex = -1;
 let pendingImport = [];
@@ -1103,6 +1156,8 @@ let activeMiniFilters = new Set();
 let miniFiltersVisible = true;
 let activeSingaFilters = new Set();
 let singaFiltersVisible = true;
+let activeTriviaFilters = new Set();
+let triviaFiltersVisible = true;
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -1120,8 +1175,8 @@ async function loadData() {
   );
 
   try {
-    const [cSnap, nSnap, tSnap, mSnap, sSnap] = await Promise.race([
-      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc), getDoc(miniTagsDoc), getDoc(singaTagsDoc)]),
+    const [cSnap, nSnap, tSnap, mSnap, sSnap, rvSnap] = await Promise.race([
+      Promise.all([getDocs(catsCol), getDocs(nightsCol), getDoc(nightTagsDoc), getDoc(miniTagsDoc), getDoc(singaTagsDoc), getDoc(triviaTagsDoc)]),
       timeout
     ]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
@@ -1129,6 +1184,7 @@ async function loadData() {
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
     miniTags = mSnap.exists() ? (mSnap.data().tags || []) : [];
     singaTags = sSnap.exists() ? (sSnap.data().tags || []) : [];
+    triviaTags = rvSnap.exists() ? (rvSnap.data().tags || []) : [];
   } catch(e) {
     console.error('Firebase load error:', e);
     const msg = e.message === 'timeout'
@@ -1151,7 +1207,7 @@ async function loadData() {
       renderLibrary();
     };
     loadingEl.appendChild(btn);
-    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback']; miniTags = []; singaTags = [];
+    categories = []; nights = []; nightTags = ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback']; miniTags = []; singaTags = []; triviaTags = [];
     return;
   }
   loadingEl.style.display = 'none';
@@ -1229,6 +1285,9 @@ async function saveMiniTags() {
 async function saveSingaTags() {
   await setDoc(singaTagsDoc, { tags: singaTags });
 }
+async function saveTriviaTags() {
+  await setDoc(triviaTagsDoc, { tags: triviaTags }); 
+}
 
 async function batchSaveCats(cats) {
   const CHUNK = 400;
@@ -1250,13 +1309,14 @@ function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  const labelMap = { library: 'librar', nights: 'night', minigames: 'mini', singalongs: 'sing', import: 'import' };
+  const labelMap = { library: 'librar', nights: 'night', trivia: 'trivia', minigames: 'mini', singalongs: 'sing', import: 'import' };
   document.querySelectorAll('.nav-tab').forEach(t => {
     const key = labelMap[name] || name;
     if (t.textContent.toLowerCase().includes(key)) t.classList.add('active');
   });
   if (name === 'library') renderLibrary();
   if (name === 'nights') renderNights();
+  if (name === 'trivia') renderTrivia();
   if (name === 'minigames') renderMiniGames();
   if (name === 'singalongs') renderSingAlongs();
 }
@@ -1280,13 +1340,23 @@ function populateFilters() {
   if (dl) dl.innerHTML = types.map(t => `<option value="${esc(t)}">`).join('');
 }
 
+function getTypes(cat) {
+  // Type field can be comma-separated: "Mini Game, Trivia"
+  return (cat.type || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+}
+
 function isBingo(cat) {
-  return (cat.type || '').toLowerCase().includes('bingo');
+  return getTypes(cat).some(t => t.includes('bingo'));
 }
 
 function isMiniGame(cat) {
-  const t = (cat.type || '').toLowerCase();
-  return t === 'mini game' || t === 'mini-game' || t === 'minigame' || t === 'mini games';
+  return getTypes(cat).some(t =>
+    t === 'mini game' || t === 'mini-game' || t === 'minigame' || t === 'mini games'
+  );
+}
+
+function isTrivia(cat) {
+  return getTypes(cat).some(t => t.includes('trivia'));
 }
 
 function renderMiniGames() {
@@ -1337,7 +1407,7 @@ function renderLibrary() {
     if (!showBingo  && isBingo(c))     return false;
     if (!showSinga  && isSingAlong(c)) return false;
     if (!showMini   && isMiniGame(c))  return false;
-    if (!showTrivia && !isBingo(c) && !isSingAlong(c) && !isMiniGame(c)) return false;
+    if (!showTrivia && isTrivia(c) && !isMiniGame(c) && !isSingAlong(c) && !isBingo(c)) return false;
     if (typeF && c.type !== typeF) return false;
     if (themeF && c.theme !== themeF) return false;
     if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
@@ -1457,30 +1527,15 @@ function editCategory(idx) {
   document.getElementById('cat-shows').value = (c.shows || []).join('\n');
   document.getElementById('cat-notes').value = c.notes || '';
   document.getElementById('cat-tags').value = c.tags || '';
-  document.getElementById('cat-published').checked = !!c.published;
-  updateCatPublishedLabel(c.type || '');
+  const pts = c.publishedTabs || (c.published ? ['trivia','mini','singa'] : []);
+  document.getElementById('cat-pub-trivia').checked = pts.includes('trivia');
+  document.getElementById('cat-pub-mini').checked = pts.includes('mini');
+  document.getElementById('cat-pub-singa').checked = pts.includes('singa');
   document.getElementById('cat-minigame-url').value = c.miniGameImage || '';
   setCatMiniPreview(c.miniGameImage || null);
   setCatBannerPreview(c.bannerData || null);
   document.getElementById('cat-modal-delete-btn').style.display = 'inline-flex';
   document.getElementById('cat-modal').classList.add('open');
-}
-
-function updateCatPublishedLabel(type) {
-  const t = (type||'').toLowerCase();
-  const lbl = document.getElementById('cat-published-label');
-  const desc = document.getElementById('cat-published-desc');
-  if (!lbl) return;
-  if (t.includes('mini')) {
-    lbl.textContent = 'Published to Mini Games';
-    desc.textContent = 'When checked, this appears on the public venue page.';
-  } else if (t.includes('sing')) {
-    lbl.textContent = 'Published to Sing-Alongs';
-    desc.textContent = 'When checked, this appears on the public venue page.';
-  } else {
-    lbl.textContent = 'Published';
-    desc.textContent = 'When checked, this appears on the public venue page.';
-  }
 }
 
 function closeCatModal() {
@@ -1567,7 +1622,8 @@ async function saveCategoryFromModal() {
     shows,
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
-    published: document.getElementById('cat-published').checked,
+    publishedTabs: ['trivia','mini','singa'].filter(k => document.getElementById(`cat-pub-${k}`).checked),
+    published: ['trivia','mini','singa'].some(k => document.getElementById(`cat-pub-${k}`).checked),
     miniGameImage: document.getElementById('cat-minigame-url').value.trim() || null,
     bannerData: catBannerData || null
   };
@@ -2353,12 +2409,134 @@ async function saveThemeEdit(i, oldTheme) {
 }
 
 // ═══════════════════════════════════════════════
+// TRIVIA RENDER + FILTER TAGS
+// ═══════════════════════════════════════════════
+
+function renderTrivia() {
+  renderTriviaFilterChips();
+  const grid = document.getElementById('trivia-grid');
+  const empty = document.getElementById('trivia-empty');
+  const items = categories.filter(c => isTrivia(c)).filter(c => {
+    if (activeTriviaFilters.size === 0) return true;
+    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    return [...activeTriviaFilters].every(f => catTags.includes(f));
+  });
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  grid.innerHTML = items.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('');
+}
+
+function renderTriviaFilterChips() {
+  const bar = document.getElementById('trivia-filter-chips');
+  if (!bar) return;
+  bar.style.display = triviaFiltersVisible ? 'flex' : 'none';
+  const allActive = activeTriviaFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearTriviaFilters()">All</button>`
+    + triviaTags.map((t, i) =>
+      `<button class="filter-chip${activeTriviaFilters.has(t) ? ' active' : ''}"
+        draggable="true" ondragstart="onTriviaTagDragStart(event,${i})"
+        ondragover="event.preventDefault()" ondrop="onTriviaTagDrop(event,${i})"
+        onclick="toggleTriviaFilter('${esc(t)}')">${esc(t)}</button>`
+    ).join('');
+  const btn = document.getElementById('trivia-filter-visibility-btn');
+  if (btn) btn.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+}
+
+function clearTriviaFilters() { activeTriviaFilters.clear(); renderTriviaFilterChips(); renderTrivia(); }
+function toggleTriviaFilter(tag) {
+  if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag); else activeTriviaFilters.add(tag);
+  renderTriviaFilterChips(); renderTrivia();
+}
+function toggleTriviaFilterVisibility() { triviaFiltersVisible = !triviaFiltersVisible; renderTriviaFilterChips(); }
+
+let _triviaDragTagIdx = null;
+function onTriviaTagDragStart(e, i) { _triviaDragTagIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+async function onTriviaTagDrop(e, i) {
+  e.preventDefault();
+  if (_triviaDragTagIdx === null || _triviaDragTagIdx === i) return;
+  const moved = triviaTags.splice(_triviaDragTagIdx, 1)[0];
+  triviaTags.splice(i, 0, moved);
+  _triviaDragTagIdx = null;
+  await saveTriviaTags();
+  renderTriviaFilterChips();
+}
+
+function openTriviaTagsModal() { renderTriviaTagsList(); document.getElementById('trivia-tag-input').value = ''; document.getElementById('trivia-tags-modal').classList.add('open'); }
+function closeTriviaTagsModal() { document.getElementById('trivia-tags-modal').classList.remove('open'); renderTriviaFilterChips(); renderTrivia(); }
+
+function renderTriviaTagsList() {
+  const list = document.getElementById('trivia-tags-list');
+  if (!triviaTags.length) { list.innerHTML = `<p style="color:var(--text-dim);font-size:0.85rem;font-style:italic;">No filter tags yet.</p>`; return; }
+  list.innerHTML = triviaTags.map((t, i) =>
+    `<div id="trivia-tag-row-${i}" draggable="true"
+        ondragstart="onTriviaTagListDragStart(event,${i})"
+        ondragover="onTriviaTagListDragOver(event,${i})"
+        ondragleave="onTriviaTagListDragLeave(event)"
+        ondrop="onTriviaTagListDrop(event,${i})"
+        style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.4rem 0.75rem;transition:border-color 0.15s;">
+      <span style="color:var(--text-dim);cursor:grab;font-size:1rem;user-select:none;">⠿</span>
+      <span id="trivia-tag-label-${i}" style="flex:1;font-size:0.92rem;color:var(--text);">${esc(t)}</span>
+      <input type="text" id="trivia-tag-edit-${i}" value="${esc(t)}" style="display:none;flex:1;padding:0.2rem 0.5rem;font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveTriviaTagEdit(${i})">
+      <button onclick="startTriviaTagEdit(${i})" id="trivia-tag-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveTriviaTagEdit(${i})" id="trivia-tag-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteTriviaTag(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('');
+}
+
+function startTriviaTagEdit(i) {
+  document.getElementById(`trivia-tag-label-${i}`).style.display = 'none';
+  document.getElementById(`trivia-tag-edit-${i}`).style.display = 'block';
+  document.getElementById(`trivia-tag-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`trivia-tag-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`trivia-tag-edit-${i}`).focus();
+}
+async function saveTriviaTagEdit(i) {
+  const val = document.getElementById(`trivia-tag-edit-${i}`).value.trim();
+  if (!val) return;
+  triviaTags[i] = val;
+  await saveTriviaTags();
+  renderTriviaTagsList();
+}
+async function addTriviaTag() {
+  const input = document.getElementById('trivia-tag-input');
+  const val = input.value.trim();
+  if (!val || triviaTags.includes(val)) return;
+  triviaTags.push(val);
+  await saveTriviaTags();
+  input.value = '';
+  renderTriviaTagsList();
+}
+async function deleteTriviaTag(i) {
+  const tag = triviaTags[i];
+  triviaTags.splice(i, 1);
+  if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag);
+  await saveTriviaTags();
+  renderTriviaTagsList();
+}
+
+let _triviaTagListDragIdx = null;
+function onTriviaTagListDragStart(e, i) { _triviaTagListDragIdx = i; e.dataTransfer.effectAllowed = 'move'; }
+function onTriviaTagListDragOver(e, i) { e.preventDefault(); const r = document.getElementById(`trivia-tag-row-${i}`); if(r) r.style.borderColor='var(--gold)'; }
+function onTriviaTagListDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+async function onTriviaTagListDrop(e, i) {
+  e.preventDefault();
+  const r = document.getElementById(`trivia-tag-row-${i}`); if(r) r.style.borderColor='';
+  if (_triviaTagListDragIdx === null || _triviaTagListDragIdx === i) return;
+  const moved = triviaTags.splice(_triviaTagListDragIdx, 1)[0];
+  triviaTags.splice(i, 0, moved);
+  _triviaTagListDragIdx = null;
+  await saveTriviaTags();
+  renderTriviaTagsList();
+}
+
+// ═══════════════════════════════════════════════
 // SING-ALONG RENDER + FILTER TAGS
 // ═══════════════════════════════════════════════
 
 function isSingAlong(cat) {
-  const t = (cat.type || '').toLowerCase();
-  return t === 'sing-along' || t === 'sing along' || t === 'singalong' || t === 'sing-alongs' || t === 'sing alongs';
+  return getTypes(cat).some(t =>
+    t === 'sing-along' || t === 'sing along' || t === 'singalong' || t === 'sing-alongs' || t === 'sing alongs'
+  );
 }
 
 function renderSingAlongs() {
@@ -2745,7 +2923,7 @@ Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   closeCatModal, saveCategoryFromModal,
-  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl, updateCatPublishedLabel,
+  handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
   editNight, deleteNight, deleteNightFromModal, closeNightModal, saveNight,
   handleBannerUpload, handleNightBannerUrl, handleNightBannerColorInput, clearNightBanner,
@@ -2765,6 +2943,11 @@ Object.assign(window, {
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
+  renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
+  openTriviaTagsModal, closeTriviaTagsModal,
+  addTriviaTag, deleteTriviaTag, startTriviaTagEdit, saveTriviaTagEdit,
+  onTriviaTagDragStart, onTriviaTagDrop,
+  onTriviaTagListDragStart, onTriviaTagListDragOver, onTriviaTagListDragLeave, onTriviaTagListDrop,
   renderSingAlongs, clearSingaFilters, toggleSingaFilter, toggleSingaFilterVisibility,
   openSingaTagsModal, closeSingaTagsModal,
   addSingaTag, deleteSingaTag, startSingaTagEdit, saveSingaTagEdit,
