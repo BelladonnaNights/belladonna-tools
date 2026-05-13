@@ -28,8 +28,21 @@
   }
   .header-left { display: flex; align-items: center; gap: 14px; }
   .logo-img { width: 44px; height: 44px; object-fit: contain; }
-  .header-title { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; }
-  .header-sub { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; }
+  .wordmark {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: baseline;
+    gap: 0.45em;
+    line-height: 1.1;
+  }
+  .wordmark-one { color: #FFFFFF; }
+  .wordmark-two { color: var(--gold); }
+  .header-title { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Cinzel', serif; margin-top: 3px; }
+  .header-sub { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
   .nav-tabs { display: flex; gap: 4px; }
   .nav-tab {
     padding: 0.5rem 1.1rem; border: 1px solid transparent; background: none;
@@ -127,6 +140,9 @@
   <div class="header-left">
     <img src="logo.png" alt="Belladonna" class="logo-img">
     <div>
+      <div class="wordmark">
+        <span class="wordmark-one">Belladonna</span><span class="wordmark-two">Venue Menu</span>
+      </div>
       <div class="header-title">Belladonna Audio Alchemies</div>
       <div class="header-sub">The Full Lineup</div>
     </div>
