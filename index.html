@@ -737,7 +737,7 @@
         <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
       </div>
     </div>
-    <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1.25rem;"></div>
+    <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
     <div id="trivia-empty" class="empty-state" style="display:none;">
       <div class="empty-state-icon">🧠</div>
       <h3>No Trivia Yet</h3>
@@ -2422,7 +2422,25 @@ function renderTrivia() {
     return [...activeTriviaFilters].every(f => catTags.includes(f));
   });
   empty.style.display = items.length === 0 ? 'block' : 'none';
-  grid.innerHTML = items.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('');
+  grid.innerHTML = items.map(c => {
+    const miniSrc = c.miniGameImage || c.bannerData || null;
+    const bannerHtml = miniSrc
+      ? `<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:6px 6px 0 0;position:relative;background:var(--surface2);">
+          <img src="${miniSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="">
+        </div>`
+      : `<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:2.5rem;opacity:0.3;">🧠</span>
+        </div>`;
+    const idx = categories.indexOf(c);
+    return `<div class="category-card" style="padding:0;overflow:hidden;cursor:pointer;" onclick="editCategory(${idx})">
+      ${bannerHtml}
+      <div style="padding:1rem 1.1rem 1.1rem;">
+        <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
+        ${c.theme ? `<div style="font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
+        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderTriviaFilterChips() {
