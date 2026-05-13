@@ -889,7 +889,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide, shown in Library</span></label>
+          <label class="form-label">Banner Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— wide/landscape, shown in Library</span></label>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:0.5rem;">
             <button class="btn btn-sm btn-danger" type="button" id="cat-banner-clear" onclick="clearCatBanner()" style="display:none;">Remove</button>
           </div>
@@ -899,7 +899,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Mini Game Card Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— 4:5 portrait, shown on Mini Games tab</span></label>
+          <label class="form-label">Portrait Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— 4:5, shown on Trivia, Mini Games &amp; Sing-Alongs tabs</span></label>
           <input type="text" id="cat-minigame-url" placeholder="Paste 4:5 portrait image URL…" oninput="handleCatMiniUrl(this.value)">
           <div id="cat-minigame-preview" style="display:none; margin-top:0.6rem; max-width:120px; aspect-ratio:4/5; border-radius:5px; overflow:hidden; border:1px solid var(--border); position:relative; background:var(--surface2);">
             <img id="cat-minigame-img" style="width:100%; height:100%; object-fit:cover;" src="" alt="" onerror="this.style.opacity=0.2">
