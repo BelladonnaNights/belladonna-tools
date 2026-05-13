@@ -594,7 +594,7 @@ function openSingaDetail(i) {
   document.getElementById('detail-cats-section').style.display = 'block';
   const shows = c.shows || [];
   document.getElementById('detail-cats').innerHTML = shows.length
-    ? `<div class="detail-cat-item" style="white-space:normal;color:var(--text-muted);">${shows.map(s=>esc(s)).join(' ')}</div>`
+    ? `<div class="detail-cat-item" style="white-space:normal;line-height:1.7;color:var(--text-muted);">${shows.filter(s=>s.trim()).map(s=>esc(s.trim())).join(' ')}</div>`
     : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
   document.getElementById('detail-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
