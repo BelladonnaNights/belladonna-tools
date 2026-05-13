@@ -1356,7 +1356,8 @@ function isMiniGame(cat) {
 }
 
 function isTrivia(cat) {
-  return getTypes(cat).some(t => t.includes('trivia'));
+  // Only the main trivia round — not Book Trivia, Mini Trivia, etc.
+  return getTypes(cat).some(t => t === 'trivia' || t === 'full trivia');
 }
 
 function renderMiniGames() {
