@@ -601,7 +601,8 @@ function renderTrivia() {
     ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
     : publishedTrivia;
   if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
-  if (venueHasSidebarFilters()) filtered = filtered.filter(venueItemMatchesFilters);
+  const triviaF = venueTabFilters('trivia');
+  if (Object.values(triviaF).some(s=>s.size>0)) filtered = filtered.filter(c => venueItemMatchesFilters(c, triviaF));
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -718,20 +719,37 @@ function openSingaDetail(i) {
 // ═══════════════════════════════════════════════
 const VENUE_DIM_LABELS = { genre:'Genre', tone:'Tone', era:'Era', audience:'Audience' };
 let venueFilterDimOptions = { genre:[], tone:[], era:[], audience:[] };
-let venueActiveSidebarFilters = { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() };
+const venueAllTabFilters = {
+  nights:    { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
+  trivia:    { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
+  minigames: { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
+  singalongs:{ genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
+};
+function venueTabFilters(tab) { return venueAllTabFilters[tab] || venueAllTabFilters.nights; }
+let venueActiveSidebarFilters = venueAllTabFilters.nights;
 let venueCurrentSidebarTab = null;
 
 async function loadVenueFilterDims() {
+  const DEFAULTS = {
+    genre:    ['Horror','Comedy','Romance','Music','Mystery/Crime','Fantasy','TV/Film','Fashion','Kids/Family','Nostalgia','Sports','Books'],
+    tone:     ['Cozy','Dark','Chaotic','Dramatic','Campy','Emotional','Wholesome','Glamorous','Spicy','Feel-Good'],
+    era:      ['70s','80s','90s','Y2K','2010s','Retro','VHS','Tumblr Era','Holiday','Classic'],
+    audience: ['Adults','Kids/Family','Date Night','Girls Night','Teens','All Ages','Party Crowd']
+  };
   try {
     const snap = await getDoc(doc(db, 'config', 'filterDimensions'));
     if (snap.exists()) {
       const d = snap.data();
-      venueFilterDimOptions.genre    = d.genre    || ['Horror','Comedy','Romance','Music','Mystery/Crime','Fantasy','TV/Film','Fashion','Kids/Family','Nostalgia'];
-      venueFilterDimOptions.tone     = d.tone     || ['Cozy','Dark','Chaotic','Dramatic','Campy','Emotional','Wholesome','Glamorous'];
-      venueFilterDimOptions.era      = d.era      || ['70s','80s','90s','Y2K','2010s','Retro','Holiday'];
-      venueFilterDimOptions.audience = d.audience || ['Adults','Kids/Family','Date Night','Girls Night','Teens','All Ages'];
+      venueFilterDimOptions.genre    = (d.genre    && d.genre.length)    ? d.genre    : DEFAULTS.genre;
+      venueFilterDimOptions.tone     = (d.tone     && d.tone.length)     ? d.tone     : DEFAULTS.tone;
+      venueFilterDimOptions.era      = (d.era      && d.era.length)      ? d.era      : DEFAULTS.era;
+      venueFilterDimOptions.audience = (d.audience && d.audience.length) ? d.audience : DEFAULTS.audience;
+    } else {
+      venueFilterDimOptions = { ...DEFAULTS };
     }
-  } catch(e) {}
+  } catch(e) {
+    venueFilterDimOptions = { ...DEFAULTS };
+  }
 }
 
 function toggleVenueSidebar(tab) {
@@ -741,6 +759,7 @@ function toggleVenueSidebar(tab) {
     closeVenueSidebar();
   } else {
     venueCurrentSidebarTab = tab;
+    venueActiveSidebarFilters = venueTabFilters(tab);
     sidebar.classList.remove('hidden'); sidebar.classList.add('open');
     backdrop.classList.add('open');
     updateVenueSidebarToggleBtns();
@@ -772,11 +791,12 @@ function updateVenueSidebarToggleBtns() {
 function renderVenueSidebarAccordion(tab) {
   const acc = document.getElementById('venue-sidebar-accordion');
   if (!acc) return;
+  const f = venueTabFilters(tab);
   acc.innerHTML = Object.keys(VENUE_DIM_LABELS).map(dim => {
     const opts = venueFilterDimOptions[dim] || [];
-    const active = venueActiveSidebarFilters[dim];
-    const hasActive = active.size > 0;
-    return `<div class="accordion-section">
+    const active = f[dim];
+    const hasActive = active && active.size > 0;
+    return `<div class="accordion-section">`;
       <div class="accordion-header ${hasActive?'has-active':''}" onclick="venueToggleAccordion('${dim}')">
         <span>${VENUE_DIM_LABELS[dim]}${hasActive?` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>`:''}</span>
         <span class="accordion-arrow" id="v-arrow-${dim}">▼</span>
@@ -789,7 +809,7 @@ function renderVenueSidebarAccordion(tab) {
     </div>`;
   }).join('');
   Object.keys(VENUE_DIM_LABELS).forEach(dim => {
-    if (venueActiveSidebarFilters[dim].size > 0) {
+    if (f[dim] && f[dim].size > 0) {
       const body = document.getElementById(`v-acc-body-${dim}`);
       const header = body?.previousElementSibling;
       if (body) body.classList.add('open');
@@ -808,39 +828,35 @@ function venueToggleAccordion(dim) {
 }
 
 function toggleVenueSidebarFilter(dim, opt, checked, tab) {
-  if (checked) venueActiveSidebarFilters[dim].add(opt);
-  else venueActiveSidebarFilters[dim].delete(opt);
+  const f = venueTabFilters(tab);
+  if (checked) f[dim].add(opt);
+  else f[dim].delete(opt);
   renderVenueActiveFilterPills(tab);
   renderVenueSidebarAccordion(tab);
   venueTabRender(tab);
 }
 
-function removeVenueSidebarFilter(dim, opt) {
-  venueActiveSidebarFilters[dim].delete(opt);
-  if (venueCurrentSidebarTab) {
-    renderVenueActiveFilterPills(venueCurrentSidebarTab);
-    renderVenueSidebarAccordion(venueCurrentSidebarTab);
-    venueTabRender(venueCurrentSidebarTab);
-  }
+function removeVenueSidebarFilter(dim, opt, tab) {
+  venueTabFilters(tab)[dim].delete(opt);
+  if (venueCurrentSidebarTab === tab) renderVenueSidebarAccordion(tab);
+  renderVenueActiveFilterPills(tab);
+  venueTabRender(tab);
 }
 
 function clearAllVenueSidebarFilters() {
-  Object.keys(venueActiveSidebarFilters).forEach(dim => venueActiveSidebarFilters[dim].clear());
-  if (venueCurrentSidebarTab) {
-    renderVenueActiveFilterPills(venueCurrentSidebarTab);
-    renderVenueSidebarAccordion(venueCurrentSidebarTab);
-    venueTabRender(venueCurrentSidebarTab);
-  }
+  if (!venueCurrentSidebarTab) return;
+  const f = venueTabFilters(venueCurrentSidebarTab);
+  Object.keys(f).forEach(dim => f[dim].clear());
+  renderVenueActiveFilterPills(venueCurrentSidebarTab);
+  renderVenueSidebarAccordion(venueCurrentSidebarTab);
+  venueTabRender(venueCurrentSidebarTab);
 }
 
-function venueHasSidebarFilters() {
-  return Object.values(venueActiveSidebarFilters).some(s => s.size > 0);
-}
-
-function venueItemMatchesFilters(item) {
+function venueItemMatchesFilters(item, filterState) {
+  const f = filterState || venueActiveSidebarFilters;
   for (const dim of ['genre','tone','era','audience']) {
-    const active = venueActiveSidebarFilters[dim];
-    if (active.size === 0) continue;
+    const active = f[dim];
+    if (!active || active.size === 0) continue;
     const vals = (item[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
     if (!vals.some(v=>active.has(v))) return false;
   }
@@ -852,9 +868,10 @@ function renderVenueActiveFilterPills(tab) {
   const bar = document.getElementById(barId);
   if (!bar) return;
   const pills = [];
-  Object.keys(venueActiveSidebarFilters).forEach(dim => {
-    venueActiveSidebarFilters[dim].forEach(opt => {
-      pills.push(`<span class="active-filter-pill" onclick="removeVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}')">
+  const f = venueTabFilters(tab);
+  Object.keys(f).forEach(dim => {
+    f[dim].forEach(opt => {
+      pills.push(`<span class="active-filter-pill" onclick="removeVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}','${tab}')">
         <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${VENUE_DIM_LABELS[dim]}</span>
         &nbsp;${opt}&nbsp;<span class="pill-x">✕</span></span>`);
     });
