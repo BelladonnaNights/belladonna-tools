@@ -110,6 +110,41 @@
     letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Cinzel', serif;
     border-top: 1px solid var(--border); margin-top: 3rem;
   }
+  /* ── SIDEBAR ── */
+  .page-layout { display:flex; gap:0; align-items:flex-start; }
+  .filter-sidebar {
+    width: 240px; flex-shrink:0; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; overflow:hidden; position:sticky; top:80px;
+    max-height:calc(100vh - 100px); overflow-y:auto;
+    transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  }
+  .filter-sidebar.hidden { width:0; opacity:0; overflow:hidden; border:none; }
+  .filter-sidebar.open { margin-right:1.5rem; }
+  .sidebar-content { padding:1rem; min-width:220px; }
+  .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
+  .sidebar-clear { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); background:none; border:none; cursor:pointer; transition:color 0.2s; }
+  .sidebar-clear:hover { color:var(--gold); }
+  .accordion-section { border-bottom:1px solid var(--border); }
+  .accordion-section:last-child { border-bottom:none; }
+  .accordion-header { display:flex; align-items:center; justify-content:space-between; padding:0.7rem 0; cursor:pointer; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); transition:color 0.2s; user-select:none; }
+  .accordion-header:hover, .accordion-header.has-active { color:var(--gold); }
+  .accordion-arrow { font-size:0.6rem; transition:transform 0.2s; color:var(--text-dim); }
+  .accordion-header.open .accordion-arrow { transform:rotate(180deg); }
+  .accordion-body { display:none; padding-bottom:0.75rem; }
+  .accordion-body.open { display:block; }
+  .filter-option { display:flex; align-items:center; gap:8px; padding:0.3rem 0; cursor:pointer; font-size:0.88rem; color:var(--text-muted); transition:color 0.15s; }
+  .filter-option:hover, .filter-option.active { color:var(--text); }
+  .filter-option input[type="checkbox"] { accent-color:var(--gold); width:14px; height:14px; cursor:pointer; flex-shrink:0; }
+  .active-filters-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
+  .active-filter-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); border-radius:30px; font-size:0.75rem; color:var(--gold); font-family:'Cinzel',serif; letter-spacing:0.06em; cursor:pointer; }
+  .active-filter-pill:hover { background:rgba(201,168,76,0.2); }
+  .pill-x { color:var(--gold-dim); font-size:0.8rem; }
+  .sidebar-toggle-btn { display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.9rem; border:1px solid var(--border); background:none; color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; border-radius:4px; transition:all 0.2s; white-space:nowrap; }
+  .sidebar-toggle-btn:hover { border-color:var(--border-strong); color:var(--gold); }
+  .sidebar-toggle-btn.active { border-color:var(--gold-dim); color:var(--gold); background:rgba(201,168,76,0.08); }
+  .content-area { flex:1; min-width:0; }
+
   .filter-chip {
     padding: 0.3rem 0.9rem;
     border-radius: 30px;
@@ -155,58 +190,88 @@
   </nav>
 </header>
 
-<main class="main">
+<div id="venue-filter-sidebar" class="filter-sidebar hidden">
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Filters</span>
+      <button class="sidebar-clear" onclick="clearAllVenueSidebarFilters()">Clear All</button>
+    </div>
+    <div id="venue-sidebar-accordion"></div>
+  </div>
+</div>
+
+<main class="main" id="main-content">
   <div id="loading">
     <div class="spinner"></div>
     <p>Summoning the lineup…</p>
   </div>
 
   <div class="view active" id="view-nights">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="nights-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="nights-filter-toggle" onclick="toggleVenueSidebar('nights')">⧉ Filters</button>
+      <div style="flex:1;position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-      <button id="nights-filter-visibility-btn" onclick="toggleNightFilters()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
-    <div class="nights-grid" id="nights-grid"></div>
+    <div class="page-layout" id="nights-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-nights" class="active-filters-bar"></div>
+        <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
+        <div class="nights-grid" id="nights-grid"></div>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-trivia">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="trivia-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="trivia-filter-toggle" onclick="toggleVenueSidebar('trivia')">⧉ Filters</button>
+      <div style="flex:1;position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-      <button id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="trivia-grid"></div>
+    <div class="page-layout" id="trivia-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
+        <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
+        <div class="minigames-grid" id="trivia-grid"></div>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-minigames">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="mini-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="mini-filter-toggle" onclick="toggleVenueSidebar('minigames')">⧉ Filters</button>
+      <div style="flex:1;position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-      <button id="mini-filter-visibility-btn" onclick="toggleMiniFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="minigames-grid"></div>
+    <div class="page-layout" id="mini-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-mini" class="active-filters-bar"></div>
+        <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
+        <div class="minigames-grid" id="minigames-grid"></div>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-singalongs">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="singa-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="singa-filter-toggle" onclick="toggleVenueSidebar('singalongs')">⧉ Filters</button>
+      <div style="flex:1;position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-      <button id="singa-filter-visibility-btn" onclick="toggleSingaFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="singalongs-grid"></div>
+    <div class="page-layout" id="singa-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-singa" class="active-filters-bar"></div>
+        <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
+        <div class="minigames-grid" id="singalongs-grid"></div>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -320,6 +385,7 @@ async function load() {
   } catch(e) { console.error('Load error:', e); }
 
   document.getElementById('loading').style.display = 'none';
+  await loadVenueFilterDims();
   renderNights();
   renderTrivia();
   renderMiniGames();
@@ -531,6 +597,7 @@ function renderTrivia() {
     ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
     : publishedTrivia;
   if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
+  if (venueHasSidebarFilters()) filtered = filtered.filter(venueItemMatchesFilters);
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -602,6 +669,7 @@ function renderSingAlongs() {
     ? publishedSingAlongs.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeSingaFilters].every(f=>ct.includes(f)); })
     : publishedSingAlongs;
   if (singaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(singaQ)||(c.theme||'').toLowerCase().includes(singaQ));
+  if (venueHasSidebarFilters()) filtered = filtered.filter(venueItemMatchesFilters);
   if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -641,8 +709,159 @@ function openSingaDetail(i) {
   document.body.style.overflow = 'hidden';
 }
 
+// ═══════════════════════════════════════════════
+// VENUE SIDEBAR FILTER SYSTEM
+// ═══════════════════════════════════════════════
+const VENUE_DIM_LABELS = { genre:'Genre', tone:'Tone', era:'Era', audience:'Audience' };
+let venueFilterDimOptions = { genre:[], tone:[], era:[], audience:[] };
+let venueActiveSidebarFilters = { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() };
+let venueCurrentSidebarTab = null;
+
+async function loadVenueFilterDims() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'filterDimensions'));
+    if (snap.exists()) {
+      const d = snap.data();
+      venueFilterDimOptions.genre    = d.genre    || ['Horror','Comedy','Romance','Music','Mystery/Crime','Fantasy','TV/Film','Fashion','Kids/Family','Nostalgia'];
+      venueFilterDimOptions.tone     = d.tone     || ['Cozy','Dark','Chaotic','Dramatic','Campy','Emotional','Wholesome','Glamorous'];
+      venueFilterDimOptions.era      = d.era      || ['70s','80s','90s','Y2K','2010s','Retro','Holiday'];
+      venueFilterDimOptions.audience = d.audience || ['Adults','Kids/Family','Date Night','Girls Night','Teens','All Ages'];
+    }
+  } catch(e) {}
+}
+
+function toggleVenueSidebar(tab) {
+  const sidebar = document.getElementById('venue-filter-sidebar');
+  if (venueCurrentSidebarTab === tab && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open'); sidebar.classList.add('hidden');
+    venueCurrentSidebarTab = null;
+    document.getElementById('main-content').prepend(sidebar);
+  } else {
+    venueCurrentSidebarTab = tab;
+    const layoutId = {nights:'nights-page-layout',trivia:'trivia-page-layout',minigames:'mini-page-layout',singalongs:'singa-page-layout'}[tab];
+    const layout = document.getElementById(layoutId);
+    if (layout) layout.prepend(sidebar);
+    sidebar.classList.remove('hidden'); sidebar.classList.add('open');
+    renderVenueSidebarAccordion(tab);
+  }
+  ['nights','trivia','mini','singa'].forEach(id => {
+    const btn = document.getElementById(`${id}-filter-toggle`);
+    if (btn) btn.classList.remove('active');
+  });
+  const tabToId = {nights:'nights',trivia:'trivia',minigames:'mini',singalongs:'singa'};
+  if (venueCurrentSidebarTab && tabToId[venueCurrentSidebarTab]) {
+    const btn = document.getElementById(`${tabToId[venueCurrentSidebarTab]}-filter-toggle`);
+    if (btn) btn.classList.add('active');
+  }
+}
+
+function renderVenueSidebarAccordion(tab) {
+  const acc = document.getElementById('venue-sidebar-accordion');
+  if (!acc) return;
+  acc.innerHTML = Object.keys(VENUE_DIM_LABELS).map(dim => {
+    const opts = venueFilterDimOptions[dim] || [];
+    const active = venueActiveSidebarFilters[dim];
+    const hasActive = active.size > 0;
+    return `<div class="accordion-section">
+      <div class="accordion-header ${hasActive?'has-active':''}" onclick="venueToggleAccordion('${dim}')">
+        <span>${VENUE_DIM_LABELS[dim]}${hasActive?` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>`:''}</span>
+        <span class="accordion-arrow" id="v-arrow-${dim}">▼</span>
+      </div>
+      <div class="accordion-body" id="v-acc-body-${dim}">
+        ${opts.map(opt=>`<label class="filter-option ${active.has(opt)?'active':''}">
+          <input type="checkbox" ${active.has(opt)?'checked':''} onchange="toggleVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}',this.checked,'${tab}')">
+          ${opt}</label>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  Object.keys(VENUE_DIM_LABELS).forEach(dim => {
+    if (venueActiveSidebarFilters[dim].size > 0) {
+      const body = document.getElementById(`v-acc-body-${dim}`);
+      const header = body?.previousElementSibling;
+      if (body) body.classList.add('open');
+      if (header) header.classList.add('open');
+    }
+  });
+}
+
+function venueToggleAccordion(dim) {
+  const body = document.getElementById(`v-acc-body-${dim}`);
+  const header = body?.previousElementSibling;
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (header) header.classList.toggle('open', !isOpen);
+}
+
+function toggleVenueSidebarFilter(dim, opt, checked, tab) {
+  if (checked) venueActiveSidebarFilters[dim].add(opt);
+  else venueActiveSidebarFilters[dim].delete(opt);
+  renderVenueActiveFilterPills(tab);
+  renderVenueSidebarAccordion(tab);
+  venueTabRender(tab);
+}
+
+function removeVenueSidebarFilter(dim, opt) {
+  venueActiveSidebarFilters[dim].delete(opt);
+  if (venueCurrentSidebarTab) {
+    renderVenueActiveFilterPills(venueCurrentSidebarTab);
+    renderVenueSidebarAccordion(venueCurrentSidebarTab);
+    venueTabRender(venueCurrentSidebarTab);
+  }
+}
+
+function clearAllVenueSidebarFilters() {
+  Object.keys(venueActiveSidebarFilters).forEach(dim => venueActiveSidebarFilters[dim].clear());
+  if (venueCurrentSidebarTab) {
+    renderVenueActiveFilterPills(venueCurrentSidebarTab);
+    renderVenueSidebarAccordion(venueCurrentSidebarTab);
+    venueTabRender(venueCurrentSidebarTab);
+  }
+}
+
+function venueHasSidebarFilters() {
+  return Object.values(venueActiveSidebarFilters).some(s => s.size > 0);
+}
+
+function venueItemMatchesFilters(item) {
+  for (const dim of ['genre','tone','era','audience']) {
+    const active = venueActiveSidebarFilters[dim];
+    if (active.size === 0) continue;
+    const vals = (item[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
+    if (!vals.some(v=>active.has(v))) return false;
+  }
+  return true;
+}
+
+function renderVenueActiveFilterPills(tab) {
+  const barId = {nights:'active-filters-bar-nights',trivia:'active-filters-bar-trivia',minigames:'active-filters-bar-mini',singalongs:'active-filters-bar-singa'}[tab];
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  const pills = [];
+  Object.keys(venueActiveSidebarFilters).forEach(dim => {
+    venueActiveSidebarFilters[dim].forEach(opt => {
+      pills.push(`<span class="active-filter-pill" onclick="removeVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}')">
+        <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${VENUE_DIM_LABELS[dim]}</span>
+        &nbsp;${opt}&nbsp;<span class="pill-x">✕</span></span>`);
+    });
+  });
+  bar.innerHTML = pills.join('');
+}
+
+function venueTabRender(tab) {
+  if (tab==='nights') renderNights();
+  else if (tab==='trivia') renderTrivia();
+  else if (tab==='minigames') renderMiniGames();
+  else if (tab==='singalongs') renderSingAlongs();
+}
+
 window.switchTab = switchTab;
 window.openNightDetail = openNightDetail;
+window.toggleVenueSidebar = toggleVenueSidebar;
+window.clearAllVenueSidebarFilters = clearAllVenueSidebarFilters;
+window.venueToggleAccordion = venueToggleAccordion;
+window.toggleVenueSidebarFilter = toggleVenueSidebarFilter;
+window.removeVenueSidebarFilter = removeVenueSidebarFilter;
 window.openMiniDetail = openMiniDetail;
 window.closeDetail = closeDetail;
 window.handleOverlayClick = handleOverlayClick;
