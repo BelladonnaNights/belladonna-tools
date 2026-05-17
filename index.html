@@ -122,34 +122,43 @@
 
   /* ── SIDEBAR FILTER ── */
   .page-layout {
-    display: flex;
-    gap: 0;
-    align-items: flex-start;
     position: relative;
   }
   .filter-sidebar {
     width: 260px;
-    flex-shrink: 0;
     background: var(--surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
     overflow: hidden;
-    position: sticky;
+    position: fixed;
     top: 80px;
+    left: -280px;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
-    transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    transition: left 0.3s ease, opacity 0.3s ease;
+    z-index: 150;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+    opacity: 0;
   }
   .filter-sidebar.hidden {
-    width: 0;
+    left: -280px;
     opacity: 0;
-    overflow: hidden;
-    border: none;
-    margin-right: 0;
+    pointer-events: none;
   }
   .filter-sidebar.open {
-    margin-right: 1.5rem;
+    left: 0;
+    opacity: 1;
+    pointer-events: all;
   }
+  /* Backdrop overlay when sidebar open */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 140;
+    background: transparent;
+  }
+  .sidebar-backdrop.open { display: block; }
   .sidebar-content { padding: 1rem; min-width: 240px; }
   .sidebar-header {
     display: flex;
@@ -275,7 +284,7 @@
   .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
   .sidebar-toggle-btn.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
 
-  .content-area { flex: 1; min-width: 0; }
+  .content-area { width: 100%; }
 
   /* search inside content area */
   .tab-search {
@@ -839,12 +848,18 @@
 
 <main class="main" id="main-content">
 
+<!-- SIDEBAR BACKDROP -->
+<div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
 <!-- ═══ FILTER SIDEBAR ═══ -->
 <div id="filter-sidebar" class="filter-sidebar hidden">
   <div class="sidebar-content">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
-      <button class="sidebar-clear" onclick="clearAllSidebarFilters()">Clear All</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="sidebar-clear" onclick="clearAllSidebarFilters()">Clear All</button>
+        <button onclick="closeSidebar()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+      </div>
     </div>
     <div id="sidebar-accordion"></div>
   </div>
@@ -1666,10 +1681,9 @@ function renderMiniGames() {
 }
 
 function renderLibrary() {
-  populateFilters();
-  const typeF = document.getElementById('lib-filter-type').value;
-  const themeF = document.getElementById('lib-filter-theme').value;
-  const tagF = document.getElementById('lib-filter-tag').value;
+  const typeF = '';
+  const themeF = '';
+  const tagF = '';
   const showTrivia = document.getElementById('lib-show-trivia').checked;
   const showBingo  = document.getElementById('lib-show-bingo').checked;
   const showSinga  = document.getElementById('lib-show-singa').checked;
@@ -2676,31 +2690,27 @@ async function saveFilterDims() {
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(tab) {
   const sidebar = document.getElementById('filter-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
   if (currentSidebarTab === tab && sidebar.classList.contains('open')) {
-    // Close
-    sidebar.classList.remove('open');
-    sidebar.classList.add('hidden');
-    currentSidebarTab = null;
-    // Move sidebar back out of layout
-    document.getElementById('main-content').prepend(sidebar);
-    updateSidebarToggleBtns();
+    closeSidebar();
   } else {
-    // Open — move sidebar into correct page-layout
     currentSidebarTab = tab;
-    const layoutId = {
-      library: 'lib-page-layout',
-      nights: 'nights-page-layout',
-      trivia: 'trivia-page-layout',
-      minigames: 'mini-page-layout',
-      singalongs: 'singa-page-layout'
-    }[tab];
-    const layout = document.getElementById(layoutId);
-    if (layout) layout.prepend(sidebar);
     sidebar.classList.remove('hidden');
     sidebar.classList.add('open');
+    backdrop.classList.add('open');
     updateSidebarToggleBtns();
     renderSidebarAccordion(tab);
   }
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('filter-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar.classList.remove('open');
+  sidebar.classList.add('hidden');
+  backdrop.classList.remove('open');
+  currentSidebarTab = null;
+  updateSidebarToggleBtns();
 }
 
 function updateSidebarToggleBtns() {
@@ -2942,7 +2952,7 @@ function getCatDimValues() {
 // Rendered as part of accordion — add at bottom
 function getSidebarManageBtn() {
   return `<div style="padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.5rem;">
-    <button onclick="openManageSidebarFilters()" class="btn btn-sm btn-ghost" style="width:100%;">✎ Manage Filter Options</button>
+    <button onclick="openManageSidebarFilters()" class="btn btn-sm btn-ghost" style="width:100%;">✎ Manage</button>
   </div>`;
 }
 
@@ -3577,7 +3587,7 @@ Object.assign(window, {
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
-  toggleSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter,
+  toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
