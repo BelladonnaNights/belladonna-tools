@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Belladonna Category Grimoire</title>
+<title>Belladonna Venue Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -629,7 +629,7 @@
     <img src="logo.png" alt="Belladonna Logo" class="logo-skull" style="width:42px; height:42px; object-fit:contain;">
     <div>
       <div class="logo-text">
-        <span class="logo-word-one">Belladonna</span><span class="logo-word-two">Grimoire</span>
+        <span class="logo-word-one">Belladonna</span><span class="logo-word-two">Venue Menu</span>
       </div>
       <span class="logo-sub">Audio Alchemies</span>
     </div>
@@ -702,7 +702,8 @@
   <div class="view" id="view-nights">
     <div id="nights-list-view">
       <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-        <div style="flex:1; min-width:0;">
+        <div id="night-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+          <input type="search" id="night-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
           <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
             <button class="filter-chip active" onclick="clearNightFilters()">All</button>
           </div>
@@ -726,7 +727,8 @@
   <!-- ═══ TRIVIA VIEW ═══ -->
   <div class="view" id="view-trivia">
     <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
+      <div id="trivia-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
         <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <button class="filter-chip active" onclick="clearTriviaFilters()">All</button>
         </div>
@@ -748,7 +750,8 @@
   <!-- ═══ MINI GAMES VIEW ═══ -->
   <div class="view" id="view-minigames">
     <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
+      <div id="mini-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
         <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <button class="filter-chip active" onclick="clearMiniFilters()">All</button>
         </div>
@@ -770,7 +773,8 @@
   <!-- ═══ SING-ALONGS VIEW ═══ -->
   <div class="view" id="view-singalongs">
     <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
+      <div id="singa-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
         <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <button class="filter-chip active" onclick="clearSingaFilters()">All</button>
         </div>
@@ -1151,13 +1155,13 @@ let pendingImport = [];
 let nightBannerData = null;
 let catBannerData = null;
 let activeNightFilters = new Set();
-let nightFiltersVisible = true;
+let nightFiltersVisible = false;
 let activeMiniFilters = new Set();
-let miniFiltersVisible = true;
+let miniFiltersVisible = false;
 let activeSingaFilters = new Set();
-let singaFiltersVisible = true;
+let singaFiltersVisible = false;
 let activeTriviaFilters = new Set();
-let triviaFiltersVisible = true;
+let triviaFiltersVisible = false;
 
 // Slug a name into a safe Firestore doc ID
 function toId(name) {
@@ -1181,10 +1185,10 @@ async function loadData() {
     ]);
     categories = cSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
-    nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Halloween', 'Kids', 'Dark', 'Music', 'Comedy', 'Throwback'];
-    miniTags = mSnap.exists() ? (mSnap.data().tags || []) : [];
-    singaTags = sSnap.exists() ? (sSnap.data().tags || []) : [];
-    triviaTags = rvSnap.exists() ? (rvSnap.data().tags || []) : [];
+    nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime'];
+    miniTags = mSnap.exists() ? (mSnap.data().tags || []) : ['Music','Party','Team Play','Quick Round','Holiday'];
+    singaTags = sSnap.exists() ? (sSnap.data().tags || []) : ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin'];
+    triviaTags = rvSnap.exists() ? (rvSnap.data().tags || []) : ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports'];
   } catch(e) {
     console.error('Firebase load error:', e);
     const msg = e.message === 'timeout'
@@ -1364,11 +1368,13 @@ function renderMiniGames() {
   renderMiniFilterChips();
   const grid = document.getElementById('minigames-grid');
   const empty = document.getElementById('minigames-empty');
-  const games = categories.filter(c => isMiniGame(c)).filter(c => {
+  const miniSearchQ = (document.getElementById('mini-search-input')?.value || '').toLowerCase().trim();
+  let games = categories.filter(c => isMiniGame(c)).filter(c => {
     if (activeMiniFilters.size === 0) return true;
     const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     return [...activeMiniFilters].every(f => catTags.includes(f));
   });
+  if (miniSearchQ) games = games.filter(c => c.name.toLowerCase().includes(miniSearchQ) || (c.theme||'').toLowerCase().includes(miniSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(miniSearchQ)));
 
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
@@ -1670,9 +1676,11 @@ async function deleteCategoryFromModal() {
 function renderNights() {
   renderNightFilterChips();
   const grid = document.getElementById('nights-grid');
-  const filtered = activeNightFilters.size > 0
+  const searchQ = (document.getElementById('night-search-input')?.value || '').toLowerCase().trim();
+  let filtered = activeNightFilters.size > 0
     ? nights.filter(n => [...activeNightFilters].every(f => (n.filterTags || []).includes(f)))
     : nights;
+  if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ) || (n.categoryIds||[]).some(c => c.toLowerCase().includes(searchQ)));
   const empty = document.getElementById('nights-empty');
   empty.style.display = filtered.length === 0 ? 'block' : 'none';
   grid.innerHTML = filtered.map((n, i) => {
@@ -2234,6 +2242,10 @@ function toggleNightFilter(tag) {
 
 function toggleNightFilterVisibility() {
   nightFiltersVisible = !nightFiltersVisible;
+  const sec = document.getElementById('night-filter-section');
+  if (sec) sec.style.display = nightFiltersVisible ? 'flex' : 'none';
+  const btn = document.getElementById('filter-visibility-btn');
+  if (btn) btn.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderNightFilterChips();
 }
 
@@ -2413,11 +2425,13 @@ function renderTrivia() {
   renderTriviaFilterChips();
   const grid = document.getElementById('trivia-grid');
   const empty = document.getElementById('trivia-empty');
-  const items = categories.filter(c => isTrivia(c)).filter(c => {
+  const triviaSearchQ = (document.getElementById('trivia-search-input')?.value || '').toLowerCase().trim();
+  let items = categories.filter(c => isTrivia(c)).filter(c => {
     if (activeTriviaFilters.size === 0) return true;
     const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     return [...activeTriviaFilters].every(f => catTags.includes(f));
   });
+  if (triviaSearchQ) items = items.filter(c => c.name.toLowerCase().includes(triviaSearchQ) || (c.theme||'').toLowerCase().includes(triviaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(triviaSearchQ)));
   empty.style.display = items.length === 0 ? 'block' : 'none';
   grid.innerHTML = items.map(c => {
     const miniSrc = c.miniGameImage || c.bannerData || null;
@@ -2461,7 +2475,14 @@ function toggleTriviaFilter(tag) {
   if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag); else activeTriviaFilters.add(tag);
   renderTriviaFilterChips(); renderTrivia();
 }
-function toggleTriviaFilterVisibility() { triviaFiltersVisible = !triviaFiltersVisible; renderTriviaFilterChips(); }
+function toggleTriviaFilterVisibility() {
+  triviaFiltersVisible = !triviaFiltersVisible;
+  const sec = document.getElementById('trivia-filter-section');
+  if (sec) sec.style.display = triviaFiltersVisible ? 'flex' : 'none';
+  const btn = document.getElementById('trivia-filter-visibility-btn');
+  if (btn) btn.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  renderTriviaFilterChips();
+}
 
 let _triviaDragTagIdx = null;
 function onTriviaTagDragStart(e, i) { _triviaDragTagIdx = i; e.dataTransfer.effectAllowed = 'move'; }
@@ -2558,11 +2579,13 @@ function renderSingAlongs() {
   renderSingaFilterChips();
   const grid = document.getElementById('singalongs-grid');
   const empty = document.getElementById('singalongs-empty');
-  const games = categories.filter(c => isSingAlong(c)).filter(c => {
+  const singaSearchQ = (document.getElementById('singa-search-input')?.value || '').toLowerCase().trim();
+  let games = categories.filter(c => isSingAlong(c)).filter(c => {
     if (activeSingaFilters.size === 0) return true;
     const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
     return [...activeSingaFilters].every(f => catTags.includes(f));
   });
+  if (singaSearchQ) games = games.filter(c => c.name.toLowerCase().includes(singaSearchQ) || (c.theme||'').toLowerCase().includes(singaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(singaSearchQ)));
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
     const miniSrc = c.miniGameImage || c.bannerData || null;
@@ -2609,7 +2632,14 @@ function toggleSingaFilter(tag) {
   if (activeSingaFilters.has(tag)) activeSingaFilters.delete(tag); else activeSingaFilters.add(tag);
   renderSingaFilterChips(); renderSingAlongs();
 }
-function toggleSingaFilterVisibility() { singaFiltersVisible = !singaFiltersVisible; renderSingaFilterChips(); }
+function toggleSingaFilterVisibility() {
+  singaFiltersVisible = !singaFiltersVisible;
+  const sec = document.getElementById('singa-filter-section');
+  if (sec) sec.style.display = singaFiltersVisible ? 'flex' : 'none';
+  const btn = document.getElementById('singa-filter-visibility-btn');
+  if (btn) btn.style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  renderSingaFilterChips();
+}
 
 let _dragSingaTagIdx = null;
 function onSingaTagDragStart(e, i) { _dragSingaTagIdx = i; e.dataTransfer.effectAllowed = 'move'; }
