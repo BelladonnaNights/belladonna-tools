@@ -120,6 +120,183 @@
   .view { display: none; }
   .view.active { display: block; }
 
+  /* ── SIDEBAR FILTER ── */
+  .page-layout {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    position: relative;
+  }
+  .filter-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  }
+  .filter-sidebar.hidden {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    border: none;
+    margin-right: 0;
+  }
+  .filter-sidebar.open {
+    margin-right: 1.5rem;
+  }
+  .sidebar-content { padding: 1rem; min-width: 240px; }
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .sidebar-clear {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .sidebar-clear:hover { color: var(--gold); }
+
+  /* accordion */
+  .accordion-section { border-bottom: 1px solid var(--border); }
+  .accordion-section:last-child { border-bottom: none; }
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.7rem 0;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    user-select: none;
+  }
+  .accordion-header:hover { color: var(--gold); }
+  .accordion-header.has-active { color: var(--gold); }
+  .accordion-arrow {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+    color: var(--text-dim);
+  }
+  .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    padding-bottom: 0.75rem;
+  }
+  .accordion-body.open { display: block; }
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.3rem 0;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    transition: color 0.15s;
+    border-radius: 3px;
+  }
+  .filter-option:hover { color: var(--text); }
+  .filter-option input[type="checkbox"] {
+    accent-color: var(--gold);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .filter-option.active { color: var(--text); font-weight: 600; }
+
+  /* active filter pills above grid */
+  .active-filters-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .active-filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px 3px 10px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 30px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  .active-filter-pill:hover { background: rgba(201,168,76,0.2); }
+  .active-filter-pill .pill-x { color: var(--gold-dim); font-size: 0.8rem; }
+
+  /* sidebar toggle btn */
+  .sidebar-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
+  .sidebar-toggle-btn.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
+
+  .content-area { flex: 1; min-width: 0; }
+
+  /* search inside content area */
+  .tab-search {
+    margin-bottom: 0.75rem;
+  }
+  .tab-search input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem 0.6rem 2.4rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .tab-search input:focus { border-color: var(--gold-dim); }
+  .tab-search-wrap { position: relative; }
+  .tab-search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+
   /* ORNAMENT DIVIDER */
   .ornament {
     text-align: center;
@@ -236,6 +413,22 @@
   .file-drop small { color: var(--text-dim); font-size: 0.8rem; }
 
   /* BADGE */
+  .filter-dim-tab {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .filter-dim-tab:hover { color: var(--gold); border-color: var(--border-strong); }
+  .filter-dim-tab.active { color: var(--gold); border-color: var(--gold-dim); background: rgba(201,168,76,0.08); }
+
   .badge {
     display: inline-block;
     padding: 2px 9px;
@@ -644,56 +837,49 @@
   </nav>
 </header>
 
-<main class="main">
+<main class="main" id="main-content">
+
+<!-- ═══ FILTER SIDEBAR ═══ -->
+<div id="filter-sidebar" class="filter-sidebar hidden">
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Filters</span>
+      <button class="sidebar-clear" onclick="clearAllSidebarFilters()">Clear All</button>
+    </div>
+    <div id="sidebar-accordion"></div>
+  </div>
+</div>
 
   <!-- ═══ LIBRARY VIEW ═══ -->
   <div class="view active" id="view-library">
-    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; flex-wrap:wrap;">
-      <div class="search-bar" style="margin-bottom:0; flex:1; min-width:200px;">
-        <span class="search-icon">🔍</span>
-        <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="lib-filter-toggle" onclick="toggleSidebar('library')">⧉ Filters</button>
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-
+      <div style="display:flex;gap:6px;align-items:center;">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-trivia" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Trivia</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-bingo" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Bingo</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-singa" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Sing</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-mini" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Mini</label>
+      </div>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add</button>
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
-    <div id="search-results" class="category-grid" style="display:none;"></div>
-    <div id="filter-and-grid">
-      <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:0.75rem;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
-          <input type="checkbox" id="lib-show-trivia" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Trivia
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
-          <input type="checkbox" id="lib-show-bingo" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Bingo
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
-          <input type="checkbox" id="lib-show-singa" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Sing-Alongs
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
-          <input type="checkbox" id="lib-show-mini" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Mini Games
-        </label>
-        <div style="width:1px;height:20px;background:var(--border);flex-shrink:0;"></div>
-        <select id="lib-filter-type" onchange="renderLibrary()" style="width:auto;min-width:130px;">
-          <option value="">All Types</option>
-        </select>
-        <div style="display:flex; align-items:center; gap:4px;">
-          <select id="lib-filter-theme" onchange="renderLibrary()" style="width:auto;min-width:130px;">
-            <option value="">All Themes</option>
-          </select>
-          <button class="btn btn-sm btn-ghost" onclick="openThemeEditorModal()" title="Edit themes" style="padding:0.35rem 0.6rem; font-size:0.9rem;">✎</button>
+    <div class="page-layout" id="lib-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-library" class="active-filters-bar"></div>
+        <div id="search-results" class="category-grid" style="display:none;"></div>
+        <div id="filter-and-grid">
+          <div id="lib-results-meta" class="results-meta"></div>
+          <div id="category-grid" class="category-grid"></div>
+          <div id="lib-empty" class="empty-state" style="display:none">
+            <div class="empty-state-icon">📚</div>
+            <h3>No Categories Yet</h3>
+            <p>Import a CSV or add categories manually to begin.</p>
+          </div>
         </div>
-        <select id="lib-filter-tag" onchange="renderLibrary()" style="width:auto;min-width:120px;">
-          <option value="">All Tags</option>
-        </select>
-        <div style="margin-left:auto; display:flex; gap:8px;">
-          <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Category</button>
-        </div>
-      </div>
-      <div id="lib-results-meta" class="results-meta"></div>
-      <div id="category-grid" class="category-grid"></div>
-      <div id="lib-empty" class="empty-state" style="display:none">
-        <div class="empty-state-icon">📚</div>
-        <h3>No Categories Yet</h3>
-        <p>Import a CSV or add categories manually to begin.</p>
       </div>
     </div>
   </div>
@@ -701,24 +887,25 @@
   <!-- ═══ THEMED NIGHTS VIEW ═══ -->
   <div class="view" id="view-nights">
     <div id="nights-list-view">
-      <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-        <div id="night-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-          <input type="search" id="night-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-          <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-            <button class="filter-chip active" onclick="clearNightFilters()">All</button>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+        <button class="sidebar-toggle-btn" id="nights-filter-toggle" onclick="toggleSidebar('nights')">⧉ Filters</button>
+        <div style="flex:1; position:relative;">
+          <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+          <input type="search" id="night-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage Filters</button>
+        <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
+      </div>
+      <div class="page-layout" id="nights-page-layout">
+        <div class="content-area">
+          <div id="active-filters-bar-nights" class="active-filters-bar"></div>
+          <div id="nights-grid" class="nights-grid"></div>
+          <div id="nights-empty" class="empty-state" style="display:none">
+            <div class="empty-state-icon">🌙</div>
+            <h3>No Themed Nights Yet</h3>
+            <p>Create your first themed night to start building event lineups.</p>
           </div>
         </div>
-        <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
-          <button class="btn btn-sm btn-ghost" id="filter-visibility-btn" onclick="toggleNightFilterVisibility()">☰ Filters</button>
-          <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage</button>
-          <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
-        </div>
-      </div>
-      <div id="nights-grid" class="nights-grid"></div>
-      <div id="nights-empty" class="empty-state" style="display:none">
-        <div class="empty-state-icon">🌙</div>
-        <h3>No Themed Nights Yet</h3>
-        <p>Create your first themed night to start building event lineups.</p>
       </div>
     </div>
     <div id="night-detail-view" style="display:none"></div>
@@ -726,70 +913,73 @@
 
   <!-- ═══ TRIVIA VIEW ═══ -->
   <div class="view" id="view-trivia">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="trivia-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearTriviaFilters()">All</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="trivia-filter-toggle" onclick="toggleSidebar('trivia')">⧉ Filters</button>
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="openTriviaTagsModal()">Manage Filters</button>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
+    </div>
+    <div class="page-layout" id="trivia-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
+        <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+        <div id="trivia-empty" class="empty-state" style="display:none;">
+          <div class="empty-state-icon">🧠</div>
+          <h3>No Trivia Yet</h3>
+          <p>Add categories with Type "Trivia" to see them here.</p>
         </div>
       </div>
-      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
-        <button class="btn btn-sm btn-ghost" id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()">☰ Filters</button>
-        <button class="btn btn-sm btn-ghost" onclick="openTriviaTagsModal()">Manage</button>
-        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
-      </div>
-    </div>
-    <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
-    <div id="trivia-empty" class="empty-state" style="display:none;">
-      <div class="empty-state-icon">🧠</div>
-      <h3>No Trivia Yet</h3>
-      <p>Add categories with Type containing "Trivia" to see them here.</p>
     </div>
   </div>
 
   <!-- ═══ MINI GAMES VIEW ═══ -->
   <div class="view" id="view-minigames">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="mini-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearMiniFilters()">All</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="mini-filter-toggle" onclick="toggleSidebar('minigames')">⧉ Filters</button>
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="openMiniTagsModal()">Manage Filters</button>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
+    </div>
+    <div class="page-layout" id="mini-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-mini" class="active-filters-bar"></div>
+        <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+        <div id="minigames-empty" class="empty-state" style="display:none;">
+          <div class="empty-state-icon">🎲</div>
+          <h3>No Mini Games Yet</h3>
+          <p>Add categories with Type "Mini Game" to see them here.</p>
         </div>
       </div>
-      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
-        <button class="btn btn-sm btn-ghost" id="mini-filter-visibility-btn" onclick="toggleMiniFilterVisibility()">☰ Filters</button>
-        <button class="btn btn-sm btn-ghost" onclick="openMiniTagsModal()">Manage</button>
-        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
-      </div>
-    </div>
-    <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
-    <div id="minigames-empty" class="empty-state" style="display:none;">
-      <div class="empty-state-icon">🎲</div>
-      <h3>No Mini Games Yet</h3>
-      <p>Add categories with Type "Mini Game" to see them here.</p>
     </div>
   </div>
 
   <!-- ═══ SING-ALONGS VIEW ═══ -->
   <div class="view" id="view-singalongs">
-    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div id="singa-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
-        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearSingaFilters()">All</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <button class="sidebar-toggle-btn" id="singa-filter-toggle" onclick="toggleSidebar('singalongs')">⧉ Filters</button>
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+      </div>
+      <button class="btn btn-sm btn-ghost" onclick="openSingaTagsModal()">Manage Filters</button>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Sing-Along</button>
+    </div>
+    <div class="page-layout" id="singa-page-layout">
+      <div class="content-area">
+        <div id="active-filters-bar-singa" class="active-filters-bar"></div>
+        <div id="singalongs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+        <div id="singalongs-empty" class="empty-state" style="display:none;">
+          <div class="empty-state-icon">🎤</div>
+          <h3>No Sing-Alongs Yet</h3>
+          <p>Add categories with Type "Sing-Along" to see them here.</p>
         </div>
       </div>
-      <div style="display:flex; gap:8px; flex-shrink:0; align-items:center;">
-        <button class="btn btn-sm btn-ghost" id="singa-filter-visibility-btn" onclick="toggleSingaFilterVisibility()">☰ Filters</button>
-        <button class="btn btn-sm btn-ghost" onclick="openSingaTagsModal()">Manage</button>
-        <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Sing-Along</button>
-      </div>
-    </div>
-    <div id="singalongs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
-    <div id="singalongs-empty" class="empty-state" style="display:none;">
-      <div class="empty-state-icon">🎤</div>
-      <h3>No Sing-Alongs Yet</h3>
-      <p>Add categories with Type "Sing-Along" to see them here.</p>
     </div>
   </div>
 
@@ -877,6 +1067,29 @@
         <div class="form-group">
           <label class="form-label">Admin Notes <span style="font-size:0.65rem;color:#C0654F;background:rgba(139,58,42,0.15);border:1px solid rgba(139,58,42,0.3);padding:1px 7px;border-radius:3px;font-family:'Crimson Text',serif;text-transform:uppercase;font-style:normal;letter-spacing:0.08em;">Private</span></label>
           <textarea id="cat-notes" rows="6" placeholder="Your private brainstorming space. Vibe references, show lists, round ideas, anything…" style="font-size:15px; line-height:1.6;"></textarea>
+        </div>
+        <div style="border-top:1px solid var(--border);margin:0.5rem 0 0.75rem;padding-top:0.75rem;">
+          <div class="section-title" style="margin-bottom:0.75rem;">Sidebar Filter Dimensions</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Genre</label>
+              <input type="text" id="cat-genre" placeholder="e.g. Horror, Comedy, Romance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tone</label>
+              <input type="text" id="cat-tone" placeholder="e.g. Cozy, Dark, Chaotic">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Era</label>
+              <input type="text" id="cat-era" placeholder="e.g. 90s, Y2K, Retro">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Audience</label>
+              <input type="text" id="cat-audience" placeholder="e.g. Adults, Date Night, Kids/Family">
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <div class="form-label" style="margin-bottom:0.5rem;">Publish to Venue <span style="color:var(--text-dim);font-size:0.7rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— check any tab this should appear on</span></div>
@@ -982,6 +1195,29 @@
         <div class="form-group">
           <label class="form-label">Tags <span style="color:var(--text-dim); font-size:0.72rem; font-style:italic; font-family:'Crimson Text',serif; text-transform:none; letter-spacing:0;">comma separated</span></label>
           <input type="text" id="night-tags-input" placeholder="e.g. Witches, Dark, Halloween, 90s…">
+        </div>
+        <div style="border-top:1px solid var(--border);margin:0.5rem 0 0.75rem;padding-top:0.75rem;">
+          <div class="section-title" style="margin-bottom:0.75rem;">Sidebar Filter Dimensions</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Genre</label>
+              <input type="text" id="night-genre" placeholder="e.g. Horror, Comedy, Romance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tone</label>
+              <input type="text" id="night-tone" placeholder="e.g. Cozy, Dark, Chaotic">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Era</label>
+              <input type="text" id="night-era" placeholder="e.g. 90s, Y2K, Retro">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Audience</label>
+              <input type="text" id="night-audience" placeholder="e.g. Adults, Date Night, Kids/Family">
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Select Categories for This Night</label>
@@ -1099,6 +1335,34 @@
   </div>
 </div>
 
+<!-- ═══ MANAGE SIDEBAR FILTERS MODAL ═══ -->
+<div class="modal-backdrop" id="manage-sidebar-filters-modal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <span class="modal-title">Manage Filter Options</span>
+      <button class="modal-close" onclick="closeManageSidebarFilters()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.25rem;">These options appear in the sidebar filter accordion. Add, edit or remove any option across all four dimensions.</p>
+      <!-- Tab buttons -->
+      <div style="display:flex; gap:4px; margin-bottom:1.25rem; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+        <button class="filter-dim-tab active" onclick="switchFilterDimTab('genre')" id="dim-tab-genre">Genre</button>
+        <button class="filter-dim-tab" onclick="switchFilterDimTab('tone')" id="dim-tab-tone">Tone</button>
+        <button class="filter-dim-tab" onclick="switchFilterDimTab('era')" id="dim-tab-era">Era</button>
+        <button class="filter-dim-tab" onclick="switchFilterDimTab('audience')" id="dim-tab-audience">Audience</button>
+      </div>
+      <div id="filter-dim-content" style="display:grid; gap:6px; max-height:320px; overflow-y:auto; margin-bottom:1rem;"></div>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="filter-dim-new-input" placeholder="Add new option…" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilterDimOption();}">
+        <button class="btn btn-sm" onclick="addFilterDimOption()" style="flex-shrink:0;">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeManageSidebarFilters()">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -1187,6 +1451,7 @@ async function loadData() {
     nights = nSnap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (a.position??9999) - (b.position??9999));
     nightTags = tSnap.exists() ? (tSnap.data().tags || []) : ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime'];
     miniTags = mSnap.exists() ? (mSnap.data().tags || []) : ['Music','Party','Team Play','Quick Round','Holiday'];
+    await loadFilterDims();
     singaTags = sSnap.exists() ? (sSnap.data().tags || []) : ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin'];
     triviaTags = rvSnap.exists() ? (rvSnap.data().tags || []) : ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports'];
   } catch(e) {
@@ -1375,6 +1640,7 @@ function renderMiniGames() {
     return [...activeMiniFilters].every(f => catTags.includes(f));
   });
   if (miniSearchQ) games = games.filter(c => c.name.toLowerCase().includes(miniSearchQ) || (c.theme||'').toLowerCase().includes(miniSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(miniSearchQ)));
+  if (hasSidebarFilters()) games = games.filter(catMatchesSidebarFilters);
 
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
@@ -1418,6 +1684,7 @@ function renderLibrary() {
     if (typeF && c.type !== typeF) return false;
     if (themeF && c.theme !== themeF) return false;
     if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
+    if (!catMatchesSidebarFilters(c)) return false;
     return true;
   });
 
@@ -1510,6 +1777,7 @@ function openAddCategoryModal() {
   document.getElementById('cat-shows').value = '';
   document.getElementById('cat-notes').value = '';
   document.getElementById('cat-tags').value = '';
+  clearCatDimFields();
   document.getElementById('cat-banner-url').value = '';
   document.getElementById('cat-minigame-url').value = '';
   setCatMiniPreview(null);
@@ -1530,6 +1798,7 @@ function editCategory(idx) {
   document.getElementById('cat-shows').value = (c.shows || []).join('\n');
   document.getElementById('cat-notes').value = c.notes || '';
   document.getElementById('cat-tags').value = c.tags || '';
+  loadCatDimFields(c);
   const pts = c.publishedTabs || (c.published ? ['trivia','mini','singa'] : []);
   document.getElementById('cat-pub-trivia').checked = pts.includes('trivia');
   document.getElementById('cat-pub-mini').checked = pts.includes('mini');
@@ -1625,6 +1894,7 @@ async function saveCategoryFromModal() {
     shows,
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
+    ...getCatDimValues(),
     publishedTabs: ['trivia','mini','singa'].filter(k => document.getElementById(`cat-pub-${k}`).checked),
     published: ['trivia','mini','singa'].some(k => document.getElementById(`cat-pub-${k}`).checked),
     miniGameImage: document.getElementById('cat-minigame-url').value.trim() || null,
@@ -1681,6 +1951,7 @@ function renderNights() {
     ? nights.filter(n => [...activeNightFilters].every(f => (n.filterTags || []).includes(f)))
     : nights;
   if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ) || (n.categoryIds||[]).some(c => c.toLowerCase().includes(searchQ)));
+  if (hasSidebarFilters()) filtered = filtered.filter(n => nightMatchesSidebarFilters(n));
   const empty = document.getElementById('nights-empty');
   empty.style.display = filtered.length === 0 ? 'block' : 'none';
   grid.innerHTML = filtered.map((n, i) => {
@@ -1790,6 +2061,7 @@ function openNewNightModal() {
   document.getElementById('night-banner-url').value = '';
   setNightBannerPreview(null);
   document.getElementById('night-published').checked = false;
+  ['genre','tone','era','audience'].forEach(d=>{const el=document.getElementById(`night-${d}`);if(el)el.value='';});
   document.getElementById('night-description').value = '';
   document.getElementById('night-admin-notes').value = '';
   document.getElementById('night-tags-input').value = '';
@@ -1810,6 +2082,7 @@ function editNight(idx) {
   document.getElementById('night-banner-url').value = (n.bannerData && !n.bannerData.startsWith('data:')) ? n.bannerData : '';
   setNightBannerPreview(n.bannerData || null, n.bannerColor || null, n.name);
   document.getElementById('night-published').checked = !!n.published;
+  ['genre','tone','era','audience'].forEach(d=>{const el=document.getElementById(`night-${d}`);if(el)el.value=n[d]||'';});
   document.getElementById('night-description').value = n.description || '';
   document.getElementById('night-admin-notes').value = n.adminNotes || '';
   document.getElementById('night-tags-input').value = (n.nightTagsList || []).join(', ');
@@ -1966,6 +2239,10 @@ async function saveNight() {
     categoryIds: checked,
     enhancements,
     filterTags,
+    genre: document.getElementById('night-genre')?.value.trim()||'',
+    tone: document.getElementById('night-tone')?.value.trim()||'',
+    era: document.getElementById('night-era')?.value.trim()||'',
+    audience: document.getElementById('night-audience')?.value.trim()||'',
     published: document.getElementById('night-published').checked,
     description: document.getElementById('night-description').value.trim(),
     adminNotes: document.getElementById('night-admin-notes').value.trim(),
@@ -2359,6 +2636,317 @@ function getSelectedNightModalTags() {
 
 // ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
+// SIDEBAR FILTER SYSTEM
+// ═══════════════════════════════════════════════
+
+// Default options for each dimension
+const DEFAULT_FILTER_DIMS = {
+  genre: ['Horror','Comedy','Romance','Music','Mystery/Crime','Fantasy','TV/Film','Fashion','Kids/Family','Nostalgia','Sports','Books'],
+  tone: ['Cozy','Dark','Chaotic','Dramatic','Campy','Emotional','Wholesome','Glamorous','Spicy','Feel-Good','Absurdist'],
+  era: ['70s','80s','90s','Y2K','2010s','Retro','VHS','Tumblr Era','Streaming Era','Classic','Holiday'],
+  audience: ['Adults','Kids/Family','Date Night','Girls Night','Teens','All Ages','Party Crowd']
+};
+
+let filterDimOptions = { genre: [], tone: [], era: [], audience: [] };
+let activeSidebarFilters = { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() };
+let currentSidebarTab = null; // which tab the sidebar is open on
+let currentFilterDimTab = 'genre';
+
+const FILTER_DIM_DOC = 'filterDimensions';
+
+async function loadFilterDims() {
+  try {
+    const snap = await getDoc(doc(db, 'config', FILTER_DIM_DOC));
+    if (snap.exists()) {
+      const d = snap.data();
+      filterDimOptions.genre    = d.genre    || DEFAULT_FILTER_DIMS.genre;
+      filterDimOptions.tone     = d.tone     || DEFAULT_FILTER_DIMS.tone;
+      filterDimOptions.era      = d.era      || DEFAULT_FILTER_DIMS.era;
+      filterDimOptions.audience = d.audience || DEFAULT_FILTER_DIMS.audience;
+    } else {
+      filterDimOptions = { ...DEFAULT_FILTER_DIMS };
+    }
+  } catch(e) { filterDimOptions = { ...DEFAULT_FILTER_DIMS }; }
+}
+
+async function saveFilterDims() {
+  await setDoc(doc(db, 'config', FILTER_DIM_DOC), filterDimOptions);
+}
+
+// ── SIDEBAR TOGGLE ──
+function toggleSidebar(tab) {
+  const sidebar = document.getElementById('filter-sidebar');
+  if (currentSidebarTab === tab && sidebar.classList.contains('open')) {
+    // Close
+    sidebar.classList.remove('open');
+    sidebar.classList.add('hidden');
+    currentSidebarTab = null;
+    // Move sidebar back out of layout
+    document.getElementById('main-content').prepend(sidebar);
+    updateSidebarToggleBtns();
+  } else {
+    // Open — move sidebar into correct page-layout
+    currentSidebarTab = tab;
+    const layoutId = {
+      library: 'lib-page-layout',
+      nights: 'nights-page-layout',
+      trivia: 'trivia-page-layout',
+      minigames: 'mini-page-layout',
+      singalongs: 'singa-page-layout'
+    }[tab];
+    const layout = document.getElementById(layoutId);
+    if (layout) layout.prepend(sidebar);
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('open');
+    updateSidebarToggleBtns();
+    renderSidebarAccordion(tab);
+  }
+}
+
+function updateSidebarToggleBtns() {
+  ['lib','nights','trivia','mini','singa'].forEach(id => {
+    const btn = document.getElementById(`${id}-filter-toggle`);
+    if (btn) btn.classList.remove('active');
+  });
+  const tabToId = { library:'lib', nights:'nights', trivia:'trivia', minigames:'mini', singalongs:'singa' };
+  if (currentSidebarTab && tabToId[currentSidebarTab]) {
+    const btn = document.getElementById(`${tabToId[currentSidebarTab]}-filter-toggle`);
+    if (btn) btn.classList.add('active');
+  }
+}
+
+// ── ACCORDION RENDER ──
+const DIM_LABELS = { genre: 'Genre', tone: 'Tone', era: 'Era', audience: 'Audience' };
+
+function renderSidebarAccordion(tab) {
+  const acc = document.getElementById('sidebar-accordion');
+  if (!acc) return;
+  acc.innerHTML = Object.keys(DIM_LABELS).map(dim => {
+    const opts = filterDimOptions[dim] || [];
+    const active = activeSidebarFilters[dim];
+    const hasActive = active.size > 0;
+    return `<div class="accordion-section">
+      <div class="accordion-header ${hasActive ? 'has-active' : ''}" onclick="toggleAccordion('${dim}')">
+        <span>${DIM_LABELS[dim]}${hasActive ? ` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>` : ''}</span>
+        <span class="accordion-arrow" id="arrow-${dim}">▼</span>
+      </div>
+      <div class="accordion-body" id="acc-body-${dim}">
+        ${opts.map(opt => `
+          <label class="filter-option ${active.has(opt) ? 'active' : ''}">
+            <input type="checkbox" ${active.has(opt) ? 'checked' : ''} onchange="toggleSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}',this.checked,'${tab}')">
+            ${opt}
+          </label>`).join('')}
+        ${!opts.length ? `<p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;padding:0.3rem 0;">No options yet — use Manage Filters</p>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  acc.innerHTML += getSidebarManageBtn();
+  // Re-open any that had active filters
+  Object.keys(DIM_LABELS).forEach(dim => {
+    if (activeSidebarFilters[dim].size > 0) {
+      const body = document.getElementById(`acc-body-${dim}`);
+      const header = body?.previousElementSibling;
+      if (body) body.classList.add('open');
+      if (header) header.classList.add('open');
+    }
+  });
+}
+
+function toggleAccordion(dim) {
+  const body = document.getElementById(`acc-body-${dim}`);
+  const header = body?.previousElementSibling;
+  const arrow = document.getElementById(`arrow-${dim}`);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (header) header.classList.toggle('open', !isOpen);
+}
+
+// ── FILTER LOGIC ──
+function toggleSidebarFilter(dim, opt, checked, tab) {
+  if (checked) activeSidebarFilters[dim].add(opt);
+  else activeSidebarFilters[dim].delete(opt);
+  renderActiveFilterPills(tab);
+  renderSidebarAccordion(tab);
+  triggerTabRender(tab);
+}
+
+function clearAllSidebarFilters() {
+  Object.keys(activeSidebarFilters).forEach(dim => activeSidebarFilters[dim].clear());
+  if (currentSidebarTab) {
+    renderActiveFilterPills(currentSidebarTab);
+    renderSidebarAccordion(currentSidebarTab);
+    triggerTabRender(currentSidebarTab);
+  }
+}
+
+function removeSidebarFilter(dim, opt) {
+  activeSidebarFilters[dim].delete(opt);
+  if (currentSidebarTab) {
+    renderActiveFilterPills(currentSidebarTab);
+    renderSidebarAccordion(currentSidebarTab);
+    triggerTabRender(currentSidebarTab);
+  }
+}
+
+function triggerTabRender(tab) {
+  if (tab === 'library') renderLibrary();
+  else if (tab === 'nights') renderNights();
+  else if (tab === 'trivia') renderTrivia();
+  else if (tab === 'minigames') renderMiniGames();
+  else if (tab === 'singalongs') renderSingAlongs();
+}
+
+function catMatchesSidebarFilters(cat) {
+  // Each active dimension must match (AND across dims, OR within dim)
+  for (const dim of ['genre','tone','era','audience']) {
+    const active = activeSidebarFilters[dim];
+    if (active.size === 0) continue;
+    const catVals = (cat[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
+    if (!catVals.some(v => active.has(v))) return false;
+  }
+  return true;
+}
+
+function nightMatchesSidebarFilters(night) {
+  for (const dim of ['genre','tone','era','audience']) {
+    const active = activeSidebarFilters[dim];
+    if (active.size === 0) continue;
+    const vals = (night[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
+    if (!vals.some(v => active.has(v))) return false;
+  }
+  return true;
+}
+
+function hasSidebarFilters() {
+  return Object.values(activeSidebarFilters).some(s => s.size > 0);
+}
+
+// ── ACTIVE PILLS ──
+function renderActiveFilterPills(tab) {
+  const barId = {
+    library: 'active-filters-bar-library',
+    nights: 'active-filters-bar-nights',
+    trivia: 'active-filters-bar-trivia',
+    minigames: 'active-filters-bar-mini',
+    singalongs: 'active-filters-bar-singa'
+  }[tab];
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  const pills = [];
+  Object.keys(activeSidebarFilters).forEach(dim => {
+    activeSidebarFilters[dim].forEach(opt => {
+      pills.push(`<span class="active-filter-pill" onclick="removeSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}')">
+        <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${DIM_LABELS[dim]}</span>
+        &nbsp;${esc(opt)}&nbsp;<span class="pill-x">✕</span>
+      </span>`);
+    });
+  });
+  bar.innerHTML = pills.join('');
+}
+
+// ── MANAGE MODAL ──
+function openManageSidebarFilters() {
+  currentFilterDimTab = 'genre';
+  renderFilterDimContent();
+  switchFilterDimTab('genre');
+  document.getElementById('manage-sidebar-filters-modal').classList.add('open');
+}
+
+function closeManageSidebarFilters() {
+  document.getElementById('manage-sidebar-filters-modal').classList.remove('open');
+  if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
+}
+
+function switchFilterDimTab(dim) {
+  currentFilterDimTab = dim;
+  document.querySelectorAll('.filter-dim-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById(`dim-tab-${dim}`);
+  if (tab) tab.classList.add('active');
+  renderFilterDimContent();
+}
+
+function renderFilterDimContent() {
+  const dim = currentFilterDimTab;
+  const opts = filterDimOptions[dim] || [];
+  const list = document.getElementById('filter-dim-content');
+  list.innerHTML = opts.map((opt, i) =>
+    `<div id="fdim-row-${i}" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.4rem 0.75rem;">
+      <span id="fdim-label-${i}" style="flex:1;font-size:0.92rem;color:var(--text);">${esc(opt)}</span>
+      <input type="text" id="fdim-input-${i}" value="${esc(opt)}" style="display:none;flex:1;padding:0.2rem 0.5rem;font-size:0.9rem;" onkeydown="if(event.key==='Enter')saveFilterDimEdit(${i})">
+      <button onclick="startFilterDimEdit(${i})" id="fdim-edit-btn-${i}" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">EDIT</button>
+      <button onclick="saveFilterDimEdit(${i})" id="fdim-save-btn-${i}" style="display:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.8rem;font-family:'Cinzel',serif;letter-spacing:0.08em;padding:0 4px;">SAVE</button>
+      <button onclick="deleteFilterDimOption(${i})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;line-height:1;padding:0 2px;" onmouseover="this.style.color='#C0654F'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+    </div>`
+  ).join('') || `<p style="color:var(--text-dim);font-size:0.85rem;font-style:italic;">No options yet.</p>`;
+  document.getElementById('filter-dim-new-input').value = '';
+}
+
+function startFilterDimEdit(i) {
+  document.getElementById(`fdim-label-${i}`).style.display = 'none';
+  document.getElementById(`fdim-input-${i}`).style.display = 'block';
+  document.getElementById(`fdim-edit-btn-${i}`).style.display = 'none';
+  document.getElementById(`fdim-save-btn-${i}`).style.display = 'inline';
+  document.getElementById(`fdim-input-${i}`).focus();
+}
+
+async function saveFilterDimEdit(i) {
+  const val = document.getElementById(`fdim-input-${i}`)?.value.trim();
+  if (!val) return;
+  filterDimOptions[currentFilterDimTab][i] = val;
+  await saveFilterDims();
+  renderFilterDimContent();
+}
+
+async function addFilterDimOption() {
+  const input = document.getElementById('filter-dim-new-input');
+  const val = input.value.trim();
+  if (!val || filterDimOptions[currentFilterDimTab].includes(val)) return;
+  filterDimOptions[currentFilterDimTab].push(val);
+  await saveFilterDims();
+  renderFilterDimContent();
+}
+
+async function deleteFilterDimOption(i) {
+  const removed = filterDimOptions[currentFilterDimTab].splice(i, 1)[0];
+  activeSidebarFilters[currentFilterDimTab].delete(removed);
+  await saveFilterDims();
+  renderFilterDimContent();
+}
+
+// ── WIRE INTO CATEGORY MODAL ──
+function clearCatDimFields() {
+  ['genre','tone','era','audience'].forEach(d => {
+    const el = document.getElementById(`cat-${d}`);
+    if (el) el.value = '';
+  });
+}
+
+function loadCatDimFields(cat) {
+  ['genre','tone','era','audience'].forEach(d => {
+    const el = document.getElementById(`cat-${d}`);
+    if (el) el.value = cat[d] || '';
+  });
+}
+
+function getCatDimValues() {
+  const out = {};
+  ['genre','tone','era','audience'].forEach(d => {
+    const el = document.getElementById(`cat-${d}`);
+    out[d] = el ? el.value.trim() : '';
+  });
+  return out;
+}
+
+// ── ADD "Manage Filters" BUTTON TO SIDEBAR FOOTER ──
+// Rendered as part of accordion — add at bottom
+function getSidebarManageBtn() {
+  return `<div style="padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.5rem;">
+    <button onclick="openManageSidebarFilters()" class="btn btn-sm btn-ghost" style="width:100%;">✎ Manage Filter Options</button>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
 // THEME EDITOR
 // ═══════════════════════════════════════════════
 
@@ -2586,6 +3174,7 @@ function renderSingAlongs() {
     return [...activeSingaFilters].every(f => catTags.includes(f));
   });
   if (singaSearchQ) games = games.filter(c => c.name.toLowerCase().includes(singaSearchQ) || (c.theme||'').toLowerCase().includes(singaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(singaSearchQ)));
+  if (hasSidebarFilters()) games = games.filter(catMatchesSidebarFilters);
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
     const miniSrc = c.miniGameImage || c.bannerData || null;
@@ -2988,6 +3577,9 @@ Object.assign(window, {
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
+  toggleSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter,
+  openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
+  addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
   openTriviaTagsModal, closeTriviaTagsModal,
   addTriviaTag, deleteTriviaTag, startTriviaTagEdit, saveTriviaTagEdit,
