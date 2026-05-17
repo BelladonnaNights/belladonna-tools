@@ -363,7 +363,7 @@ async function load() {
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     publishedSingAlongs = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => (c.publishedTabs||[]).includes('singa') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['sing-along','sing along','singalong','sing-alongs','sing alongs'].includes(t))))
+      .filter(c => { const tabs = c.publishedTabs||[]; const types = (c.type||'').toLowerCase().split(',').map(t=>t.trim()); return tabs.includes('singa') || (c.published && types.some(t => t.includes('sing'))); })
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     publishedTrivia = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
@@ -601,7 +601,7 @@ function renderTrivia() {
     ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
     : publishedTrivia;
   if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
-  if (Object.values(venueActiveSidebarFilters).some(s=>s.size>0)) filtered = filtered.filter(venueItemMatchesFilters);
+  if (Object.values(venueActiveSidebarFilters).some(s=>s.size>0)) filtered = filtered.filter(c => venueItemMatchesFilters(c));
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -866,21 +866,24 @@ function renderVenueActiveFilterPills(tab) {
   const bar = document.getElementById(barId);
   if (!bar) return;
   const pills = [];
-  Object.keys(venueActiveSidebarFilters).forEach(dim => {
-    venueActiveSidebarFilters[dim].forEach(opt => {
-      pills.push(`<span class="active-filter-pill" onclick="removeVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}','${tab}')">
-        <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${VENUE_DIM_LABELS[dim]}</span>
-        &nbsp;${opt}&nbsp;<span class="pill-x">✕</span></span>`);
+  Object.keys(venueActiveSidebarFilters).forEach(function(dim) {
+    venueActiveSidebarFilters[dim].forEach(function(opt) {
+      const safeOpt = opt.replace(/'/g, "\'");
+      pills.push('<span class="active-filter-pill" onclick="removeVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',\'' + tab + '\')">'
+        + '<span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">' + VENUE_DIM_LABELS[dim] + '</span>'
+        + '&nbsp;' + opt + '&nbsp;<span class="pill-x">✕</span>'
+        + '</span>');
     });
   });
   bar.innerHTML = pills.join('');
 }
 
 function venueTabRender(tab) {
-  if (tab==='nights') renderNights();
-  else if (tab==='trivia') renderTrivia();
-  else if (tab==='minigames') renderMiniGames();
-  else if (tab==='singalongs') renderSingAlongs();
+  // Filters are global — re-render all tabs
+  renderNights();
+  renderTrivia();
+  renderMiniGames();
+  renderSingAlongs();
 }
 
 window.switchTab = switchTab;
