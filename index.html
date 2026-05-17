@@ -2810,11 +2810,12 @@ function removeSidebarFilter(dim, opt, tab) {
 }
 
 function triggerTabRender(tab) {
-  if (tab === 'library') renderLibrary();
-  else if (tab === 'nights') renderNights();
-  else if (tab === 'trivia') renderTrivia();
-  else if (tab === 'minigames') renderMiniGames();
-  else if (tab === 'singalongs') renderSingAlongs();
+  // Filters are global — re-render all tabs so everything stays in sync
+  renderLibrary();
+  renderNights();
+  renderTrivia();
+  renderMiniGames();
+  renderSingAlongs();
 }
 
 function catMatchesSidebarFilters(cat) {
@@ -3039,6 +3040,7 @@ function renderTrivia() {
     return [...activeTriviaFilters].every(f => catTags.includes(f));
   });
   if (triviaSearchQ) items = items.filter(c => c.name.toLowerCase().includes(triviaSearchQ) || (c.theme||'').toLowerCase().includes(triviaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(triviaSearchQ)));
+  if (hasSidebarFilters()) items = items.filter(catMatchesSidebarFilters);
   empty.style.display = items.length === 0 ? 'block' : 'none';
   grid.innerHTML = items.map(c => {
     const miniSrc = c.miniGameImage || c.bannerData || null;
