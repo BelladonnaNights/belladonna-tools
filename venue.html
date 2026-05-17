@@ -303,20 +303,20 @@ async function load() {
 
     try {
       const ntSnap = await getDoc(doc(db, 'config', 'nightTags'));
-      venueNightTags = ntSnap.exists() ? (ntSnap.data().tags || []) : [];
-    } catch(e) { venueNightTags = []; }
+      venueNightTags = ntSnap.exists() ? (ntSnap.data().tags || []) : ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime'];
+    } catch(e) { venueNightTags = ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime']; }
     try {
       const mSnap = await getDoc(doc(db, 'config', 'miniTags'));
-      venueMiniTags = mSnap.exists() ? (mSnap.data().tags || []) : [];
-    } catch(e) { venueMiniTags = []; }
+      venueMiniTags = mSnap.exists() ? (mSnap.data().tags || []) : ['Music','Party','Team Play','Quick Round','Holiday'];
+    } catch(e) { venueMiniTags = ['Music','Party','Team Play','Quick Round','Holiday']; }
     try {
       const sSnap = await getDoc(doc(db, 'config', 'singaTags'));
-      venueSingaTags = sSnap.exists() ? (sSnap.data().tags || []) : [];
-    } catch(e) { venueSingaTags = []; }
+      venueSingaTags = sSnap.exists() ? (sSnap.data().tags || []) : ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin'];
+    } catch(e) { venueSingaTags = ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin']; }
     try {
       const rvSnap = await getDoc(doc(db, 'config', 'triviaTags'));
-      venueTriviaTagsList = rvSnap.exists() ? (rvSnap.data().tags || []) : [];
-    } catch(e) { venueTriviaTagsList = []; }
+      venueTriviaTagsList = rvSnap.exists() ? (rvSnap.data().tags || []) : ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports'];
+    } catch(e) { venueTriviaTagsList = ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports']; }
   } catch(e) { console.error('Load error:', e); }
 
   document.getElementById('loading').style.display = 'none';
