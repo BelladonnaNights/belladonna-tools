@@ -1655,7 +1655,7 @@ function renderMiniGames() {
     return [...activeMiniFilters].every(f => catTags.includes(f));
   });
   if (miniSearchQ) games = games.filter(c => c.name.toLowerCase().includes(miniSearchQ) || (c.theme||'').toLowerCase().includes(miniSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(miniSearchQ)));
-  if (hasSidebarFilters()) games = games.filter(catMatchesSidebarFilters);
+  if (hasSidebarFilters('minigames')) games = games.filter(c => catMatchesSidebarFilters(c, tabFilters('minigames')));
 
   empty.style.display = games.length === 0 ? 'block' : 'none';
   grid.innerHTML = games.map(c => {
@@ -1698,7 +1698,7 @@ function renderLibrary() {
     if (typeF && c.type !== typeF) return false;
     if (themeF && c.theme !== themeF) return false;
     if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
-    if (!catMatchesSidebarFilters(c)) return false;
+    if (!catMatchesSidebarFilters(c, tabFilters('library'))) return false;
     return true;
   });
 
@@ -1965,7 +1965,7 @@ function renderNights() {
     ? nights.filter(n => [...activeNightFilters].every(f => (n.filterTags || []).includes(f)))
     : nights;
   if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ) || (n.categoryIds||[]).some(c => c.toLowerCase().includes(searchQ)));
-  if (hasSidebarFilters()) filtered = filtered.filter(n => nightMatchesSidebarFilters(n));
+  if (hasSidebarFilters('nights')) filtered = filtered.filter(n => nightMatchesSidebarFilters(n, tabFilters('nights')));
   const empty = document.getElementById('nights-empty');
   empty.style.display = filtered.length === 0 ? 'block' : 'none';
   grid.innerHTML = filtered.map((n, i) => {
@@ -2662,7 +2662,17 @@ const DEFAULT_FILTER_DIMS = {
 };
 
 let filterDimOptions = { genre: [], tone: [], era: [], audience: [] };
-let activeSidebarFilters = { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() };
+// Per-tab sidebar filter state
+const allTabFilters = {
+  library:   { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() },
+  nights:    { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() },
+  trivia:    { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() },
+  minigames: { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() },
+  singalongs:{ genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() },
+};
+// Convenience getter — returns filters for the active tab
+function tabFilters(tab) { return allTabFilters[tab] || allTabFilters.library; }
+let activeSidebarFilters = allTabFilters.library; // backwards compat reference
 let currentSidebarTab = null; // which tab the sidebar is open on
 let currentFilterDimTab = 'genre';
 
@@ -2695,6 +2705,7 @@ function toggleSidebar(tab) {
     closeSidebar();
   } else {
     currentSidebarTab = tab;
+    activeSidebarFilters = tabFilters(tab); // point to this tab's filters
     sidebar.classList.remove('hidden');
     sidebar.classList.add('open');
     backdrop.classList.add('open');
@@ -2731,13 +2742,14 @@ const DIM_LABELS = { genre: 'Genre', tone: 'Tone', era: 'Era', audience: 'Audien
 function renderSidebarAccordion(tab) {
   const acc = document.getElementById('sidebar-accordion');
   if (!acc) return;
+  const f = tabFilters(tab);
   acc.innerHTML = Object.keys(DIM_LABELS).map(dim => {
     const opts = filterDimOptions[dim] || [];
-    const active = activeSidebarFilters[dim];
-    const hasActive = active.size > 0;
-    return `<div class="accordion-section">
-      <div class="accordion-header ${hasActive ? 'has-active' : ''}" onclick="toggleAccordion('${dim}')">
-        <span>${DIM_LABELS[dim]}${hasActive ? ` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>` : ''}</span>
+    const active = f[dim];
+    const hasActive = active && active.size > 0;
+    return `<div class="accordion-section">`;
+      <div class="accordion-header ${(active&&active.size>0) ? 'has-active' : ''}" onclick="toggleAccordion('${dim}')">
+        <span>${DIM_LABELS[dim]}${(active&&active.size>0) ? ` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>` : ''}</span>
         <span class="accordion-arrow" id="arrow-${dim}">▼</span>
       </div>
       <div class="accordion-body" id="acc-body-${dim}">
@@ -2753,7 +2765,7 @@ function renderSidebarAccordion(tab) {
   acc.innerHTML += getSidebarManageBtn();
   // Re-open any that had active filters
   Object.keys(DIM_LABELS).forEach(dim => {
-    if (activeSidebarFilters[dim].size > 0) {
+    if (f[dim] && f[dim].size > 0) {
       const body = document.getElementById(`acc-body-${dim}`);
       const header = body?.previousElementSibling;
       if (body) body.classList.add('open');
@@ -2774,29 +2786,35 @@ function toggleAccordion(dim) {
 
 // ── FILTER LOGIC ──
 function toggleSidebarFilter(dim, opt, checked, tab) {
-  if (checked) activeSidebarFilters[dim].add(opt);
-  else activeSidebarFilters[dim].delete(opt);
+  const f = tabFilters(tab);
+  if (checked) f[dim].add(opt);
+  else f[dim].delete(opt);
+  activeSidebarFilters = f; // keep reference in sync
   renderActiveFilterPills(tab);
   renderSidebarAccordion(tab);
   triggerTabRender(tab);
 }
 
 function clearAllSidebarFilters() {
-  Object.keys(activeSidebarFilters).forEach(dim => activeSidebarFilters[dim].clear());
-  if (currentSidebarTab) {
-    renderActiveFilterPills(currentSidebarTab);
-    renderSidebarAccordion(currentSidebarTab);
-    triggerTabRender(currentSidebarTab);
-  }
+  if (!currentSidebarTab) return;
+  const f = tabFilters(currentSidebarTab);
+  Object.keys(f).forEach(dim => f[dim].clear());
+  activeSidebarFilters = f;
+  renderActiveFilterPills(currentSidebarTab);
+  renderSidebarAccordion(currentSidebarTab);
+  triggerTabRender(currentSidebarTab);
 }
 
-function removeSidebarFilter(dim, opt) {
-  activeSidebarFilters[dim].delete(opt);
-  if (currentSidebarTab) {
-    renderActiveFilterPills(currentSidebarTab);
-    renderSidebarAccordion(currentSidebarTab);
-    triggerTabRender(currentSidebarTab);
+function removeSidebarFilter(dim, opt, tab) {
+  const f = tabFilters(tab);
+  f[dim].delete(opt);
+  // Update accordion if sidebar is open on this tab
+  if (currentSidebarTab === tab) {
+    activeSidebarFilters = f;
+    renderSidebarAccordion(tab);
   }
+  renderActiveFilterPills(tab);
+  triggerTabRender(tab);
 }
 
 function triggerTabRender(tab) {
@@ -2807,29 +2825,31 @@ function triggerTabRender(tab) {
   else if (tab === 'singalongs') renderSingAlongs();
 }
 
-function catMatchesSidebarFilters(cat) {
-  // Each active dimension must match (AND across dims, OR within dim)
+function catMatchesSidebarFilters(cat, filterState) {
+  const f = filterState || activeSidebarFilters;
   for (const dim of ['genre','tone','era','audience']) {
-    const active = activeSidebarFilters[dim];
-    if (active.size === 0) continue;
+    const active = f[dim];
+    if (!active || active.size === 0) continue;
     const catVals = (cat[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
     if (!catVals.some(v => active.has(v))) return false;
   }
   return true;
 }
 
-function nightMatchesSidebarFilters(night) {
+function nightMatchesSidebarFilters(night, filterState) {
+  const f = filterState || activeSidebarFilters;
   for (const dim of ['genre','tone','era','audience']) {
-    const active = activeSidebarFilters[dim];
-    if (active.size === 0) continue;
+    const active = f[dim];
+    if (!active || active.size === 0) continue;
     const vals = (night[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
     if (!vals.some(v => active.has(v))) return false;
   }
   return true;
 }
 
-function hasSidebarFilters() {
-  return Object.values(activeSidebarFilters).some(s => s.size > 0);
+function hasSidebarFilters(tab) {
+  const f = tab ? tabFilters(tab) : activeSidebarFilters;
+  return Object.values(f).some(s => s.size > 0);
 }
 
 // ── ACTIVE PILLS ──
@@ -2843,10 +2863,11 @@ function renderActiveFilterPills(tab) {
   }[tab];
   const bar = document.getElementById(barId);
   if (!bar) return;
+  const f = tabFilters(tab);
   const pills = [];
-  Object.keys(activeSidebarFilters).forEach(dim => {
-    activeSidebarFilters[dim].forEach(opt => {
-      pills.push(`<span class="active-filter-pill" onclick="removeSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}')">
+  Object.keys(f).forEach(dim => {
+    f[dim].forEach(opt => {
+      pills.push(`<span class="active-filter-pill" onclick="removeSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}',' + "'" + tab + "'" + ')">
         <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${DIM_LABELS[dim]}</span>
         &nbsp;${esc(opt)}&nbsp;<span class="pill-x">✕</span>
       </span>`);
