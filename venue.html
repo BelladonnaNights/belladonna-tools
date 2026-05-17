@@ -165,65 +165,47 @@
     <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
       <div id="nights-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
         <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
-        <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearNightFilters()">All</button>
-        </div>
+        <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
       </div>
-      <button id="nights-filter-visibility-btn" onclick="toggleNightFilters()"
-        style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;"
-        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+      <button id="nights-filter-visibility-btn" onclick="toggleNightFilters()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="nights-empty" class="empty-state" style="display:none;">
-      <h2>Nothing Published Yet</h2><p>Check back soon.</p>
-    </div>
+    <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
     <div class="nights-grid" id="nights-grid"></div>
   </div>
 
   <div class="view" id="view-trivia">
-    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
-        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearTriviaFilters()">All</button>
-        </div>
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div id="trivia-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+        <div id="trivia-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
       </div>
-      <button id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()"
-        style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;"
-        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+      <button id="trivia-filter-visibility-btn" onclick="toggleTriviaFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
     <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
     <div class="minigames-grid" id="trivia-grid"></div>
   </div>
 
   <div class="view" id="view-minigames">
-    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
-        <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="nav-tab active" style="border-radius:30px; padding:0.3rem 0.9rem; font-size:0.68rem;" onclick="clearMiniFilters()">All</button>
-        </div>
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div id="mini-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+        <div id="mini-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
       </div>
-      <button id="mini-filter-visibility-btn" onclick="toggleMiniFilterVisibility()"
-        style="background:none; border:1px solid var(--border); color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.35rem 0.75rem; border-radius:3px; cursor:pointer; white-space:nowrap; transition:all 0.2s;"
-        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+      <button id="mini-filter-visibility-btn" onclick="toggleMiniFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="minigames-empty" class="empty-state" style="display:none;">
-      <h2>No Mini Games Yet</h2><p>Check back soon.</p>
-    </div>
+    <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
     <div class="minigames-grid" id="minigames-grid"></div>
   </div>
+
   <div class="view" id="view-singalongs">
-    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:0;">
-        <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="filter-chip active" onclick="clearSingaFilters()">All</button>
-        </div>
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div id="singa-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+        <div id="singa-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
       </div>
-      <button id="singa-filter-visibility-btn" onclick="toggleSingaFilterVisibility()"
-        style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;"
-        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+      <button id="singa-filter-visibility-btn" onclick="toggleSingaFilterVisibility()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
     </div>
-    <div id="singalongs-empty" class="empty-state" style="display:none;">
-      <h2>No Sing-Alongs Yet</h2><p>Check back soon.</p>
-    </div>
+    <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
     <div class="minigames-grid" id="singalongs-grid"></div>
   </div>
 </main>
@@ -275,14 +257,14 @@ let venueNightTags = [];
 let activeNightFilters = new Set();
 let nightFiltersVisible = false;
 let activeMiniFilters = new Set();
-let miniFiltersVisible = true;
+let miniFiltersVisible = false;
 let venueSingaTags = [];
 let activeSingaFilters = new Set();
-let singaFiltersVisible = true;
+let singaFiltersVisible = false;
 let publishedSingAlongs = [];
 let venueTriviaTagsList = [];
 let activeTriviaFilters = new Set();
-let triviaFiltersVisible = true;
+let triviaFiltersVisible = false;
 let publishedTrivia = [];
 
 function esc(str) {
@@ -361,10 +343,8 @@ function toggleNightFilter(tag) {
 }
 function toggleNightFilters() {
   nightFiltersVisible = !nightFiltersVisible;
-  const sec = document.getElementById('nights-filter-section');
-  if (sec) sec.style.display = nightFiltersVisible ? 'flex' : 'none';
-  const btn = document.getElementById('nights-filter-visibility-btn');
-  if (btn) btn.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  document.getElementById('nights-filter-section').style.display = nightFiltersVisible ? 'flex' : 'none';
+  document.getElementById('nights-filter-visibility-btn').style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderNightFilterChips();
 }
 
@@ -421,6 +401,8 @@ function toggleMiniFilter(tag) {
 
 function toggleMiniFilterVisibility() {
   miniFiltersVisible = !miniFiltersVisible;
+  document.getElementById('mini-filter-section').style.display = miniFiltersVisible ? 'flex' : 'none';
+  document.getElementById('mini-filter-visibility-btn').style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderMiniFilterChips();
 }
 
@@ -533,18 +515,22 @@ function toggleTriviaFilter(tag) {
   if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag); else activeTriviaFilters.add(tag);
   renderTriviaFilterChips(); renderTrivia();
 }
-function toggleTriviaFilterVisibility() { triviaFiltersVisible = !triviaFiltersVisible; renderTriviaFilterChips(); }
+function toggleTriviaFilterVisibility() {
+  triviaFiltersVisible = !triviaFiltersVisible;
+  document.getElementById('trivia-filter-section').style.display = triviaFiltersVisible ? 'flex' : 'none';
+  document.getElementById('trivia-filter-visibility-btn').style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  renderTriviaFilterChips();
+}
 
 function renderTrivia() {
   renderTriviaFilterChips();
   const grid = document.getElementById('trivia-grid');
   const empty = document.getElementById('trivia-empty');
-  const filtered = activeTriviaFilters.size > 0
-    ? publishedTrivia.filter(c => {
-        const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-        return [...activeTriviaFilters].every(f => catTags.includes(f));
-      })
+  const triviaQ = (document.getElementById('trivia-search-input')?.value||'').toLowerCase().trim();
+  let filtered = activeTriviaFilters.size > 0
+    ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
     : publishedTrivia;
+  if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -600,18 +586,22 @@ function toggleSingaFilter(tag) {
   if (activeSingaFilters.has(tag)) activeSingaFilters.delete(tag); else activeSingaFilters.add(tag);
   renderSingaFilterChips(); renderSingAlongs();
 }
-function toggleSingaFilterVisibility() { singaFiltersVisible = !singaFiltersVisible; renderSingaFilterChips(); }
+function toggleSingaFilterVisibility() {
+  singaFiltersVisible = !singaFiltersVisible;
+  document.getElementById('singa-filter-section').style.display = singaFiltersVisible ? 'flex' : 'none';
+  document.getElementById('singa-filter-visibility-btn').style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  renderSingaFilterChips();
+}
 
 function renderSingAlongs() {
   renderSingaFilterChips();
   const grid = document.getElementById('singalongs-grid');
   const empty = document.getElementById('singalongs-empty');
-  const filtered = activeSingaFilters.size > 0
-    ? publishedSingAlongs.filter(c => {
-        const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-        return [...activeSingaFilters].every(f => catTags.includes(f));
-      })
+  const singaQ = (document.getElementById('singa-search-input')?.value||'').toLowerCase().trim();
+  let filtered = activeSingaFilters.size > 0
+    ? publishedSingAlongs.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeSingaFilters].every(f=>ct.includes(f)); })
     : publishedSingAlongs;
+  if (singaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(singaQ)||(c.theme||'').toLowerCase().includes(singaQ));
   if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -663,6 +653,14 @@ window.clearNightFilters = clearNightFilters;
 window.toggleNightFilter = toggleNightFilter;
 window.toggleNightFilters = toggleNightFilters;
 window.clearTriviaFilters = clearTriviaFilters;
+window.toggleTriviaFilter = toggleTriviaFilter;
+window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
+window.clearMiniFilters = clearMiniFilters;
+window.toggleMiniFilter = toggleMiniFilter;
+window.toggleMiniFilterVisibility = toggleMiniFilterVisibility;
+window.clearSingaFilters = clearSingaFilters;
+window.toggleSingaFilter = toggleSingaFilter;
+window.toggleSingaFilterVisibility = toggleSingaFilterVisibility;
 window.toggleTriviaFilter = toggleTriviaFilter;
 window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
 window.openTriviaDetail = openTriviaDetail;
