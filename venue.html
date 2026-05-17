@@ -601,8 +601,7 @@ function renderTrivia() {
     ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
     : publishedTrivia;
   if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
-  const triviaF = venueTabFilters('trivia');
-  if (Object.values(triviaF).some(s=>s.size>0)) filtered = filtered.filter(c => venueItemMatchesFilters(c, triviaF));
+  if (Object.values(venueActiveSidebarFilters).some(s=>s.size>0)) filtered = filtered.filter(venueItemMatchesFilters);
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
@@ -719,14 +718,9 @@ function openSingaDetail(i) {
 // ═══════════════════════════════════════════════
 const VENUE_DIM_LABELS = { genre:'Genre', tone:'Tone', era:'Era', audience:'Audience' };
 let venueFilterDimOptions = { genre:[], tone:[], era:[], audience:[] };
-const venueAllTabFilters = {
-  nights:    { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
-  trivia:    { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
-  minigames: { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
-  singalongs:{ genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() },
-};
-function venueTabFilters(tab) { return venueAllTabFilters[tab] || venueAllTabFilters.nights; }
-let venueActiveSidebarFilters = venueAllTabFilters.nights;
+// Global sidebar filter state for venue
+const venueActiveSidebarFilters = { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() };
+function venueTabFilters(tab) { return venueActiveSidebarFilters; }
 let venueCurrentSidebarTab = null;
 
 async function loadVenueFilterDims() {
@@ -759,7 +753,6 @@ function toggleVenueSidebar(tab) {
     closeVenueSidebar();
   } else {
     venueCurrentSidebarTab = tab;
-    venueActiveSidebarFilters = venueTabFilters(tab);
     sidebar.classList.remove('hidden'); sidebar.classList.add('open');
     backdrop.classList.add('open');
     updateVenueSidebarToggleBtns();
@@ -837,34 +830,30 @@ function venueToggleAccordion(dim) {
 }
 
 function toggleVenueSidebarFilter(dim, opt, checked, tab) {
-  const f = venueTabFilters(tab);
-  if (checked) f[dim].add(opt);
-  else f[dim].delete(opt);
-  renderVenueActiveFilterPills(tab);
-  renderVenueSidebarAccordion(tab);
+  if (checked) venueActiveSidebarFilters[dim].add(opt);
+  else venueActiveSidebarFilters[dim].delete(opt);
+  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
+  renderVenueSidebarAccordion(venueCurrentSidebarTab || tab);
   venueTabRender(tab);
 }
 
 function removeVenueSidebarFilter(dim, opt, tab) {
-  venueTabFilters(tab)[dim].delete(opt);
-  if (venueCurrentSidebarTab === tab) renderVenueSidebarAccordion(tab);
-  renderVenueActiveFilterPills(tab);
-  venueTabRender(tab);
+  venueActiveSidebarFilters[dim].delete(opt);
+  if (venueCurrentSidebarTab) renderVenueSidebarAccordion(venueCurrentSidebarTab);
+  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
+  venueTabRender(tab || venueCurrentSidebarTab || 'nights');
 }
 
 function clearAllVenueSidebarFilters() {
-  if (!venueCurrentSidebarTab) return;
-  const f = venueTabFilters(venueCurrentSidebarTab);
-  Object.keys(f).forEach(dim => f[dim].clear());
-  renderVenueActiveFilterPills(venueCurrentSidebarTab);
-  renderVenueSidebarAccordion(venueCurrentSidebarTab);
-  venueTabRender(venueCurrentSidebarTab);
+  Object.keys(venueActiveSidebarFilters).forEach(dim => venueActiveSidebarFilters[dim].clear());
+  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
+  if (venueCurrentSidebarTab) renderVenueSidebarAccordion(venueCurrentSidebarTab);
+  ['nights','trivia','minigames','singalongs'].forEach(t => venueTabRender(t));
 }
 
-function venueItemMatchesFilters(item, filterState) {
-  const f = filterState || venueActiveSidebarFilters;
+function venueItemMatchesFilters(item) {
   for (const dim of ['genre','tone','era','audience']) {
-    const active = f[dim];
+    const active = venueActiveSidebarFilters[dim];
     if (!active || active.size === 0) continue;
     const vals = (item[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
     if (!vals.some(v=>active.has(v))) return false;
@@ -877,9 +866,8 @@ function renderVenueActiveFilterPills(tab) {
   const bar = document.getElementById(barId);
   if (!bar) return;
   const pills = [];
-  const f = venueTabFilters(tab);
-  Object.keys(f).forEach(dim => {
-    f[dim].forEach(opt => {
+  Object.keys(venueActiveSidebarFilters).forEach(dim => {
+    venueActiveSidebarFilters[dim].forEach(opt => {
       pills.push(`<span class="active-filter-pill" onclick="removeVenueSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}','${tab}')">
         <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${VENUE_DIM_LABELS[dim]}</span>
         &nbsp;${opt}&nbsp;<span class="pill-x">✕</span></span>`);
