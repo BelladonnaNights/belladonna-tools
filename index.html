@@ -2743,25 +2743,31 @@ function renderSidebarAccordion(tab) {
   const acc = document.getElementById('sidebar-accordion');
   if (!acc) return;
   const f = tabFilters(tab);
-  acc.innerHTML = Object.keys(DIM_LABELS).map(dim => {
+  let html = '';
+  Object.keys(DIM_LABELS).forEach(function(dim) {
     const opts = filterDimOptions[dim] || [];
     const active = f[dim];
-    const hasActive = active && active.size > 0;
-    return `<div class="accordion-section">`;
-      <div class="accordion-header ${(active&&active.size>0) ? 'has-active' : ''}" onclick="toggleAccordion('${dim}')">
-        <span>${DIM_LABELS[dim]}${(active&&active.size>0) ? ` <span style="color:var(--gold-dim);font-size:0.7rem;">(${active.size})</span>` : ''}</span>
-        <span class="accordion-arrow" id="arrow-${dim}">▼</span>
-      </div>
-      <div class="accordion-body" id="acc-body-${dim}">
-        ${opts.map(opt => `
-          <label class="filter-option ${active.has(opt) ? 'active' : ''}">
-            <input type="checkbox" ${active.has(opt) ? 'checked' : ''} onchange="toggleSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}',this.checked,'${tab}')">
-            ${opt}
-          </label>`).join('')}
-        ${!opts.length ? `<p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;padding:0.3rem 0;">No options yet — use Manage Filters</p>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+    const isActive = active && active.size > 0;
+    const countBadge = isActive ? ' <span style="color:var(--gold-dim);font-size:0.7rem;">(' + active.size + ')</span>' : '';
+    let optionsHtml = '';
+    opts.forEach(function(opt) {
+      const checked = (active && active.has(opt)) ? 'checked' : '';
+      const activeClass = (active && active.has(opt)) ? 'active' : '';
+      const safeOpt = opt.replace(/'/g, "\'");
+      optionsHtml += '<label class="filter-option ' + activeClass + '">'
+        + '<input type="checkbox" ' + checked + ' onchange="toggleSidebarFilter(\''+dim+'\',\''+safeOpt+'\',this.checked,\''+tab+'\')">'
+        + ' ' + opt + '</label>';
+    });
+    if (!opts.length) optionsHtml = '<p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;padding:0.3rem 0;">No options yet</p>';
+    html += '<div class="accordion-section">'
+      + '<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="toggleAccordion(\'' + dim + '\')">'
+      + '<span>' + DIM_LABELS[dim] + countBadge + '</span>'
+      + '<span class="accordion-arrow" id="arrow-' + dim + '">▼</span>'
+      + '</div>'
+      + '<div class="accordion-body" id="acc-body-' + dim + '">' + optionsHtml + '</div>'
+      + '</div>';
+  });
+  acc.innerHTML = html;
   acc.innerHTML += getSidebarManageBtn();
   // Re-open any that had active filters
   Object.keys(DIM_LABELS).forEach(dim => {
