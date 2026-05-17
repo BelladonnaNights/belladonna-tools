@@ -1423,13 +1423,11 @@ function renderLibrary() {
 }
 
 function categoryCardHTML(cat, idx, highlight) {
-  const showsHtml = (cat.shows || []).map(s => {
-    const isMatch = highlight && s.toLowerCase().includes(highlight.toLowerCase());
-    return `<span class="show-tag${isMatch ? ' highlight' : ''}">${esc(s)}</span>`;
-  }).join('<span style="color:var(--text-dim)"> · </span>');
+  // Shows are searchable but not displayed on library cards
+  // They appear only on Mini Games / Sing-Alongs / Trivia tab cards
 
   const bannerHtml = cat.bannerData
-    ? `<div style="height:110px; overflow:hidden; border-radius:4px 4px 0 0; position:relative; background:var(--surface2); margin:-1.1rem -1.3rem 0.9rem;">
+    ? `<div style="height:110px; overflow:hidden; border-radius:4px 4px 0 0; position:relative; background:var(--surface2); margin:-1.4rem -1.3rem 0.9rem;">
         <img src="${cat.bannerData}" style="width:100%; height:100%; object-fit:cover; display:block;" alt="">
       </div>`
     : '';
@@ -1449,8 +1447,6 @@ function categoryCardHTML(cat, idx, highlight) {
       ${cat.theme ? `<span style="font-size:0.78rem; font-weight:700; color:var(--text); letter-spacing:0.02em;">${esc(cat.theme)}</span>` : ''}
     </div>
     ${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:0.6rem;">${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.68rem;">${esc(t)}</span>`).join('')}</div>` : ''}
-    <div class="category-shows">${showsHtml || '<span style="color:var(--text-dim); font-style:italic;">No shows listed</span>'}</div>
-    ${cat.notes ? `<p style="font-size:0.82rem; color:var(--text-dim); margin-top:0.5rem; font-style:italic;">${esc(cat.notes)}</p>` : ''}
     <div class="category-card-actions">
       <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem; border-radius:3px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
       <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
