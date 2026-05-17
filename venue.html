@@ -162,6 +162,17 @@
   </div>
 
   <div class="view active" id="view-nights">
+    <div style="display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+      <div id="nights-filter-section" style="display:none; flex:1; min-width:0; flex-direction:column; gap:8px;">
+        <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.9rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+        <div id="night-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="filter-chip active" onclick="clearNightFilters()">All</button>
+        </div>
+      </div>
+      <button id="nights-filter-visibility-btn" onclick="toggleNightFilters()"
+        style="background:none;border:1px solid var(--border);color:var(--text-muted);font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.75rem;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all 0.2s;"
+        onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-muted)'">☰ Filters</button>
+    </div>
     <div id="nights-empty" class="empty-state" style="display:none;">
       <h2>Nothing Published Yet</h2><p>Check back soon.</p>
     </div>
@@ -260,6 +271,9 @@ const db = getFirestore(app);
 let publishedNights = [];
 let publishedMiniGames = [];
 let venueMiniTags = [];
+let venueNightTags = [];
+let activeNightFilters = new Set();
+let nightFiltersVisible = false;
 let activeMiniFilters = new Set();
 let miniFiltersVisible = true;
 let venueSingaTags = [];
@@ -306,6 +320,10 @@ async function load() {
       .sort((a,b) => (a.position??9999) - (b.position??9999));
 
     try {
+      const ntSnap = await getDoc(doc(db, 'config', 'nightTags'));
+      venueNightTags = ntSnap.exists() ? (ntSnap.data().tags || []) : [];
+    } catch(e) { venueNightTags = []; }
+    try {
       const mSnap = await getDoc(doc(db, 'config', 'miniTags'));
       venueMiniTags = mSnap.exists() ? (mSnap.data().tags || []) : [];
     } catch(e) { venueMiniTags = []; }
@@ -326,15 +344,46 @@ async function load() {
   renderSingAlongs();
 }
 
+function renderNightFilterChips() {
+  const bar = document.getElementById('night-filter-chips');
+  if (!bar) return;
+  const allActive = activeNightFilters.size === 0;
+  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearNightFilters()">All</button>`
+    + venueNightTags.map(t =>
+      `<button class="filter-chip${activeNightFilters.has(t) ? ' active' : ''}" onclick="toggleNightFilter('${t.replace(/'/g,"\'")}'">${t}</button>`
+    ).join('');
+}
+
+function clearNightFilters() { activeNightFilters.clear(); renderNightFilterChips(); renderNights(); }
+function toggleNightFilter(tag) {
+  if (activeNightFilters.has(tag)) activeNightFilters.delete(tag); else activeNightFilters.add(tag);
+  renderNightFilterChips(); renderNights();
+}
+function toggleNightFilters() {
+  nightFiltersVisible = !nightFiltersVisible;
+  const sec = document.getElementById('nights-filter-section');
+  if (sec) sec.style.display = nightFiltersVisible ? 'flex' : 'none';
+  const btn = document.getElementById('nights-filter-visibility-btn');
+  if (btn) btn.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  renderNightFilterChips();
+}
+
 function renderNights() {
+  renderNightFilterChips();
   const grid = document.getElementById('nights-grid');
   const empty = document.getElementById('nights-empty');
-  if (!publishedNights.length) { empty.style.display = 'block'; return; }
+  const searchQ = (document.getElementById('nights-search-input')?.value || '').toLowerCase().trim();
+  let filtered = activeNightFilters.size > 0
+    ? publishedNights.filter(n => [...activeNightFilters].every(f => (n.filterTags||[]).includes(f)))
+    : publishedNights;
+  if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ));
+  if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
-  grid.innerHTML = publishedNights.map((n, i) => {
+  grid.innerHTML = filtered.map((n, i) => {
+    const realIdx = publishedNights.indexOf(n);
     const bgColor = n.bannerColor ? `background:${n.bannerColor};` : '';
     const bannerImg = n.bannerData ? `<img src="${n.bannerData}" alt="${esc(n.name)}">` : '';
-    return `<div class="night-card" onclick="openNightDetail(${i})">
+    return `<div class="night-card" onclick="openNightDetail(${realIdx})">
       <div class="night-banner" style="${bgColor}">${bannerImg}</div>
       <div class="night-info">
         <div class="night-name">${esc(n.name)}</div>
@@ -610,6 +659,9 @@ window.handleOverlayClick = handleOverlayClick;
 window.clearMiniFilters = clearMiniFilters;
 window.toggleMiniFilter = toggleMiniFilter;
 window.toggleMiniFilterVisibility = toggleMiniFilterVisibility;
+window.clearNightFilters = clearNightFilters;
+window.toggleNightFilter = toggleNightFilter;
+window.toggleNightFilters = toggleNightFilters;
 window.clearTriviaFilters = clearTriviaFilters;
 window.toggleTriviaFilter = toggleTriviaFilter;
 window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
