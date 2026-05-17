@@ -111,15 +111,18 @@
     border-top: 1px solid var(--border); margin-top: 3rem;
   }
   /* ── SIDEBAR ── */
-  .page-layout { display:flex; gap:0; align-items:flex-start; }
+  .page-layout { position: relative; }
   .filter-sidebar {
-    width: 240px; flex-shrink:0; background:var(--surface); border:1px solid var(--border);
-    border-radius:8px; overflow:hidden; position:sticky; top:80px;
+    width: 240px; background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:8px; overflow:hidden; position:fixed; top:80px; left:-260px;
     max-height:calc(100vh - 100px); overflow-y:auto;
-    transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    transition: left 0.3s ease, opacity 0.3s ease;
+    z-index:150; box-shadow:4px 0 24px rgba(0,0,0,0.5); opacity:0;
   }
-  .filter-sidebar.hidden { width:0; opacity:0; overflow:hidden; border:none; }
-  .filter-sidebar.open { margin-right:1.5rem; }
+  .filter-sidebar.hidden { left:-260px; opacity:0; pointer-events:none; }
+  .filter-sidebar.open { left:0; opacity:1; pointer-events:all; }
+  .sidebar-backdrop { display:none; position:fixed; inset:0; z-index:140; background:transparent; }
+  .sidebar-backdrop.open { display:block; }
   .sidebar-content { padding:1rem; min-width:220px; }
   .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
   .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
@@ -143,7 +146,7 @@
   .sidebar-toggle-btn { display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.9rem; border:1px solid var(--border); background:none; color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; border-radius:4px; transition:all 0.2s; white-space:nowrap; }
   .sidebar-toggle-btn:hover { border-color:var(--border-strong); color:var(--gold); }
   .sidebar-toggle-btn.active { border-color:var(--gold-dim); color:var(--gold); background:rgba(201,168,76,0.08); }
-  .content-area { flex:1; min-width:0; }
+  .content-area { width:100%; }
 
   .filter-chip {
     padding: 0.3rem 0.9rem;
@@ -190,6 +193,7 @@
   </nav>
 </header>
 
+<div id="venue-sidebar-backdrop" class="sidebar-backdrop" onclick="closeVenueSidebar()"></div>
 <div id="venue-filter-sidebar" class="filter-sidebar hidden">
   <div class="sidebar-content">
     <div class="sidebar-header">
@@ -384,8 +388,8 @@ async function load() {
     } catch(e) { venueTriviaTagsList = ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports']; }
   } catch(e) { console.error('Load error:', e); }
 
-  document.getElementById('loading').style.display = 'none';
   await loadVenueFilterDims();
+  document.getElementById('loading').style.display = 'none';
   renderNights();
   renderTrivia();
   renderMiniGames();
@@ -732,18 +736,28 @@ async function loadVenueFilterDims() {
 
 function toggleVenueSidebar(tab) {
   const sidebar = document.getElementById('venue-filter-sidebar');
+  const backdrop = document.getElementById('venue-sidebar-backdrop');
   if (venueCurrentSidebarTab === tab && sidebar.classList.contains('open')) {
-    sidebar.classList.remove('open'); sidebar.classList.add('hidden');
-    venueCurrentSidebarTab = null;
-    document.getElementById('main-content').prepend(sidebar);
+    closeVenueSidebar();
   } else {
     venueCurrentSidebarTab = tab;
-    const layoutId = {nights:'nights-page-layout',trivia:'trivia-page-layout',minigames:'mini-page-layout',singalongs:'singa-page-layout'}[tab];
-    const layout = document.getElementById(layoutId);
-    if (layout) layout.prepend(sidebar);
     sidebar.classList.remove('hidden'); sidebar.classList.add('open');
+    backdrop.classList.add('open');
+    updateVenueSidebarToggleBtns();
     renderVenueSidebarAccordion(tab);
   }
+}
+
+function closeVenueSidebar() {
+  const sidebar = document.getElementById('venue-filter-sidebar');
+  const backdrop = document.getElementById('venue-sidebar-backdrop');
+  sidebar.classList.remove('open'); sidebar.classList.add('hidden');
+  backdrop.classList.remove('open');
+  venueCurrentSidebarTab = null;
+  updateVenueSidebarToggleBtns();
+}
+
+function updateVenueSidebarToggleBtns() {
   ['nights','trivia','mini','singa'].forEach(id => {
     const btn = document.getElementById(`${id}-filter-toggle`);
     if (btn) btn.classList.remove('active');
@@ -858,6 +872,7 @@ function venueTabRender(tab) {
 window.switchTab = switchTab;
 window.openNightDetail = openNightDetail;
 window.toggleVenueSidebar = toggleVenueSidebar;
+window.closeVenueSidebar = closeVenueSidebar;
 window.clearAllVenueSidebarFilters = clearAllVenueSidebarFilters;
 window.venueToggleAccordion = venueToggleAccordion;
 window.toggleVenueSidebarFilter = toggleVenueSidebarFilter;
