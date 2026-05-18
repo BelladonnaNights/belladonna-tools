@@ -121,53 +121,132 @@
   .view.active { display: block; }
 
   /* ── SIDEBAR FILTER ── */
-  /* ── FILTER SIDEBAR: fixed left, content shifts via margin ── */
+  /* ── APP LAYOUT: sidebar + content as flex row ── */
+  .app-layout {
+    display: flex;
+    align-items: flex-start;
+    min-height: calc(100vh - 72px);
+  }
   .filter-sidebar {
-    position: fixed;
+    width: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width 0.25s ease;
+    position: sticky;
     top: 72px;
-    left: 0;
-    width: 224px;
     height: calc(100vh - 72px);
+    overflow-y: auto;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    overflow-y: auto;
-    z-index: 120;
-    transform: translateX(-228px);
-    transition: transform 0.28s ease;
-    padding-bottom: 3rem;
   }
   .filter-sidebar.open {
-    transform: translateX(0);
+    width: 200px;
   }
-  .sidebar-inner { padding: 0; }
-  .main-with-sidebar {
-    margin-left: 0;
-    transition: margin-left 0.28s ease;
-  }
-  .main-with-sidebar.sidebar-open {
-    margin-left: 240px;
-  }
+  .sidebar-inner { width: 200px; }
+  .main { flex: 1; min-width: 0; }
   .page-layout { display: block; }
   .content-area { width: 100%; }
   /* sidebar-content removed — using sidebar-inner */
-  .sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    padding: 1rem 1rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-    z-index: 1;
-  }
+
   .sidebar-title {
     font-family: 'Cinzel', serif;
     font-size: 0.72rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--gold);
+  }
+  /* Sidebar item styles */
+  .sb-row, .sb-all {
+    padding: 0.5rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .sb-all:hover { color: var(--gold); }
+  .sb-icon { font-size: 0.7rem; color: var(--text-dim); }
+  .sb-type-section { border-bottom: 1px solid var(--border); }
+  .sb-type-header {
+    padding: 0.5rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .sb-type-header:hover { color: var(--text); }
+  .sb-type-header.active { color: var(--gold); }
+  .sb-count { margin-left: auto; color: var(--text-dim); font-size: 0.65rem; }
+  .sb-subs { padding: 0 0 0.4rem 0; }
+  .sb-sub {
+    padding: 0.28rem 1rem 0.28rem 2rem;
+    font-family: 'Crimson Text', serif;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .sb-sub:hover { color: var(--text); }
+  .sb-sub.active { color: var(--gold); font-weight: 600; }
+  .sb-divider { height: 1px; background: var(--border); margin: 0.4rem 0; }
+  .sb-dim-section {}
+  .sb-dim-header {
+    padding: 0.5rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .sb-dim-header:hover { color: var(--text); }
+  .sb-dim-header.has-active { color: var(--gold); }
+  .sb-arrow { font-size: 0.55rem; color: var(--text-dim); }
+  .sb-check-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.22rem 1rem;
+  }
+  .sb-check-row label { font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+  .sb-label-active { color: var(--text) !important; }
+  .sb-empty { padding: 0.3rem 1rem; font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+  .sb-manage {
+    padding: 0.6rem 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .sb-manage:hover { color: var(--gold); }
+  /* Sidebar header */
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
   }
   .sidebar-clear {
     font-family: 'Cinzel', serif;
@@ -278,7 +357,7 @@
   .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
   .sidebar-toggle-btn.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
 
-  /* .content-area handled in main-with-sidebar */
+
 
   /* search inside content area */
   .tab-search {
@@ -840,7 +919,8 @@
   </nav>
 </header>
 
-<div id="filter-sidebar" class="filter-sidebar">
+<div class="app-layout">
+<aside id="filter-sidebar" class="filter-sidebar">
   <div class="sidebar-inner">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
@@ -848,9 +928,8 @@
     </div>
     <div id="sidebar-accordion"></div>
   </div>
-</div>
-
-<main class="main main-with-sidebar" id="main-content">
+</aside>
+<main class="main" id="main-content">
 
   <!-- ═══ LIBRARY VIEW ═══ -->
   <div class="view active" id="view-library">
@@ -1025,6 +1104,7 @@
   </div>
 
 </main>
+</div><!-- end app-layout -->
 
 <!-- ═══ ADD/EDIT CATEGORY MODAL ═══ -->
 <div class="modal-backdrop" id="cat-modal">
@@ -2648,7 +2728,8 @@ let filterDimOptions = { genre: [], tone: [], era: [], audience: [] };
 const activeSidebarFilters = { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() };
 function tabFilters(tab) { return activeSidebarFilters; } // always return global state
 let currentSidebarTab = null; // which tab the sidebar is open on
-let activeSidebarTypeFilter = null; // 'nights'|'trivia'|'minigames'|'singalongs'|null
+let activeSidebarTypeFilter = null;
+let activeSidebarSubFilter = null; // 'nights'|'trivia'|'minigames'|'singalongs'|null
 let currentFilterDimTab = 'genre';
 
 const FILTER_DIM_DOC = 'filterDimensions';
@@ -2716,69 +2797,93 @@ const DIM_LABELS = { genre: 'Genre', tone: 'Tone', era: 'Era', audience: 'Audien
 function renderSidebarAccordion(tab) {
   const acc = document.getElementById('sidebar-accordion');
   if (!acc) return;
-  const lines = [];
+  let html = '';
 
-  // ALL EVENTS
-  lines.push('<div style="padding:0.5rem 1rem;">');
-  lines.push('<button onclick="clearAllSidebarFilters()" style="background:none;border:none;color:var(--text-muted);font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-muted)\'">+ All Events</button>');
-  lines.push('</div>');
+  // ── ALL EVENTS ──
+  html += '<div class="sb-row sb-all" onclick="clearAllSidebarFilters()" style="cursor:pointer;">'
+        + '<span class="sb-icon">+</span><span>All Events</span></div>';
 
-  // TYPE SECTIONS
-  var typeSecs = [
-    {key:'nights',    label:'THEME NIGHTS',  cnt: nights.length},
-    {key:'trivia',    label:'TRIVIA',         cnt: categories.filter(isTrivia).length},
-    {key:'minigames', label:'MINI GAMES',     cnt: categories.filter(isMiniGame).length},
-    {key:'singalongs',label:'SING-ALONGS',    cnt: categories.filter(isSingAlong).length},
+  // ── TYPE SECTIONS with subcategories ──
+  const typeSections = [
+    { key: 'nights',     label: 'Theme Nights',
+      subs: [...new Set(nights.map(n => n.theme).filter(Boolean))].sort() },
+    { key: 'singalongs', label: 'Sing-Alongs',
+      subs: [...new Set(categories.filter(isSingAlong).map(c => c.theme).filter(Boolean))].sort() },
+    { key: 'trivia',     label: 'Trivia',
+      subs: [...new Set(categories.filter(isTrivia).map(c => c.theme).filter(Boolean))].sort() },
+    { key: 'minigames',  label: 'Mini Games',
+      subs: [...new Set(categories.filter(isMiniGame).map(c => c.theme).filter(Boolean))].sort() },
   ];
-  typeSecs.forEach(function(sec) {
-    var col = activeSidebarTypeFilter === sec.key ? 'var(--gold)' : 'var(--text-muted)';
-    lines.push('<div style="padding:0 1rem 0.1rem;">');
-    lines.push('<button onclick="toggleTypeFilter(\'' + sec.key + '\')" style="background:none;border:none;width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;cursor:pointer;font-family:Cinzel,serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:' + col + ';">');
-    lines.push('<span>' + sec.label + '</span><span style="color:var(--text-dim);font-size:0.65rem;">(' + sec.cnt + ')</span>');
-    lines.push('</button></div>');
+
+  typeSections.forEach(function(sec) {
+    const isTypeActive = activeSidebarTypeFilter === sec.key;
+    const total = sec.key === 'nights' ? nights.length
+      : sec.key === 'singalongs' ? categories.filter(isSingAlong).length
+      : sec.key === 'trivia' ? categories.filter(isTrivia).length
+      : categories.filter(isMiniGame).length;
+
+    html += '<div class="sb-type-section" id="sbtype-' + sec.key + '">';
+    html += '<div class="sb-type-header ' + (isTypeActive ? 'active' : '') + '" onclick="toggleTypeFilter(\'' + sec.key + '\')">'
+          + '<span class="sb-icon">' + (isTypeActive ? '[-]' : '&rsaquo;') + '</span>'
+          + '<span>' + sec.label.toUpperCase() + '</span>'
+          + '<span class="sb-count">(' + total + ')</span></div>';
+    if (isTypeActive && sec.subs.length) {
+      html += '<div class="sb-subs">';
+      html += '<div class="sb-sub ' + (!activeSidebarSubFilter ? 'active' : '') + '" onclick="toggleSubFilter(null)">'
+            + 'All (' + total + ')</div>';
+      sec.subs.forEach(function(sub) {
+        const cnt = sec.key === 'nights'
+          ? nights.filter(n => n.theme === sub).length
+          : categories.filter(c => (sec.key==='singalongs'?isSingAlong(c):sec.key==='trivia'?isTrivia(c):isMiniGame(c)) && c.theme===sub).length;
+        var safeSub = sub.replace(/'/g, "\\'");
+        html += '<div class="sb-sub ' + (activeSidebarSubFilter===sub?'active':'') + '" onclick="toggleSubFilter(\'' + safeSub + '\')">';
+        html += sub + ' (' + cnt + ')</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
   });
 
-  lines.push('<div style="height:1px;background:var(--border);margin:0.6rem 0;"></div>');
+  html += '<div class="sb-divider"></div>';
 
-  // DIMENSION FILTERS
+  // ── DIMENSION FILTERS ──
   Object.keys(DIM_LABELS).forEach(function(dim) {
-    var opts = filterDimOptions[dim] || [];
-    var active = activeSidebarFilters[dim];
-    var isActive = active && active.size > 0;
-    var badge = isActive ? ' (' + active.size + ')' : '';
-    var optsHtml = '';
+    const opts = filterDimOptions[dim] || [];
+    const active = activeSidebarFilters[dim];
+    const isActive = active && active.size > 0;
+    const badge = isActive ? ' (' + active.size + ')' : '';
+    let optsHtml = '';
     opts.forEach(function(opt) {
-      var chk = (active && active.has(opt)) ? 'checked' : '';
-      var col2 = (active && active.has(opt)) ? 'var(--text)' : 'var(--text-muted)';
-      var sid = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
-      var safeOpt = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      optsHtml += '<div style="display:flex;align-items:center;gap:7px;padding:0.18rem 0;">'
-        + '<input type="checkbox" ' + chk + ' id="' + sid + '" onchange="toggleSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')" style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
-        + '<label for="' + sid + '" style="font-size:0.86rem;color:' + col2 + ';cursor:pointer;line-height:1.3;">' + opt + '</label>'
+      const chk = (active && active.has(opt));
+      var safeOpt = opt.replace(/'/g, "\\'");
+      const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
+      optsHtml += '<div class="sb-check-row">'
+        + '<input type="checkbox" id="' + safeId + '" ' + (chk?'checked':'')
+        + ' onchange="toggleSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')"'
+        + ' style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
+        + '<label for="' + safeId + '" class="' + (chk?'sb-label-active':'') + '">' + opt + '</label>'
         + '</div>';
     });
-    if (!opts.length) optsHtml = '<p style="color:var(--text-dim);font-size:0.8rem;font-style:italic;padding:0.2rem 0;">None yet — use Manage</p>';
+    if (!opts.length) optsHtml = '<div class="sb-empty">None yet — use Manage</div>';
 
-    lines.push('<div class="accordion-section" style="padding:0 1rem;">');
-    lines.push('<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="toggleAccordion(\'' + dim + '\')" style="padding:0.45rem 0;">');
-    lines.push('<span>' + DIM_LABELS[dim] + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>');
-    lines.push('<span class="accordion-arrow" id="arrow-' + dim + '">&#9660;</span>');
-    lines.push('</div>');
-    lines.push('<div class="accordion-body" id="acc-body-' + dim + '" style="padding-bottom:0.5rem;">' + optsHtml + '</div>');
-    lines.push('</div>');
+    html += '<div class="sb-dim-section">';
+    html += '<div class="sb-dim-header ' + (isActive?'has-active':'') + '" onclick="toggleAccordion(\'' + dim + '\')">'
+          + '<span>' + DIM_LABELS[dim].toUpperCase() + badge + '</span>'
+          + '<span class="sb-arrow" id="arrow-' + dim + '">&#9660;</span></div>';
+    html += '<div class="accordion-body" id="acc-body-' + dim + '">' + optsHtml + '</div>';
+    html += '</div>';
   });
 
-  lines.push('<div style="padding:0.75rem 1rem 0;border-top:1px solid var(--border);margin-top:0.5rem;">');
-  lines.push('<button onclick="openManageSidebarFilters()" style="background:none;border:none;color:var(--text-dim);font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-dim)\'">&#9998; Manage</button>');
-  lines.push('</div>');
+  html += '<div class="sb-divider"></div>';
+  html += '<div class="sb-manage" onclick="openManageSidebarFilters()">&#9998; Manage</div>';
 
-  acc.innerHTML = lines.join('');
+  acc.innerHTML = html;
 
   // Re-open active accordion sections
   Object.keys(DIM_LABELS).forEach(function(dim) {
     if (activeSidebarFilters[dim] && activeSidebarFilters[dim].size > 0) {
-      var body = document.getElementById('acc-body-' + dim);
-      var header = body ? body.previousElementSibling : null;
+      const body = document.getElementById('acc-body-' + dim);
+      const header = body ? body.previousElementSibling : null;
       if (body) body.classList.add('open');
       if (header) header.classList.add('open');
     }
@@ -2827,8 +2932,14 @@ function triggerTabRender(tab) {
   renderSingAlongs();
 }
 
+function toggleSubFilter(sub) {
+  activeSidebarSubFilter = sub;
+  if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
+  triggerTabRender(currentSidebarTab || 'library');
+}
+
 function toggleTypeFilter(type) {
-  // Toggle — click same type again to clear
+  activeSidebarSubFilter = null; // reset sub when type changes
   activeSidebarTypeFilter = (activeSidebarTypeFilter === type) ? null : type;
   if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
   // Switch to that tab automatically
@@ -3611,7 +3722,7 @@ Object.assign(window, {
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
-  toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter,
+  toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter, toggleSubFilter,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
