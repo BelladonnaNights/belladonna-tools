@@ -111,11 +111,18 @@
     border-top: 1px solid var(--border); margin-top: 3rem;
   }
   /* ── SIDEBAR ── */
-  .page-layout { display:flex; align-items:flex-start; gap:0; }
-  .filter-sidebar { width:0; flex-shrink:0; overflow:hidden; transition:width 0.3s ease; position:sticky; top:72px; max-height:calc(100vh - 80px); overflow-y:auto; }
-  .filter-sidebar.open { width:210px; margin-right:1.25rem; }
-  .sidebar-inner { width:210px; padding:0 0 2rem 0; }
-  .sidebar-backdrop { display:none; }
+  .filter-sidebar {
+    position: fixed; top: 72px; left: 0; width: 210px;
+    height: calc(100vh - 72px); background: var(--surface); border-right: 1px solid var(--border);
+    overflow-y: auto; z-index: 120; transform: translateX(-214px); transition: transform 0.28s ease;
+    padding-bottom: 3rem;
+  }
+  .filter-sidebar.open { transform: translateX(0); }
+  .sidebar-inner { padding: 0; }
+  .main-with-sidebar { margin-left: 0; transition: margin-left 0.28s ease; }
+  .main-with-sidebar.sidebar-open { margin-left: 226px; }
+  .page-layout { display: block; }
+  .content-area { width: 100%; }
   .sidebar-content { padding:1rem; min-width:220px; }
   .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
   .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
@@ -211,8 +218,7 @@
         <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div class="page-layout" id="nights-page-layout">
-      <div class="content-area">
+    <div id="nights-page-layout">
         <div id="active-filters-bar-nights" class="active-filters-bar"></div>
         <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
         <div class="nights-grid" id="nights-grid"></div>
@@ -228,8 +234,7 @@
         <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div class="page-layout" id="trivia-page-layout">
-      <div class="content-area">
+    <div id="trivia-page-layout">
         <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="trivia-grid"></div>
@@ -245,8 +250,7 @@
         <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div class="page-layout" id="mini-page-layout">
-      <div class="content-area">
+    <div id="mini-page-layout">
         <div id="active-filters-bar-mini" class="active-filters-bar"></div>
         <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="minigames-grid"></div>
@@ -262,8 +266,7 @@
         <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div class="page-layout" id="singa-page-layout">
-      <div class="content-area">
+    <div id="singa-page-layout">
         <div id="active-filters-bar-singa" class="active-filters-bar"></div>
         <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="singalongs-grid"></div>
