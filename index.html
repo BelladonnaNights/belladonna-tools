@@ -121,31 +121,34 @@
   .view.active { display: block; }
 
   /* ── SIDEBAR FILTER ── */
-  /* ── PUSH SIDEBAR LAYOUT ── */
-  .page-layout {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-  }
+  /* ── FILTER SIDEBAR: fixed left, content shifts via margin ── */
   .filter-sidebar {
-    width: 0;
-    flex-shrink: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-    position: sticky;
+    position: fixed;
     top: 72px;
-    max-height: calc(100vh - 80px);
+    left: 0;
+    width: 224px;
+    height: calc(100vh - 72px);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     overflow-y: auto;
+    z-index: 120;
+    transform: translateX(-228px);
+    transition: transform 0.28s ease;
+    padding-bottom: 3rem;
   }
   .filter-sidebar.open {
-    width: 220px;
-    margin-right: 1.25rem;
+    transform: translateX(0);
   }
-  .sidebar-inner {
-    width: 220px;
-    padding: 0 0 2rem 0;
+  .sidebar-inner { padding: 0; }
+  .main-with-sidebar {
+    margin-left: 0;
+    transition: margin-left 0.28s ease;
   }
-  .sidebar-backdrop { display: none; } /* not needed — sidebar is in layout */
+  .main-with-sidebar.sidebar-open {
+    margin-left: 240px;
+  }
+  .page-layout { display: block; }
+  .content-area { width: 100%; }
   /* sidebar-content removed — using sidebar-inner */
   .sidebar-header {
     display: flex;
@@ -275,7 +278,7 @@
   .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
   .sidebar-toggle-btn.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
 
-  .content-area { flex: 1; min-width: 0; }
+  /* .content-area handled in main-with-sidebar */
 
   /* search inside content area */
   .tab-search {
@@ -837,9 +840,6 @@
   </nav>
 </header>
 
-<main class="main" id="main-content">
-
-<!-- ═══ FILTER SIDEBAR (shared, injected into each page-layout) ═══ -->
 <div id="filter-sidebar" class="filter-sidebar">
   <div class="sidebar-inner">
     <div class="sidebar-header">
@@ -849,6 +849,8 @@
     <div id="sidebar-accordion"></div>
   </div>
 </div>
+
+<main class="main main-with-sidebar" id="main-content">
 
   <!-- ═══ LIBRARY VIEW ═══ -->
   <div class="view active" id="view-library">
@@ -867,8 +869,7 @@
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add</button>
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
-    <div class="page-layout" id="lib-page-layout">
-      <div class="content-area">
+    <div id="lib-page-layout">
         <div id="active-filters-bar-library" class="active-filters-bar"></div>
         <div id="search-results" class="category-grid" style="display:none;"></div>
         <div id="filter-and-grid">
@@ -896,8 +897,7 @@
         <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage Filters</button>
         <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
       </div>
-      <div class="page-layout" id="nights-page-layout">
-        <div class="content-area">
+      <div id="nights-page-layout">
           <div id="active-filters-bar-nights" class="active-filters-bar"></div>
           <div id="nights-grid" class="nights-grid"></div>
           <div id="nights-empty" class="empty-state" style="display:none">
@@ -906,7 +906,6 @@
             <p>Create your first themed night to start building event lineups.</p>
           </div>
         </div>
-      </div>
     </div>
     <div id="night-detail-view" style="display:none"></div>
   </div>
@@ -922,8 +921,7 @@
       <button class="btn btn-sm btn-ghost" onclick="openTriviaTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
     </div>
-    <div class="page-layout" id="trivia-page-layout">
-      <div class="content-area">
+    <div id="trivia-page-layout">
         <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
         <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;">
@@ -946,8 +944,7 @@
       <button class="btn btn-sm btn-ghost" onclick="openMiniTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
     </div>
-    <div class="page-layout" id="mini-page-layout">
-      <div class="content-area">
+    <div id="mini-page-layout">
         <div id="active-filters-bar-mini" class="active-filters-bar"></div>
         <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="minigames-empty" class="empty-state" style="display:none;">
@@ -970,8 +967,7 @@
       <button class="btn btn-sm btn-ghost" onclick="openSingaTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Sing-Along</button>
     </div>
-    <div class="page-layout" id="singa-page-layout">
-      <div class="content-area">
+    <div id="singa-page-layout">
         <div id="active-filters-bar-singa" class="active-filters-bar"></div>
         <div id="singalongs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="singalongs-empty" class="empty-state" style="display:none;">
