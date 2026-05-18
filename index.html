@@ -2756,25 +2756,19 @@ async function saveFilterDims() {
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(tab) {
   const sidebar = document.getElementById('filter-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
   if (currentSidebarTab === tab && sidebar.classList.contains('open')) {
-    closeSidebar();
+    sidebar.classList.remove('open');
+    currentSidebarTab = null;
   } else {
     currentSidebarTab = tab;
-    sidebar.classList.remove('hidden');
     sidebar.classList.add('open');
-    backdrop.classList.add('open');
-    updateSidebarToggleBtns();
     renderSidebarAccordion(tab);
   }
+  updateSidebarToggleBtns();
 }
 
 function closeSidebar() {
-  const sidebar = document.getElementById('filter-sidebar');
-  const backdrop = document.getElementById('sidebar-backdrop');
-  sidebar.classList.remove('open');
-  sidebar.classList.add('hidden');
-  backdrop.classList.remove('open');
+  document.getElementById('filter-sidebar').classList.remove('open');
   currentSidebarTab = null;
   updateSidebarToggleBtns();
 }
@@ -2799,114 +2793,41 @@ function renderSidebarAccordion(tab) {
   if (!acc) return;
   let html = '';
 
-  // ── ALL EVENTS ──
-  html += '<div class="sb-row sb-all" onclick="clearAllSidebarFilters()" style="cursor:pointer;">'
-        + '<span class="sb-icon">+</span><span>All Events</span></div>';
-
-  // ── TYPE SECTIONS with subcategories ──
-  const typeSections = [
-    { key: 'nights',     label: 'Theme Nights',
-      subs: [...new Set(nights.map(n => n.theme).filter(Boolean))].sort() },
-    { key: 'singalongs', label: 'Sing-Alongs',
-      subs: [...new Set(categories.filter(isSingAlong).map(c => c.theme).filter(Boolean))].sort() },
-    { key: 'trivia',     label: 'Trivia',
-      subs: [...new Set(categories.filter(isTrivia).map(c => c.theme).filter(Boolean))].sort() },
-    { key: 'minigames',  label: 'Mini Games',
-      subs: [...new Set(categories.filter(isMiniGame).map(c => c.theme).filter(Boolean))].sort() },
-  ];
-
-  typeSections.forEach(function(sec) {
-    const isTypeActive = activeSidebarTypeFilter === sec.key;
-    const total = sec.key === 'nights' ? nights.length
-      : sec.key === 'singalongs' ? categories.filter(isSingAlong).length
-      : sec.key === 'trivia' ? categories.filter(isTrivia).length
-      : categories.filter(isMiniGame).length;
-
-    html += '<div class="sb-type-section" id="sbtype-' + sec.key + '">';
-    html += '<div class="sb-type-header ' + (isTypeActive ? 'active' : '') + '" onclick="toggleTypeFilter(\'' + sec.key + '\')">'
-          + '<span class="sb-icon">' + (isTypeActive ? '[-]' : '&rsaquo;') + '</span>'
-          + '<span>' + sec.label.toUpperCase() + '</span>'
-          + '<span class="sb-count">(' + total + ')</span></div>';
-    if (isTypeActive && sec.subs.length) {
-      html += '<div class="sb-subs">';
-      html += '<div class="sb-sub ' + (!activeSidebarSubFilter ? 'active' : '') + '" onclick="toggleSubFilter(null)">'
-            + 'All (' + total + ')</div>';
-      sec.subs.forEach(function(sub) {
-        const cnt = sec.key === 'nights'
-          ? nights.filter(n => n.theme === sub).length
-          : categories.filter(c => (sec.key==='singalongs'?isSingAlong(c):sec.key==='trivia'?isTrivia(c):isMiniGame(c)) && c.theme===sub).length;
-        var safeSub = sub.replace(/'/g, "\\'");
-        html += '<div class="sb-sub ' + (activeSidebarSubFilter===sub?'active':'') + '" onclick="toggleSubFilter(\'' + safeSub + '\')">';
-        html += sub + ' (' + cnt + ')</div>';
-      });
-      html += '</div>';
-    }
-    html += '</div>';
-  });
-
-  html += '<div class="sb-divider"></div>';
-
-  // ── DIMENSION FILTERS ──
+  // DIMENSION FILTERS ONLY (Genre, Tone, Era, Audience)
   Object.keys(DIM_LABELS).forEach(function(dim) {
     const opts = filterDimOptions[dim] || [];
     const active = activeSidebarFilters[dim];
     const isActive = active && active.size > 0;
     const badge = isActive ? ' (' + active.size + ')' : '';
+
     let optsHtml = '';
     opts.forEach(function(opt) {
       const chk = (active && active.has(opt));
-      var safeOpt = opt.replace(/'/g, "\\'");
-      const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
+      const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi, '-');
+      const safeOpt = opt.replace(/'/g, "\'");
       optsHtml += '<div class="sb-check-row">'
-        + '<input type="checkbox" id="' + safeId + '" ' + (chk?'checked':'')
+        + '<input type="checkbox" id="' + safeId + '" ' + (chk ? 'checked' : '')
         + ' onchange="toggleSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')"'
         + ' style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
-        + '<label for="' + safeId + '" class="' + (chk?'sb-label-active':'') + '">' + opt + '</label>'
+        + '<label for="' + safeId + '" style="font-size:0.85rem;color:' + (chk ? 'var(--text)' : 'var(--text-muted)') + ';cursor:pointer;line-height:1.4;">' + opt + '</label>'
         + '</div>';
     });
     if (!opts.length) optsHtml = '<div class="sb-empty">None yet — use Manage</div>';
 
-    html += '<div class="sb-dim-section">';
-    html += '<div class="sb-dim-header ' + (isActive?'has-active':'') + '" onclick="toggleAccordion(\'' + dim + '\')">'
-          + '<span>' + DIM_LABELS[dim].toUpperCase() + badge + '</span>'
-          + '<span class="sb-arrow" id="arrow-' + dim + '">&#9660;</span></div>';
-    html += '<div class="accordion-body" id="acc-body-' + dim + '">' + optsHtml + '</div>';
-    html += '</div>';
+    // All dim sections start open
+    html += '<div class="sb-dim-section">'
+      + '<div class="sb-dim-header ' + (isActive ? 'has-active' : '') + '" onclick="toggleAccordion(\'' + dim + '\')">' 
+      + '<span>' + DIM_LABELS[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
+      + '<span class="sb-arrow accordion-arrow" id="arrow-' + dim + '">&#9660;</span>'
+      + '</div>'
+      + '<div class="accordion-body open" id="acc-body-' + dim + '">' + optsHtml + '</div>'
+      + '</div>';
   });
 
   html += '<div class="sb-divider"></div>';
   html += '<div class="sb-manage" onclick="openManageSidebarFilters()">&#9998; Manage</div>';
 
   acc.innerHTML = html;
-
-  // Re-open active accordion sections
-  Object.keys(DIM_LABELS).forEach(function(dim) {
-    if (activeSidebarFilters[dim] && activeSidebarFilters[dim].size > 0) {
-      const body = document.getElementById('acc-body-' + dim);
-      const header = body ? body.previousElementSibling : null;
-      if (body) body.classList.add('open');
-      if (header) header.classList.add('open');
-    }
-  });
-}
-function toggleAccordion(dim) {
-  const body = document.getElementById(`acc-body-${dim}`);
-  const header = body?.previousElementSibling;
-  const arrow = document.getElementById(`arrow-${dim}`);
-  if (!body) return;
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (header) header.classList.toggle('open', !isOpen);
-}
-
-// ── FILTER LOGIC ──
-function toggleSidebarFilter(dim, opt, checked, tab) {
-  if (checked) activeSidebarFilters[dim].add(opt);
-  else activeSidebarFilters[dim].delete(opt);
-  // Update pills on all tabs and re-render current tab
-  ['library','nights','trivia','minigames','singalongs'].forEach(t => renderActiveFilterPills(t));
-  renderSidebarAccordion(currentSidebarTab || tab);
-  triggerTabRender(tab);
 }
 
 function clearAllSidebarFilters() {
