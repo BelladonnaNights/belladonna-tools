@@ -653,7 +653,7 @@ function openTriviaDetail(i) {
 
 function renderSingaFilterChips() {
   const bar = document.getElementById('singa-filter-chips');
-  if (!bar) return;
+  if (!bar) return; // element not in DOM — old pill system
   bar.style.display = singaFiltersVisible ? 'flex' : 'none';
   const allActive = activeSingaFilters.size === 0;
   bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearSingaFilters()">All</button>`
@@ -774,9 +774,7 @@ function toggleVenueSidebar(tab) {
 
 function closeVenueSidebar() {
   const sidebar = document.getElementById('venue-filter-sidebar');
-  const backdrop = document.getElementById('venue-sidebar-backdrop');
-  sidebar.classList.remove('open'); sidebar.classList.add('hidden');
-  backdrop.classList.remove('open');
+  sidebar.classList.remove('open');
   venueCurrentSidebarTab = null;
   updateVenueSidebarToggleBtns();
 }
@@ -796,16 +794,8 @@ function updateVenueSidebarToggleBtns() {
 function renderVenueSidebarAccordion(tab) {
   var acc = document.getElementById('venue-sidebar-accordion');
   if (!acc) return;
-  var lines = [];
-
-  // Clear all button
-  lines.push('<div style="padding:0.5rem 1rem;">');
-  lines.push('<button onclick="clearAllVenueSidebarFilters()" style="background:none;border:none;color:var(--text-muted);font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-muted)\'">+ All</button>');
-  lines.push('</div>');
-  lines.push('<div style="height:1px;background:var(--border);margin:0.25rem 0 0.5rem;"></div>');
-
-  // DIMENSION FILTERS
   var vDims = {genre:'Genre', tone:'Tone', era:'Era', audience:'Audience'};
+  var lines = [];
   Object.keys(vDims).forEach(function(dim) {
     var opts = venueFilterDimOptions[dim] || [];
     var active = venueActiveSidebarFilters[dim];
@@ -813,36 +803,25 @@ function renderVenueSidebarAccordion(tab) {
     var badge = isActive ? ' (' + active.size + ')' : '';
     var optsHtml = '';
     opts.forEach(function(opt) {
-      var chk = (active && active.has(opt)) ? 'checked' : '';
-      var col = (active && active.has(opt)) ? 'var(--text)' : 'var(--text-muted)';
+      var chk = (active && active.has(opt));
       var sid = 'vsf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
-      var safeOpt = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      optsHtml += '<div style="display:flex;align-items:center;gap:7px;padding:0.18rem 0;">'
-        + '<input type="checkbox" ' + chk + ' id="' + sid + '" onchange="toggleVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')" style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
-        + '<label for="' + sid + '" style="font-size:0.86rem;color:' + col + ';cursor:pointer;line-height:1.3;">' + opt + '</label>'
+      var safeOpt = opt.replace(/'/g, "\'");
+      optsHtml += '<div class="sb-check-row">'
+        + '<input type="checkbox" id="' + sid + '" ' + (chk?'checked':'')
+        + ' onchange="toggleVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')"'
+        + ' style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
+        + '<label for="' + sid + '" style="font-size:0.85rem;color:' + (chk?'var(--text)':'var(--text-muted)') + ';cursor:pointer;line-height:1.4;">' + opt + '</label>'
         + '</div>';
     });
-    if (!opts.length) optsHtml = '<p style="color:var(--text-dim);font-size:0.8rem;font-style:italic;padding:0.2rem 0;">No options yet</p>';
-
-    lines.push('<div class="accordion-section" style="padding:0 1rem;">');
-    lines.push('<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="venueToggleAccordion(\'' + dim + '\')" style="padding:0.45rem 0;">');
-    lines.push('<span>' + vDims[dim] + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>');
-    lines.push('<span class="accordion-arrow" id="v-arrow-' + dim + '">&#9660;</span>');
-    lines.push('</div>');
-    lines.push('<div class="accordion-body" id="v-acc-body-' + dim + '" style="padding-bottom:0.5rem;">' + optsHtml + '</div>');
-    lines.push('</div>');
+    if (!opts.length) optsHtml = '<div style="padding:0.2rem 1rem;font-size:0.8rem;color:var(--text-dim);font-style:italic;">No options yet</div>';
+    lines.push('<div class="sb-dim-section">'
+      + '<div class="sb-dim-header ' + (isActive?'has-active':'') + '" onclick="venueToggleAccordion(\'' + dim + '\')">' 
+      + '<span>' + vDims[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
+      + '<span class="sb-arrow accordion-arrow" id="v-arrow-' + dim + '">&#9660;</span></div>'
+      + '<div class="accordion-body open" id="v-acc-body-' + dim + '">' + optsHtml + '</div>'
+      + '</div>');
   });
-
   acc.innerHTML = lines.join('');
-
-  Object.keys(vDims).forEach(function(dim) {
-    if (venueActiveSidebarFilters[dim] && venueActiveSidebarFilters[dim].size > 0) {
-      var body = document.getElementById('v-acc-body-' + dim);
-      var header = body ? body.previousElementSibling : null;
-      if (body) body.classList.add('open');
-      if (header) header.classList.add('open');
-    }
-  });
 }
 
 function venueToggleAccordion(dim) {
