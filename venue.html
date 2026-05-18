@@ -111,18 +111,11 @@
     border-top: 1px solid var(--border); margin-top: 3rem;
   }
   /* ── SIDEBAR ── */
-  .page-layout { position: relative; }
-  .filter-sidebar {
-    width: 240px; background:var(--surface); border:1px solid var(--border-strong);
-    border-radius:8px; overflow:hidden; position:fixed; top:80px; left:-260px;
-    max-height:calc(100vh - 100px); overflow-y:auto;
-    transition: left 0.3s ease, opacity 0.3s ease;
-    z-index:150; box-shadow:4px 0 24px rgba(0,0,0,0.5); opacity:0;
-  }
-  .filter-sidebar.hidden { left:-260px; opacity:0; pointer-events:none; }
-  .filter-sidebar.open { left:0; opacity:1; pointer-events:all; }
-  .sidebar-backdrop { display:none; position:fixed; inset:0; z-index:140; background:transparent; }
-  .sidebar-backdrop.open { display:block; }
+  .page-layout { display:flex; align-items:flex-start; gap:0; }
+  .filter-sidebar { width:0; flex-shrink:0; overflow:hidden; transition:width 0.3s ease; position:sticky; top:72px; max-height:calc(100vh - 80px); overflow-y:auto; }
+  .filter-sidebar.open { width:210px; margin-right:1.25rem; }
+  .sidebar-inner { width:210px; padding:0 0 2rem 0; }
+  .sidebar-backdrop { display:none; }
   .sidebar-content { padding:1rem; min-width:220px; }
   .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
   .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
@@ -146,7 +139,7 @@
   .sidebar-toggle-btn { display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.9rem; border:1px solid var(--border); background:none; color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; border-radius:4px; transition:all 0.2s; white-space:nowrap; }
   .sidebar-toggle-btn:hover { border-color:var(--border-strong); color:var(--gold); }
   .sidebar-toggle-btn.active { border-color:var(--gold-dim); color:var(--gold); background:rgba(201,168,76,0.08); }
-  .content-area { width:100%; }
+  .content-area { flex:1; min-width:0; }
 
   .filter-chip {
     padding: 0.3rem 0.9rem;
@@ -782,38 +775,51 @@ function updateVenueSidebarToggleBtns() {
 }
 
 function renderVenueSidebarAccordion(tab) {
-  const acc = document.getElementById('venue-sidebar-accordion');
+  var acc = document.getElementById('venue-sidebar-accordion');
   if (!acc) return;
-  const f = venueTabFilters(tab);
-  let html = '';
-  Object.keys(VENUE_DIM_LABELS).forEach(function(dim) {
-    const opts = venueFilterDimOptions[dim] || [];
-    const active = f[dim];
-    const isActive = active && active.size > 0;
-    const badge = isActive ? ' <span style="color:var(--gold-dim);font-size:0.7rem;">(' + active.size + ')</span>' : '';
-    let optsHtml = '';
+  var lines = [];
+
+  // Clear all button
+  lines.push('<div style="padding:0.5rem 1rem;">');
+  lines.push('<button onclick="clearAllVenueSidebarFilters()" style="background:none;border:none;color:var(--text-muted);font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-muted)\'">+ All</button>');
+  lines.push('</div>');
+  lines.push('<div style="height:1px;background:var(--border);margin:0.25rem 0 0.5rem;"></div>');
+
+  // DIMENSION FILTERS
+  var vDims = {genre:'Genre', tone:'Tone', era:'Era', audience:'Audience'};
+  Object.keys(vDims).forEach(function(dim) {
+    var opts = venueFilterDimOptions[dim] || [];
+    var active = venueActiveSidebarFilters[dim];
+    var isActive = active && active.size > 0;
+    var badge = isActive ? ' (' + active.size + ')' : '';
+    var optsHtml = '';
     opts.forEach(function(opt) {
-      const chk = (active && active.has(opt)) ? 'checked' : '';
-      const cls = (active && active.has(opt)) ? 'active' : '';
-      const safeOpt = opt.replace(/'/g, "\'");
-      optsHtml += '<label class="filter-option ' + cls + '">'
-        + '<input type="checkbox" ' + chk + ' onchange="toggleVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')">'
-        + ' ' + opt + '</label>';
+      var chk = (active && active.has(opt)) ? 'checked' : '';
+      var col = (active && active.has(opt)) ? 'var(--text)' : 'var(--text-muted)';
+      var sid = 'vsf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
+      var safeOpt = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      optsHtml += '<div style="display:flex;align-items:center;gap:7px;padding:0.18rem 0;">'
+        + '<input type="checkbox" ' + chk + ' id="' + sid + '" onchange="toggleVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')" style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
+        + '<label for="' + sid + '" style="font-size:0.86rem;color:' + col + ';cursor:pointer;line-height:1.3;">' + opt + '</label>'
+        + '</div>';
     });
-    if (!opts.length) optsHtml = '<p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;padding:0.3rem 0;">No options yet</p>';
-    html += '<div class="accordion-section">'
-      + '<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="venueToggleAccordion(\'' + dim + '\')">'
-      + '<span>' + VENUE_DIM_LABELS[dim] + badge + '</span>'
-      + '<span class="accordion-arrow" id="v-arrow-' + dim + '">▼</span>'
-      + '</div>'
-      + '<div class="accordion-body" id="v-acc-body-' + dim + '">' + optsHtml + '</div>'
-      + '</div>';
+    if (!opts.length) optsHtml = '<p style="color:var(--text-dim);font-size:0.8rem;font-style:italic;padding:0.2rem 0;">No options yet</p>';
+
+    lines.push('<div class="accordion-section" style="padding:0 1rem;">');
+    lines.push('<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="venueToggleAccordion(\'' + dim + '\')" style="padding:0.45rem 0;">');
+    lines.push('<span>' + vDims[dim] + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>');
+    lines.push('<span class="accordion-arrow" id="v-arrow-' + dim + '">&#9660;</span>');
+    lines.push('</div>');
+    lines.push('<div class="accordion-body" id="v-acc-body-' + dim + '" style="padding-bottom:0.5rem;">' + optsHtml + '</div>');
+    lines.push('</div>');
   });
-  acc.innerHTML = html;
-  Object.keys(VENUE_DIM_LABELS).forEach(function(dim) {
-    if (f[dim] && f[dim].size > 0) {
-      const body = document.getElementById('v-acc-body-' + dim);
-      const header = body ? body.previousElementSibling : null;
+
+  acc.innerHTML = lines.join('');
+
+  Object.keys(vDims).forEach(function(dim) {
+    if (venueActiveSidebarFilters[dim] && venueActiveSidebarFilters[dim].size > 0) {
+      var body = document.getElementById('v-acc-body-' + dim);
+      var header = body ? body.previousElementSibling : null;
       if (body) body.classList.add('open');
       if (header) header.classList.add('open');
     }
