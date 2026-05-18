@@ -855,6 +855,10 @@ function clearAllVenueSidebarFilters() {
   ['nights','trivia','minigames','singalongs'].forEach(t => venueTabRender(t));
 }
 
+function venueHasSidebarFilters() {
+  return Object.values(venueActiveSidebarFilters).some(s => s.size > 0);
+}
+
 function venueItemMatchesFilters(item) {
   for (const dim of ['genre','tone','era','audience']) {
     const active = venueActiveSidebarFilters[dim];
