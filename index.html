@@ -121,52 +121,43 @@
   .view.active { display: block; }
 
   /* ── SIDEBAR FILTER ── */
+  /* ── PUSH SIDEBAR LAYOUT ── */
   .page-layout {
-    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
   }
   .filter-sidebar {
-    width: 260px;
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
+    width: 0;
+    flex-shrink: 0;
     overflow: hidden;
-    position: fixed;
-    top: 80px;
-    left: -280px;
-    max-height: calc(100vh - 100px);
+    transition: width 0.3s ease;
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
-    transition: left 0.3s ease, opacity 0.3s ease;
-    z-index: 150;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
-    opacity: 0;
-  }
-  .filter-sidebar.hidden {
-    left: -280px;
-    opacity: 0;
-    pointer-events: none;
   }
   .filter-sidebar.open {
-    left: 0;
-    opacity: 1;
-    pointer-events: all;
+    width: 220px;
+    margin-right: 1.25rem;
   }
-  /* Backdrop overlay when sidebar open */
-  .sidebar-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 140;
-    background: transparent;
+  .sidebar-inner {
+    width: 220px;
+    padding: 0 0 2rem 0;
   }
-  .sidebar-backdrop.open { display: block; }
-  .sidebar-content { padding: 1rem; min-width: 240px; }
+  .sidebar-backdrop { display: none; } /* not needed — sidebar is in layout */
+  /* sidebar-content removed — using sidebar-inner */
   .sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem 1rem 0.75rem;
     border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
   }
   .sidebar-title {
     font-family: 'Cinzel', serif;
@@ -284,7 +275,7 @@
   .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
   .sidebar-toggle-btn.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
 
-  .content-area { width: 100%; }
+  .content-area { flex: 1; min-width: 0; }
 
   /* search inside content area */
   .tab-search {
@@ -848,18 +839,12 @@
 
 <main class="main" id="main-content">
 
-<!-- SIDEBAR BACKDROP -->
-<div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
-
-<!-- ═══ FILTER SIDEBAR ═══ -->
-<div id="filter-sidebar" class="filter-sidebar hidden">
-  <div class="sidebar-content">
+<!-- ═══ FILTER SIDEBAR (shared, injected into each page-layout) ═══ -->
+<div id="filter-sidebar" class="filter-sidebar">
+  <div class="sidebar-inner">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button class="sidebar-clear" onclick="clearAllSidebarFilters()">Clear All</button>
-        <button onclick="closeSidebar()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
-      </div>
+      <button class="sidebar-clear" onclick="clearAllSidebarFilters()">Clear All</button>
     </div>
     <div id="sidebar-accordion"></div>
   </div>
@@ -2667,6 +2652,7 @@ let filterDimOptions = { genre: [], tone: [], era: [], audience: [] };
 const activeSidebarFilters = { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() };
 function tabFilters(tab) { return activeSidebarFilters; } // always return global state
 let currentSidebarTab = null; // which tab the sidebar is open on
+let activeSidebarTypeFilter = null; // 'nights'|'trivia'|'minigames'|'singalongs'|null
 let currentFilterDimTab = 'genre';
 
 const FILTER_DIM_DOC = 'filterDimensions';
@@ -2734,44 +2720,74 @@ const DIM_LABELS = { genre: 'Genre', tone: 'Tone', era: 'Era', audience: 'Audien
 function renderSidebarAccordion(tab) {
   const acc = document.getElementById('sidebar-accordion');
   if (!acc) return;
-  const f = tabFilters(tab);
-  let html = '';
-  Object.keys(DIM_LABELS).forEach(function(dim) {
-    const opts = filterDimOptions[dim] || [];
-    const active = f[dim];
-    const isActive = active && active.size > 0;
-    const countBadge = isActive ? ' <span style="color:var(--gold-dim);font-size:0.7rem;">(' + active.size + ')</span>' : '';
-    let optionsHtml = '';
-    opts.forEach(function(opt) {
-      const checked = (active && active.has(opt)) ? 'checked' : '';
-      const activeClass = (active && active.has(opt)) ? 'active' : '';
-      const safeOpt = opt.replace(/'/g, "\'");
-      optionsHtml += '<label class="filter-option ' + activeClass + '">'
-        + '<input type="checkbox" ' + checked + ' onchange="toggleSidebarFilter(\''+dim+'\',\''+safeOpt+'\',this.checked,\''+tab+'\')">'
-        + ' ' + opt + '</label>';
-    });
-    if (!opts.length) optionsHtml = '<p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;padding:0.3rem 0;">No options yet</p>';
-    html += '<div class="accordion-section">'
-      + '<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="toggleAccordion(\'' + dim + '\')">'
-      + '<span>' + DIM_LABELS[dim] + countBadge + '</span>'
-      + '<span class="accordion-arrow" id="arrow-' + dim + '">▼</span>'
-      + '</div>'
-      + '<div class="accordion-body" id="acc-body-' + dim + '">' + optionsHtml + '</div>'
-      + '</div>';
+  const lines = [];
+
+  // ALL EVENTS
+  lines.push('<div style="padding:0.5rem 1rem;">');
+  lines.push('<button onclick="clearAllSidebarFilters()" style="background:none;border:none;color:var(--text-muted);font-family:Cinzel,serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-muted)\'">+ All Events</button>');
+  lines.push('</div>');
+
+  // TYPE SECTIONS
+  var typeSecs = [
+    {key:'nights',    label:'THEME NIGHTS',  cnt: nights.length},
+    {key:'trivia',    label:'TRIVIA',         cnt: categories.filter(isTrivia).length},
+    {key:'minigames', label:'MINI GAMES',     cnt: categories.filter(isMiniGame).length},
+    {key:'singalongs',label:'SING-ALONGS',    cnt: categories.filter(isSingAlong).length},
+  ];
+  typeSecs.forEach(function(sec) {
+    var col = activeSidebarTypeFilter === sec.key ? 'var(--gold)' : 'var(--text-muted)';
+    lines.push('<div style="padding:0 1rem 0.1rem;">');
+    lines.push('<button onclick="toggleTypeFilter(\'' + sec.key + '\')" style="background:none;border:none;width:100%;text-align:left;display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;cursor:pointer;font-family:Cinzel,serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:' + col + ';">');
+    lines.push('<span>' + sec.label + '</span><span style="color:var(--text-dim);font-size:0.65rem;">(' + sec.cnt + ')</span>');
+    lines.push('</button></div>');
   });
-  acc.innerHTML = html;
-  acc.innerHTML += getSidebarManageBtn();
-  // Re-open any that had active filters
-  Object.keys(DIM_LABELS).forEach(dim => {
-    if (f[dim] && f[dim].size > 0) {
-      const body = document.getElementById(`acc-body-${dim}`);
-      const header = body?.previousElementSibling;
+
+  lines.push('<div style="height:1px;background:var(--border);margin:0.6rem 0;"></div>');
+
+  // DIMENSION FILTERS
+  Object.keys(DIM_LABELS).forEach(function(dim) {
+    var opts = filterDimOptions[dim] || [];
+    var active = activeSidebarFilters[dim];
+    var isActive = active && active.size > 0;
+    var badge = isActive ? ' (' + active.size + ')' : '';
+    var optsHtml = '';
+    opts.forEach(function(opt) {
+      var chk = (active && active.has(opt)) ? 'checked' : '';
+      var col2 = (active && active.has(opt)) ? 'var(--text)' : 'var(--text-muted)';
+      var sid = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
+      var safeOpt = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      optsHtml += '<div style="display:flex;align-items:center;gap:7px;padding:0.18rem 0;">'
+        + '<input type="checkbox" ' + chk + ' id="' + sid + '" onchange="toggleSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')" style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
+        + '<label for="' + sid + '" style="font-size:0.86rem;color:' + col2 + ';cursor:pointer;line-height:1.3;">' + opt + '</label>'
+        + '</div>';
+    });
+    if (!opts.length) optsHtml = '<p style="color:var(--text-dim);font-size:0.8rem;font-style:italic;padding:0.2rem 0;">None yet — use Manage</p>';
+
+    lines.push('<div class="accordion-section" style="padding:0 1rem;">');
+    lines.push('<div class="accordion-header ' + (isActive ? 'has-active' : '') + '" onclick="toggleAccordion(\'' + dim + '\')" style="padding:0.45rem 0;">');
+    lines.push('<span>' + DIM_LABELS[dim] + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>');
+    lines.push('<span class="accordion-arrow" id="arrow-' + dim + '">&#9660;</span>');
+    lines.push('</div>');
+    lines.push('<div class="accordion-body" id="acc-body-' + dim + '" style="padding-bottom:0.5rem;">' + optsHtml + '</div>');
+    lines.push('</div>');
+  });
+
+  lines.push('<div style="padding:0.75rem 1rem 0;border-top:1px solid var(--border);margin-top:0.5rem;">');
+  lines.push('<button onclick="openManageSidebarFilters()" style="background:none;border:none;color:var(--text-dim);font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;" onmouseover="this.style.color=\'var(--gold)\'" onmouseout="this.style.color=\'var(--text-dim)\'">&#9998; Manage</button>');
+  lines.push('</div>');
+
+  acc.innerHTML = lines.join('');
+
+  // Re-open active accordion sections
+  Object.keys(DIM_LABELS).forEach(function(dim) {
+    if (activeSidebarFilters[dim] && activeSidebarFilters[dim].size > 0) {
+      var body = document.getElementById('acc-body-' + dim);
+      var header = body ? body.previousElementSibling : null;
       if (body) body.classList.add('open');
       if (header) header.classList.add('open');
     }
   });
 }
-
 function toggleAccordion(dim) {
   const body = document.getElementById(`acc-body-${dim}`);
   const header = body?.previousElementSibling;
@@ -2813,6 +2829,15 @@ function triggerTabRender(tab) {
   renderTrivia();
   renderMiniGames();
   renderSingAlongs();
+}
+
+function toggleTypeFilter(type) {
+  // Toggle — click same type again to clear
+  activeSidebarTypeFilter = (activeSidebarTypeFilter === type) ? null : type;
+  if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
+  // Switch to that tab automatically
+  if (activeSidebarTypeFilter) switchView(activeSidebarTypeFilter);
+  triggerTabRender(activeSidebarTypeFilter || 'library');
 }
 
 function catMatchesSidebarFilters(cat) {
@@ -2956,13 +2981,7 @@ function getCatDimValues() {
   return out;
 }
 
-// ── ADD "Manage Filters" BUTTON TO SIDEBAR FOOTER ──
-// Rendered as part of accordion — add at bottom
-function getSidebarManageBtn() {
-  return `<div style="padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.5rem;">
-    <button onclick="openManageSidebarFilters()" class="btn btn-sm btn-ghost" style="width:100%;">✎ Manage</button>
-  </div>`;
-}
+// getSidebarManageBtn removed — inlined in renderSidebarAccordion
 
 // ═══════════════════════════════════════════════
 // THEME EDITOR
@@ -3596,7 +3615,7 @@ Object.assign(window, {
   onMiniTagDragStart, onMiniTagDrop,
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
-  toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter,
+  toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
