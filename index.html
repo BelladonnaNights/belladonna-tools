@@ -2802,11 +2802,8 @@ function clearAllSidebarFilters() {
 function removeSidebarFilter(dim, opt, tab) {
   activeSidebarFilters[dim].delete(opt);
   if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
-  // Re-render all tabs that show pills
   ['library','nights','trivia','minigames','singalongs'].forEach(t => renderActiveFilterPills(t));
-  triggerTabRender(tab || currentSidebarTab || 'library');
-  // Also re-render current view
-  if (currentSidebarTab) triggerTabRender(currentSidebarTab);
+  triggerTabRender(tab);
 }
 
 function triggerTabRender(tab) {
@@ -2853,16 +2850,17 @@ function renderActiveFilterPills(tab) {
   }[tab];
   const bar = document.getElementById(barId);
   if (!bar) return;
-  const pills = [];
-  Object.keys(activeSidebarFilters).forEach(dim => {
-    activeSidebarFilters[dim].forEach(opt => {
-      pills.push(`<span class="active-filter-pill" onclick="removeSidebarFilter('${dim}','${opt.replace(/'/g,"\'")}',' + "'" + tab + "'" + ')">
-        <span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">${DIM_LABELS[dim]}</span>
-        &nbsp;${esc(opt)}&nbsp;<span class="pill-x">✕</span>
-      </span>`);
+  let html = '';
+  Object.keys(activeSidebarFilters).forEach(function(dim) {
+    activeSidebarFilters[dim].forEach(function(opt) {
+      html += '<span class="active-filter-pill" onclick="removeSidebarFilter(\'' + dim + '\',\'' + opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\',\'' + tab + '\')">'
+            + '<span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;margin-right:4px;">' + DIM_LABELS[dim] + '</span>'
+            + esc(opt)
+            + ' <span class="pill-x" style="margin-left:4px;">✕</span>'
+            + '</span>';
     });
   });
-  bar.innerHTML = pills.join('');
+  bar.innerHTML = html;
 }
 
 // ── MANAGE MODAL ──
