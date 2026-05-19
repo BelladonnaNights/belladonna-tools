@@ -2915,6 +2915,25 @@ function renderActiveFilterPills(tab) {
   bar.innerHTML = html;
 }
 
+function toggleSidebarFilter(dim, opt, checked, tab) {
+  if (checked) activeSidebarFilters[dim].add(opt);
+  else activeSidebarFilters[dim].delete(opt);
+  ['library','nights','trivia','minigames','singalongs'].forEach(t => renderActiveFilterPills(t));
+  if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
+  triggerTabRender(tab);
+}
+
+function toggleAccordion(dim) {
+  const body = document.getElementById('acc-body-' + dim);
+  const header = body ? body.previousElementSibling : null;
+  const arrow = document.getElementById('arrow-' + dim);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (header) header.classList.toggle('open', !isOpen);
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
 // ── MANAGE MODAL ──
 function openManageSidebarFilters() {
   currentFilterDimTab = 'genre';
