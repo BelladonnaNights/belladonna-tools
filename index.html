@@ -116,19 +116,18 @@
   }
 
   /* LAYOUT */
-  .main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+  .main { flex: 1; min-width: 0; padding: 2rem; }
   .view { display: none; }
   .view.active { display: block; }
 
-  /* ── SIDEBAR FILTER ── */
-  /* ── APP LAYOUT: sidebar + content as flex row ── */
+  /* ── APP LAYOUT ── */
   .app-layout {
     display: flex;
     align-items: flex-start;
   }
   .filter-sidebar {
-    width: 0;
     flex-shrink: 0;
+    width: 0;
     overflow: hidden;
     transition: width 0.25s ease;
     position: sticky;
@@ -138,13 +137,8 @@
     background: var(--surface);
     border-right: 1px solid var(--border);
   }
-  .filter-sidebar.open {
-    width: 200px;
-  }
-  .sidebar-inner { width: 200px; }
-  .main { flex: 1; min-width: 0; margin: 0; max-width: none; }
-  .page-layout { display: block; }
-  .content-area { width: 100%; }
+  .filter-sidebar.open { width: 280px; }
+  .sidebar-inner { width: 280px; }
   /* sidebar-content removed — using sidebar-inner */
 
   .sidebar-title {
@@ -2815,7 +2809,7 @@ function renderSidebarAccordion(tab) {
       + '<span>' + DIM_LABELS[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
       + '<span class="sb-arrow accordion-arrow" id="arrow-' + dim + '">&#9660;</span>'
       + '</div>'
-      + '<div class="accordion-body open" id="acc-body-' + dim + '">' + optsHtml + '</div>'
+      + '<div class="accordion-body" id="acc-body-' + dim + '">' + optsHtml + '</div>'
       + '</div>';
   });
 
