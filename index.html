@@ -125,7 +125,6 @@
   .app-layout {
     display: flex;
     align-items: flex-start;
-    min-height: calc(100vh - 72px);
   }
   .filter-sidebar {
     width: 0;
@@ -134,7 +133,7 @@
     transition: width 0.25s ease;
     position: sticky;
     top: 72px;
-    height: calc(100vh - 72px);
+    max-height: calc(100vh - 72px);
     overflow-y: auto;
     background: var(--surface);
     border-right: 1px solid var(--border);
@@ -143,7 +142,7 @@
     width: 200px;
   }
   .sidebar-inner { width: 200px; }
-  .main { flex: 1; min-width: 0; }
+  .main { flex: 1; min-width: 0; margin: 0; max-width: none; }
   .page-layout { display: block; }
   .content-area { width: 100%; }
   /* sidebar-content removed — using sidebar-inner */
@@ -1009,7 +1008,6 @@
           <p>Add categories with Type "Trivia" to see them here.</p>
         </div>
       </div>
-    </div>
   </div>
 
   <!-- ═══ MINI GAMES VIEW ═══ -->
@@ -1032,7 +1030,6 @@
           <p>Add categories with Type "Mini Game" to see them here.</p>
         </div>
       </div>
-    </div>
   </div>
 
   <!-- ═══ SING-ALONGS VIEW ═══ -->
@@ -1055,7 +1052,6 @@
           <p>Add categories with Type "Sing-Along" to see them here.</p>
         </div>
       </div>
-    </div>
   </div>
 
   <!-- ═══ IMPORT VIEW ═══ -->
