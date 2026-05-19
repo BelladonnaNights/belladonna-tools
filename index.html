@@ -2877,16 +2877,15 @@ function nightMatchesSidebarFilters(night) {
   for (const dim of ['genre','tone','era','audience']) {
     const active = activeSidebarFilters[dim];
     if (!active || active.size === 0) continue;
-    // Check night's own dim fields first
+    // Check night's own dim fields
     const nightVals = (night[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
     if (nightVals.some(v => active.has(v))) continue;
-    // Fall back: check if any of the night's categories match
+    // Fall back: check categories assigned to this night
     const catIds = night.categoryIds || [];
-    const catMatch = categories.some(c => {
-      if (!catIds.includes(c._id) && !catIds.includes(c.name)) return false;
-      const catVals = (c[dim] || '').split(',').map(v => v.trim()).filter(Boolean);
-      return catVals.some(v => active.has(v));
-    });
+    const catMatch = catIds.length > 0 && categories.some(c =>
+      (catIds.includes(c._id) || catIds.includes(c.name)) &&
+      (c[dim] || '').split(',').map(v => v.trim()).filter(Boolean).some(v => active.has(v))
+    );
     if (!catMatch) return false;
   }
   return true;
