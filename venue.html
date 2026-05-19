@@ -425,8 +425,8 @@ function toggleNightFilter(tag) {
 }
 function toggleNightFilters() {
   nightFiltersVisible = !nightFiltersVisible;
-  document.getElementById('nights-filter-section').style.display = nightFiltersVisible ? 'flex' : 'none';
-  document.getElementById('nights-filter-visibility-btn').style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  const ns = document.getElementById('nights-filter-section'); if (ns) ns.style.display = nightFiltersVisible ? 'flex' : 'none';
+  const nb = document.getElementById('nights-filter-visibility-btn'); if (nb) nb.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderNightFilterChips();
 }
 
@@ -483,8 +483,8 @@ function toggleMiniFilter(tag) {
 
 function toggleMiniFilterVisibility() {
   miniFiltersVisible = !miniFiltersVisible;
-  document.getElementById('mini-filter-section').style.display = miniFiltersVisible ? 'flex' : 'none';
-  document.getElementById('mini-filter-visibility-btn').style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  const ms = document.getElementById('mini-filter-section'); if (ms) ms.style.display = miniFiltersVisible ? 'flex' : 'none';
+  const mb = document.getElementById('mini-filter-visibility-btn'); if (mb) mb.style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderMiniFilterChips();
 }
 
@@ -599,8 +599,8 @@ function toggleTriviaFilter(tag) {
 }
 function toggleTriviaFilterVisibility() {
   triviaFiltersVisible = !triviaFiltersVisible;
-  document.getElementById('trivia-filter-section').style.display = triviaFiltersVisible ? 'flex' : 'none';
-  document.getElementById('trivia-filter-visibility-btn').style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  const ts = document.getElementById('trivia-filter-section'); if (ts) ts.style.display = triviaFiltersVisible ? 'flex' : 'none';
+  const tb = document.getElementById('trivia-filter-visibility-btn'); if (tb) tb.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderTriviaFilterChips();
 }
 
@@ -671,8 +671,8 @@ function toggleSingaFilter(tag) {
 }
 function toggleSingaFilterVisibility() {
   singaFiltersVisible = !singaFiltersVisible;
-  document.getElementById('singa-filter-section').style.display = singaFiltersVisible ? 'flex' : 'none';
-  document.getElementById('singa-filter-visibility-btn').style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
+  const ss = document.getElementById('singa-filter-section'); if (ss) ss.style.display = singaFiltersVisible ? 'flex' : 'none';
+  const sb = document.getElementById('singa-filter-visibility-btn'); if (sb) sb.style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
   renderSingaFilterChips();
 }
 
