@@ -111,15 +111,15 @@
     border-top: 1px solid var(--border); margin-top: 3rem;
   }
   /* ── SIDEBAR ── */
-  .app-layout { display:flex; align-items:flex-start; min-height:calc(100vh - 72px); }
+  .app-layout { display:flex; align-items:flex-start; }
   .filter-sidebar {
     width: 0; flex-shrink:0; overflow:hidden; transition:width 0.25s ease;
-    position:sticky; top:72px; height:calc(100vh - 72px); overflow-y:auto;
+    position:sticky; top:72px; max-height:calc(100vh - 72px); overflow-y:auto;
     background:var(--surface); border-right:1px solid var(--border);
   }
   .filter-sidebar.open { width:200px; }
   .sidebar-inner { width:200px; }
-  .main { flex:1; min-width:0; }
+  .main { flex:1; min-width:0; margin:0; max-width:none; }
   .page-layout { display:block; }
   .content-area { width:100%; }
   .sidebar-content { padding:1rem; min-width:220px; }
