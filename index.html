@@ -563,7 +563,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     column-gap: 1.25rem;
-    row-gap: 1.5rem;
+    row-gap: 2rem;
   }
   .category-card {
     background: var(--surface);
@@ -942,19 +942,14 @@
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add</button>
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
-    <div id="lib-page-layout">
-        <div id="active-filters-bar-library" class="active-filters-bar"></div>
-        <div id="search-results" class="category-grid" style="display:none;"></div>
-        <div id="filter-and-grid">
-          <div id="lib-results-meta" class="results-meta"></div>
-          <div id="category-grid" class="category-grid"></div>
-          <div id="lib-empty" class="empty-state" style="display:none">
-            <div class="empty-state-icon">📚</div>
-            <h3>No Categories Yet</h3>
-            <p>Import a CSV or add categories manually to begin.</p>
-          </div>
-        </div>
-      </div>
+    <div id="active-filters-bar-library" class="active-filters-bar"></div>
+    <div id="search-results" class="category-grid" style="display:none;"></div>
+    <div id="lib-results-meta" class="results-meta"></div>
+    <div id="category-grid" class="category-grid"></div>
+    <div id="lib-empty" class="empty-state" style="display:none">
+      <div class="empty-state-icon">📚</div>
+      <h3>No Categories Yet</h3>
+      <p>Import a CSV or add categories manually to begin.</p>
     </div>
   </div>
 
@@ -2912,8 +2907,23 @@ function renderActiveFilterPills(tab) {
 function toggleSidebarFilter(dim, opt, checked, tab) {
   if (checked) activeSidebarFilters[dim].add(opt);
   else activeSidebarFilters[dim].delete(opt);
+  // Update checkbox + label in place — do NOT rebuild accordion (it would collapse open sections)
+  const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi, '-');
+  const cb = document.getElementById(safeId);
+  if (cb) {
+    cb.checked = checked;
+    const lbl = cb.nextElementSibling;
+    if (lbl) lbl.style.color = checked ? 'var(--text)' : 'var(--text-muted)';
+  }
+  // Update badge on header
+  const active = activeSidebarFilters[dim];
+  const header = document.querySelector('#acc-body-' + dim)?.previousElementSibling;
+  if (header) {
+    const badge = header.querySelector('span span');
+    if (badge) badge.textContent = active.size > 0 ? ' (' + active.size + ')' : '';
+    header.classList.toggle('has-active', active.size > 0);
+  }
   ['library','nights','trivia','minigames','singalongs'].forEach(t => renderActiveFilterPills(t));
-  if (currentSidebarTab) renderSidebarAccordion(currentSidebarTab);
   triggerTabRender(tab);
 }
 
