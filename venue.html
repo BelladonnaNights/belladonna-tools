@@ -279,6 +279,7 @@
     <div class="minigames-grid" id="singalongs-grid"></div>
   </div>
 </main>
+</div><!-- end app-layout -->
 
 <div class="detail-overlay" id="detail-overlay" onclick="handleOverlayClick(event)">
   <div class="detail-panel">
@@ -747,19 +748,22 @@ async function loadVenueFilterDims() {
   }
 }
 
-function toggleVenueSidebar(tab) {
+async function toggleVenueSidebar(tab) {
   const sidebar = document.getElementById('venue-filter-sidebar');
-  const backdrop = document.getElementById('venue-sidebar-backdrop');
   if (venueCurrentSidebarTab === tab && sidebar.classList.contains('open')) {
-    closeVenueSidebar();
+    sidebar.classList.remove('open');
+    venueCurrentSidebarTab = null;
+    updateVenueSidebarToggleBtns();
   } else {
     venueCurrentSidebarTab = tab;
-    sidebar.classList.remove('hidden'); sidebar.classList.add('open');
-    backdrop.classList.add('open');
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('open');
     updateVenueSidebarToggleBtns();
+    if (!venueFilterDimOptions.genre.length) await loadVenueFilterDims();
     renderVenueSidebarAccordion(tab);
   }
 }
+
 
 function closeVenueSidebar() {
   const sidebar = document.getElementById('venue-filter-sidebar');
