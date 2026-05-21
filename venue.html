@@ -51,7 +51,7 @@
   }
   .nav-tab:hover { color: var(--gold-light); border-color: var(--border); }
   .nav-tab.active { color: var(--gold); border-color: var(--border-strong); background: rgba(201,168,76,0.07); }
-  .main { flex: 1; min-width: 0; padding: 2.5rem 2rem; }
+  .main { flex: 1; min-width: 0; padding: 2rem; }
   .view { display: none; }
   .view.active { display: block; }
   #loading {
@@ -211,17 +211,16 @@
   </nav>
 </header>
 
-<div id="venue-sidebar-backdrop" class="sidebar-backdrop" onclick="closeVenueSidebar()"></div>
-<div id="venue-filter-sidebar" class="filter-sidebar hidden">
-  <div class="sidebar-content">
+<div class="app-layout">
+<aside id="venue-filter-sidebar" class="filter-sidebar">
+  <div class="sidebar-inner">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
       <button class="sidebar-clear" onclick="clearAllVenueSidebarFilters()">Clear All</button>
     </div>
     <div id="venue-sidebar-accordion"></div>
   </div>
-</div>
-
+</aside>
 <main class="main" id="main-content">
   <div id="loading">
     <div class="spinner"></div>
@@ -236,7 +235,6 @@
         <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div id="nights-page-layout">
         <div id="active-filters-bar-nights" class="active-filters-bar"></div>
         <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
         <div class="nights-grid" id="nights-grid"></div>
@@ -252,7 +250,6 @@
         <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div id="trivia-page-layout">
         <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="trivia-grid"></div>
@@ -268,7 +265,6 @@
         <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div id="mini-page-layout">
         <div id="active-filters-bar-mini" class="active-filters-bar"></div>
         <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="minigames-grid"></div>
@@ -284,7 +280,6 @@
         <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
     </div>
-    <div id="singa-page-layout">
         <div id="active-filters-bar-singa" class="active-filters-bar"></div>
         <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
         <div class="minigames-grid" id="singalongs-grid"></div>
@@ -820,7 +815,7 @@ function renderVenueSidebarAccordion(tab) {
       + '<div class="sb-dim-header ' + (isActive?'has-active':'') + '" onclick="venueToggleAccordion(\'' + dim + '\')">' 
       + '<span>' + vDims[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
       + '<span class="sb-arrow accordion-arrow" id="v-arrow-' + dim + '">&#9660;</span></div>'
-      + '<div class="accordion-body open" id="v-acc-body-' + dim + '">' + optsHtml + '</div>'
+      + '<div class="accordion-body" id="v-acc-body-' + dim + '">' + optsHtml + '</div>'
       + '</div>');
   });
   acc.innerHTML = lines.join('');
