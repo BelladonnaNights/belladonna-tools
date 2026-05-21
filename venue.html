@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Belladonna Audio Alchemies — The Full Lineup</title>
+<title>Belladonna Audio Alchemies — Venue Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -30,17 +30,15 @@
   .logo-img { width: 44px; height: 44px; object-fit: contain; }
   .wordmark {
     font-family: 'Cinzel', serif;
-    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     display: flex;
-    align-items: baseline;
-    gap: 0.45em;
-    line-height: 1.1;
+    flex-direction: column;
+    line-height: 1.2;
   }
-  .wordmark-one { color: #FFFFFF; }
-  .wordmark-two { color: var(--gold); }
+  .wordmark-one { color: #FFFFFF; font-size: 1.25rem; }
+  .wordmark-two { color: var(--gold); font-size: 0.9rem; }
   .header-title { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Cinzel', serif; margin-top: 3px; }
   .header-sub { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
   .nav-tabs { display: flex; gap: 4px; }
@@ -191,11 +189,62 @@
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
-  @media (max-width: 600px) {
-    .site-header { flex-direction: column; align-items: flex-start; padding: 1rem; gap: 0.75rem; }
-    .main { padding: 1.5rem 1rem; }
-    .nights-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-    .minigames-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+  /* ═══════════════════════════════════════════════
+     MOBILE STYLES — max-width: 768px
+     Swap this entire block to redesign mobile independently
+     ═══════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+
+    /* ── Header ── */
+    .site-header {
+      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+    }
+    .header-left { gap: 0.6rem; }
+    .wordmark-one { font-size: 1.1rem; }
+    .wordmark-two { font-size: 0.78rem; }
+    .header-title { font-size: 0.68rem; }
+    .nav-tabs { gap: 2px; }
+    .nav-tab { padding: 0.4rem 0.65rem; font-size: 0.62rem; letter-spacing: 0.08em; }
+
+    /* ── Layout — no sidebar push on mobile ── */
+    .app-layout { display: block; }
+    .main { padding: 1rem; }
+
+    /* ── Filter sidebar — overlay instead of push ── */
+    .filter-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 100vh;
+      max-height: 100vh;
+      z-index: 500;
+      overflow-y: auto;
+      border-right: none;
+      border-radius: 0 12px 12px 0;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.6);
+      transition: width 0.25s ease;
+    }
+    .filter-sidebar.open {
+      width: 67vw;
+      max-width: 320px;
+    }
+
+    /* ── Grids — two columns ── */
+    .nights-grid,
+    .minigames-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    /* ── Cards ── */
+    .night-card { font-size: 0.85rem; }
+    .night-name { font-size: 0.82rem; }
+
+    /* ── Search/toolbar row ── */
+    .sidebar-toggle-btn { padding: 0.45rem 0.75rem; font-size: 0.65rem; }
+
   }
 </style>
 </head>
@@ -209,7 +258,6 @@
         <span class="wordmark-one">Belladonna</span><span class="wordmark-two">Venue Menu</span>
       </div>
       <div class="header-title">Belladonna Audio Alchemies</div>
-      <div class="header-sub">The Full Lineup</div>
     </div>
   </div>
   <nav class="nav-tabs">
