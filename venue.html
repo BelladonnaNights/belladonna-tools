@@ -818,19 +818,35 @@ function renderVenueSidebarAccordion(tab) {
 }
 
 function venueToggleAccordion(dim) {
-  const body = document.getElementById(`v-acc-body-${dim}`);
-  const header = body?.previousElementSibling;
+  const body = document.getElementById('v-acc-body-' + dim);
+  const header = body ? body.previousElementSibling : null;
+  const arrow = document.getElementById('v-arrow-' + dim);
   if (!body) return;
   const isOpen = body.classList.contains('open');
   body.classList.toggle('open', !isOpen);
   if (header) header.classList.toggle('open', !isOpen);
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 function toggleVenueSidebarFilter(dim, opt, checked, tab) {
   if (checked) venueActiveSidebarFilters[dim].add(opt);
   else venueActiveSidebarFilters[dim].delete(opt);
+  // Update in place - don't rebuild accordion
+  const safeId = 'vsf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi, '-');
+  const cb = document.getElementById(safeId);
+  if (cb) {
+    cb.checked = checked;
+    const lbl = cb.nextElementSibling;
+    if (lbl) lbl.style.color = checked ? 'var(--text)' : 'var(--text-muted)';
+  }
+  const active = venueActiveSidebarFilters[dim];
+  const header = document.querySelector('#v-acc-body-' + dim + ' ~ *') || document.getElementById('v-acc-body-' + dim)?.previousElementSibling;
+  if (header) {
+    const badge = header.querySelector('span span');
+    if (badge) badge.textContent = active.size > 0 ? ' (' + active.size + ')' : '';
+    header.classList.toggle('has-active', active.size > 0);
+  }
   ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
-  renderVenueSidebarAccordion(venueCurrentSidebarTab || tab);
   venueTabRender(tab);
 }
 
