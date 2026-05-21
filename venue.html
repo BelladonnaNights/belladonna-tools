@@ -438,6 +438,7 @@ function renderNights() {
     ? publishedNights.filter(n => [...activeNightFilters].every(f => (n.filterTags||[]).includes(f)))
     : publishedNights;
   if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ));
+  if (venueHasSidebarFilters()) filtered = filtered.filter(n => venueItemMatchesFilters(n));
   if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML=''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((n, i) => {
@@ -491,12 +492,13 @@ function renderMiniGames() {
   renderMiniFilterChips();
   const grid = document.getElementById('minigames-grid');
   const empty = document.getElementById('minigames-empty');
-  const filtered = activeMiniFilters.size > 0
+  let filtered = activeMiniFilters.size > 0
     ? publishedMiniGames.filter(c => {
         const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
         return [...activeMiniFilters].every(f => catTags.includes(f));
       })
     : publishedMiniGames;
+  if (venueHasSidebarFilters()) filtered = filtered.filter(c => venueItemMatchesFilters(c));
   if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map((c, i) => {
