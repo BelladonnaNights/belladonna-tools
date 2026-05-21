@@ -562,7 +562,8 @@
   .category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1.25rem;
+    column-gap: 1.25rem;
+    row-gap: 1.5rem;
   }
   .category-card {
     background: var(--surface);
@@ -969,15 +970,13 @@
         <button class="btn btn-sm btn-ghost" onclick="openNightTagsModal()">Manage Filters</button>
         <button class="btn btn-sm" onclick="openNewNightModal()">+ New Themed Night</button>
       </div>
-      <div id="nights-page-layout">
-          <div id="active-filters-bar-nights" class="active-filters-bar"></div>
-          <div id="nights-grid" class="nights-grid"></div>
-          <div id="nights-empty" class="empty-state" style="display:none">
-            <div class="empty-state-icon">🌙</div>
-            <h3>No Themed Nights Yet</h3>
-            <p>Create your first themed night to start building event lineups.</p>
-          </div>
-        </div>
+      <div id="active-filters-bar-nights" class="active-filters-bar"></div>
+      <div id="nights-grid" class="nights-grid"></div>
+      <div id="nights-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon">🌙</div>
+        <h3>No Themed Nights Yet</h3>
+        <p>Create your first themed night to start building event lineups.</p>
+      </div>
     </div>
     <div id="night-detail-view" style="display:none"></div>
   </div>
@@ -993,7 +992,6 @@
       <button class="btn btn-sm btn-ghost" onclick="openTriviaTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Trivia</button>
     </div>
-    <div id="trivia-page-layout">
         <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
         <div id="trivia-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;">
@@ -1015,7 +1013,6 @@
       <button class="btn btn-sm btn-ghost" onclick="openMiniTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Mini Game</button>
     </div>
-    <div id="mini-page-layout">
         <div id="active-filters-bar-mini" class="active-filters-bar"></div>
         <div id="minigames-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="minigames-empty" class="empty-state" style="display:none;">
@@ -1037,7 +1034,6 @@
       <button class="btn btn-sm btn-ghost" onclick="openSingaTagsModal()">Manage Filters</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Sing-Along</button>
     </div>
-    <div id="singa-page-layout">
         <div id="active-filters-bar-singa" class="active-filters-bar"></div>
         <div id="singalongs-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
         <div id="singalongs-empty" class="empty-state" style="display:none;">
