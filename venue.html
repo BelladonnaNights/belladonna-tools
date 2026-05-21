@@ -114,13 +114,22 @@
   .app-layout { display:flex; align-items:flex-start; }
   .filter-sidebar {
     flex-shrink:0; width:0; overflow:hidden; transition:width 0.25s ease;
-    position:sticky; top:72px; max-height:calc(100vh - 72px); overflow-y:auto;
+    position:sticky; top:90px; max-height:calc(100vh - 90px); overflow-y:auto;
     background:var(--surface); border-right:1px solid var(--border);
   }
   .filter-sidebar.open { width:280px; }
   .sidebar-inner { width:280px; }
-  .sidebar-content { padding:1rem; min-width:220px; }
-  .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border); }
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
   .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
   .sidebar-clear { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); background:none; border:none; cursor:pointer; transition:color 0.2s; }
   .sidebar-clear:hover { color:var(--gold); }
