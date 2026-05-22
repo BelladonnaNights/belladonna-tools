@@ -37,8 +37,8 @@
     flex-direction: column;
     line-height: 1.2;
   }
-  .wordmark-one { color: #FFFFFF; font-size: 1.25rem; }
-  .wordmark-two { color: var(--gold); font-size: 0.9rem; }
+  .wordmark-one { color: #FFFFFF; font-size: 1.6rem; }
+  .wordmark-two { color: var(--gold); font-size: 1.1rem; }
   .header-title { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Cinzel', serif; margin-top: 3px; }
   .header-sub { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
   .nav-tabs { display: flex; gap: 4px; }
@@ -210,7 +210,6 @@
     }
     .wordmark-one { font-size: 1.1rem; }
     .wordmark-two { font-size: 0.78rem; }
-    .header-title { font-size: 0.68rem; }
 
     /* Nav tabs: own full-width row below header content */
     .nav-tabs {
@@ -274,6 +273,18 @@
     /* ── Toolbar row ── */
     .sidebar-toggle-btn { padding: 0.45rem 0.75rem; font-size: 0.65rem; }
 
+    /* ── Nav tab text slightly larger ── */
+    .nav-tab { font-size: 0.65rem; }
+
+    /* ── Footer: two lines, centered ── */
+    .site-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+    .footer-diamond { font-size: 0.6rem; }
+
   }
 </style>
 </head>
@@ -286,7 +297,6 @@
       <div class="wordmark">
         <span class="wordmark-one">Belladonna</span><span class="wordmark-two">Venue Menu</span>
       </div>
-      <div class="header-title">Belladonna Audio Alchemies</div>
     </div>
   </div>
   <nav class="nav-tabs">
@@ -393,7 +403,7 @@
   </div>
 </div>
 
-<footer class="site-footer">Belladonna Audio Alchemies &nbsp;✦&nbsp; Seattle–Tacoma</footer>
+<footer class="site-footer" id="site-footer"><span class="footer-line1">Belladonna Audio Alchemies</span><span class="footer-diamond"> ✦ </span><span class="footer-line2">Seattle–Tacoma</span></footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
