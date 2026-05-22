@@ -302,11 +302,15 @@
   <div class="sidebar-inner">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
-      <button class="sidebar-clear" onclick="clearAllVenueSidebarFilters()">Clear All</button>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-clear" onclick="clearAllVenueSidebarFilters()">Clear All</button>
+        <button onclick="closeVenueSidebar()" style="background:none;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+      </div>
     </div>
     <div id="venue-sidebar-accordion"></div>
   </div>
 </aside>
+<div id="mobile-sidebar-backdrop" onclick="closeVenueSidebar()" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.45);"></div>
 <main class="main" id="main-content">
   <div id="loading">
     <div class="spinner"></div>
@@ -855,7 +859,9 @@ async function toggleVenueSidebar(tab) {
 
 function closeVenueSidebar() {
   const sidebar = document.getElementById('venue-filter-sidebar');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
   sidebar.classList.remove('open');
+  if (backdrop) backdrop.style.display = 'none';
   venueCurrentSidebarTab = null;
   updateVenueSidebarToggleBtns();
 }
