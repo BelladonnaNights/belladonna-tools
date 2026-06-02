@@ -176,7 +176,6 @@
   .desc-hero img {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
   }
-  .desc-hero-emoji { position: relative; z-index: 1; }
   .desc-title {
     font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--text);
@@ -402,7 +401,7 @@
         <div class="menu-card-grid centered-row" id="mains-grid">
 
           <div class="menu-card" onclick="navigateTo('karaoke')">
-            <div class="menu-card-img-placeholder">🎤</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Karaoke</div>
               <div class="menu-card-desc">High-energy hosted karaoke nights that keep the whole bar singing.</div>
@@ -411,7 +410,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('trivia')">
-            <div class="menu-card-img-placeholder">🧠</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Trivia</div>
               <div class="menu-card-desc">Team trivia nights with custom categories for every crowd.</div>
@@ -420,7 +419,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('bingo')">
-            <div class="menu-card-img-placeholder">🎵</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Music Bingo</div>
               <div class="menu-card-desc">Bingo meets the dance floor — guests race to match songs they know and love.</div>
@@ -441,7 +440,7 @@
         <div class="menu-card-grid centered-row" id="features-grid">
 
           <div class="menu-card" onclick="navigateTo('singalongs')">
-            <div class="menu-card-img-placeholder">🎶</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Sing-Alongs</div>
               <div class="menu-card-desc">Hosted sing-along events built around iconic artists, eras, and moments.</div>
@@ -450,7 +449,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('comedy')">
-            <div class="menu-card-img-placeholder">😂</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Comedy Nights</div>
               <div class="menu-card-desc">Stand-up and comedy showcases that pack the room and raise the tab.</div>
@@ -459,7 +458,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('openmic')">
-            <div class="menu-card-img-placeholder">🎙️</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Open Mics</div>
               <div class="menu-card-desc">Community-driven open mic nights — music, spoken word, and everything in between.</div>
@@ -480,7 +479,7 @@
         <div class="menu-card-grid centered-row" id="specialties-grid">
 
           <div class="menu-card" onclick="navigateTo('themed')">
-            <div class="menu-card-img-placeholder">🌙</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Themed Nights</div>
               <div class="menu-card-desc">Fully produced themed events — décor, games, playlist, and hosting all in one.</div>
@@ -489,7 +488,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('private')">
-            <div class="menu-card-img-placeholder">🥂</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Private Parties</div>
               <div class="menu-card-desc">Birthdays, buyouts, and celebrations — custom packages for private events.</div>
@@ -498,7 +497,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('holiday')">
-            <div class="menu-card-img-placeholder">🎄</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Holiday Parties</div>
               <div class="menu-card-desc">Seasonal productions designed to fill your venue and spread the cheer.</div>
@@ -507,7 +506,7 @@
           </div>
 
           <div class="menu-card" onclick="navigateTo('ticketed')">
-            <div class="menu-card-img-placeholder">🎟️</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Ticketed Events</div>
               <div class="menu-card-desc">Premium productions sold as tickets — full show, full house.</div>
@@ -528,7 +527,7 @@
         <div class="menu-card-grid centered-row" id="appetizers-grid">
 
           <div class="menu-card" onclick="navigateTo('minigames')">
-            <div class="menu-card-img-placeholder">🎲</div>
+            <div class="menu-card-img-placeholder"></div>
             <div class="menu-card-body">
               <div class="menu-card-title">Mini Games</div>
               <div class="menu-card-desc">Quick-round interactive games — perfect between sets or as a standalone add-on.</div>
@@ -589,7 +588,7 @@
   <div class="view" id="view-bingo">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-bingo"><span class="desc-hero-emoji">🎵</span></div>
+      <div class="desc-hero" id="desc-hero-bingo"></div>
       <div class="desc-title">Music Bingo</div>
       <div class="desc-subtitle">Main Course</div>
       <div class="desc-body">
@@ -645,7 +644,7 @@
   <div class="view" id="view-karaoke">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-karaoke"><span class="desc-hero-emoji">🎤</span></div>
+      <div class="desc-hero" id="desc-hero-karaoke"></div>
       <div class="desc-title">Karaoke</div>
       <div class="desc-subtitle">Main Course</div>
       <div class="desc-body">
@@ -659,7 +658,7 @@
   <div class="view" id="view-comedy">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-comedy"><span class="desc-hero-emoji">😂</span></div>
+      <div class="desc-hero" id="desc-hero-comedy"></div>
       <div class="desc-title">Comedy Nights</div>
       <div class="desc-subtitle">Featured</div>
       <div class="desc-body">
@@ -673,7 +672,7 @@
   <div class="view" id="view-openmic">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-openmic"><span class="desc-hero-emoji">🎙️</span></div>
+      <div class="desc-hero" id="desc-hero-openmic"></div>
       <div class="desc-title">Open Mics</div>
       <div class="desc-subtitle">Featured</div>
       <div class="desc-body">
@@ -687,7 +686,7 @@
   <div class="view" id="view-private">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-private"><span class="desc-hero-emoji">🥂</span></div>
+      <div class="desc-hero" id="desc-hero-private"></div>
       <div class="desc-title">Private Parties</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
@@ -701,7 +700,7 @@
   <div class="view" id="view-holiday">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-holiday"><span class="desc-hero-emoji">🎄</span></div>
+      <div class="desc-hero" id="desc-hero-holiday"></div>
       <div class="desc-title">Holiday Parties</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
@@ -715,7 +714,7 @@
   <div class="view" id="view-ticketed">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-ticketed"><span class="desc-hero-emoji">🎟️</span></div>
+      <div class="desc-hero" id="desc-hero-ticketed"></div>
       <div class="desc-title">Ticketed Events</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
