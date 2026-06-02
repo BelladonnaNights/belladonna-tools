@@ -909,6 +909,7 @@
     <button class="nav-tab" onclick="switchView('trivia')">Trivia</button>
     <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
+    <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
 </header>
@@ -1080,6 +1081,63 @@
       <button class="btn btn-ghost" onclick="exportJSON()">Export as JSON</button>
     </div>
   </div>
+
+  <!-- ═══ MAIN MENU EDITOR VIEW ═══ -->
+  <div class="view" id="view-mainmenu">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <div class="section-title" style="margin-bottom:0.25rem;">Main Menu Editor</div>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Edit the cards and text on the public venue landing page.</p>
+      </div>
+      <button class="btn" onclick="saveMainMenu()">Save Changes</button>
+    </div>
+
+    <!-- LIVE PREVIEW LABEL -->
+    <div style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:1rem;">Live Preview</div>
+
+    <!-- MENU PREVIEW — mirrors venue.html landing page -->
+    <div id="mm-preview" style="background:var(--ink); border:1px solid var(--border); border-radius:8px; padding:2.5rem 2rem 3rem; margin-bottom:2rem;">
+
+      <!-- Intro text preview -->
+      <div style="text-align:center; margin-bottom:2.5rem;">
+        <div style="font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:0.5rem;" id="mm-prev-eyebrow">Belladonna Audio Alchemies</div>
+        <div style="font-family:'Cinzel',serif; font-size:2rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text); margin-bottom:0.5rem;" id="mm-prev-title">The Menu</div>
+        <div style="font-size:1rem; color:var(--text-muted); font-style:italic;" id="mm-prev-subtitle">Live entertainment crafted for your venue.</div>
+      </div>
+
+      <!-- Sections preview -->
+      <div id="mm-sections-preview"></div>
+    </div>
+
+    <!-- EDIT INTRO -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title" style="margin-bottom:1rem;">Header Text</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Eyebrow Text</label>
+          <input type="text" class="form-input" id="mm-eyebrow" value="Belladonna Audio Alchemies" oninput="mmUpdatePreviewText()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Main Title</label>
+          <input type="text" class="form-input" id="mm-title" value="The Menu" oninput="mmUpdatePreviewText()">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Subtitle</label>
+          <input type="text" class="form-input" id="mm-subtitle" value="Live entertainment crafted for your venue. Select a category to explore." oninput="mmUpdatePreviewText()">
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT SECTIONS + CARDS -->
+    <div id="mm-sections-editor"></div>
+
+    <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+      <button class="btn" onclick="saveMainMenu()">Save Changes</button>
+      <button class="btn btn-ghost" onclick="loadMainMenu()">Discard & Reload</button>
+    </div>
+  </div>
+
 
 </main>
 </div><!-- end app-layout -->
@@ -1628,6 +1686,7 @@ async function batchSaveCats(cats) {
 // VIEW SWITCHING
 // ═══════════════════════════════════════════════
 function switchView(name) {
+  if (name === 'mainmenu' && !mmData) loadMainMenu();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
@@ -3638,6 +3697,248 @@ async function onTagListDrop(e, i) {
 // ═══════════════════════════════════════════════
 // EXPOSE TO WINDOW (required for type=module inline onclick)
 // ═══════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
+// MAIN MENU EDITOR
+// Stores config in Firestore: config/mainMenu
+// ════════════════════════════════════════════════════════
+
+// Default menu structure — mirrors venue.html landing page
+const MM_DEFAULTS = {
+  eyebrow: 'Belladonna Audio Alchemies',
+  title: 'The Menu',
+  subtitle: 'Live entertainment crafted for your venue. Select a category to explore.',
+  sections: [
+    {
+      id: 'mains', label: 'Main Courses',
+      desc: 'Our signature offerings — the heart of every great night.',
+      cards: [
+        { id:'karaoke', emoji:'🎤', title:'Karaoke', desc:'High-energy hosted karaoke nights that keep the whole bar singing.', image:'' },
+        { id:'trivia',  emoji:'🧠', title:'Trivia',  desc:'Team trivia nights with custom categories for every crowd.', image:'' },
+        { id:'bingo',   emoji:'🎵', title:'Music Bingo', desc:'Bingo meets the dance floor — guests race to match songs they know and love.', image:'' },
+      ]
+    },
+    {
+      id: 'features', label: 'Featured',
+      desc: 'Specialty performances and interactive shows worth headlining.',
+      cards: [
+        { id:'singalongs', emoji:'🎶', title:'Sing-Alongs', desc:'Hosted sing-along events built around iconic artists, eras, and moments.', image:'' },
+        { id:'comedy',     emoji:'😂', title:'Comedy Nights', desc:'Stand-up and comedy showcases that pack the room and raise the tab.', image:'' },
+        { id:'openmic',    emoji:'🎙️', title:'Open Mics', desc:'Community-driven open mic nights — music, spoken word, and everything in between.', image:'' },
+      ]
+    },
+    {
+      id: 'appetizers', label: 'Appetizers',
+      desc: 'Add-on games and mini-events to spice up any night.',
+      cards: [
+        { id:'minigames', emoji:'🎲', title:'Mini Games', desc:'Quick-round interactive games — perfect between sets or as a standalone add-on.', image:'' },
+      ]
+    },
+    {
+      id: 'specialties', label: 'Specialties',
+      desc: 'Custom, seasonal, and ticketed events built around your vision.',
+      cards: [
+        { id:'themed',    emoji:'🌙', title:'Themed Nights', desc:'Fully produced themed events — décor, games, playlist, and hosting all in one.', image:'' },
+        { id:'private',   emoji:'🥂', title:'Private Parties', desc:'Birthdays, buyouts, and celebrations — custom packages for private events.', image:'' },
+        { id:'holiday',   emoji:'🎄', title:'Holiday Parties', desc:'Seasonal productions designed to fill your venue during the biggest nights of the year.', image:'' },
+        { id:'ticketed',  emoji:'🎟️', title:'Ticketed Events', desc:'Premium productions sold as tickets — full show, full house.', image:'' },
+      ]
+    }
+  ]
+};
+
+let mmData = null; // loaded from Firebase or defaults
+
+async function loadMainMenu() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'mainMenu'));
+    mmData = snap.exists() ? snap.data() : JSON.parse(JSON.stringify(MM_DEFAULTS));
+  } catch(e) {
+    mmData = JSON.parse(JSON.stringify(MM_DEFAULTS));
+  }
+  mmRenderEditor();
+  mmUpdatePreviewText();
+}
+
+async function saveMainMenu() {
+  // Read current field values back into mmData
+  mmData.eyebrow  = document.getElementById('mm-eyebrow')?.value || mmData.eyebrow;
+  mmData.title    = document.getElementById('mm-title')?.value   || mmData.title;
+  mmData.subtitle = document.getElementById('mm-subtitle')?.value|| mmData.subtitle;
+
+  // Read card fields
+  mmData.sections.forEach(sec => {
+    // Section desc
+    const secDesc = document.getElementById('mm-sec-desc-' + sec.id);
+    if (secDesc) sec.desc = secDesc.value;
+    // Section label
+    const secLabel = document.getElementById('mm-sec-label-' + sec.id);
+    if (secLabel) sec.label = secLabel.value;
+    // Cards
+    sec.cards.forEach(card => {
+      const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
+      const t = document.getElementById(prefix + 'title');
+      const d = document.getElementById(prefix + 'desc');
+      const img = document.getElementById(prefix + 'image');
+      const em = document.getElementById(prefix + 'emoji');
+      if (t) card.title = t.value;
+      if (d) card.desc  = d.value;
+      if (img) card.image = img.value;
+      if (em) card.emoji = em.value;
+    });
+  });
+
+  try {
+    await setDoc(doc(db, 'config', 'mainMenu'), mmData);
+    toast('Menu saved!', 'success');
+    mmRenderPreview();
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+function mmUpdatePreviewText() {
+  const eyebrow  = document.getElementById('mm-eyebrow')?.value  || '';
+  const title    = document.getElementById('mm-title')?.value    || '';
+  const subtitle = document.getElementById('mm-subtitle')?.value || '';
+  const pe = document.getElementById('mm-prev-eyebrow');
+  const pt = document.getElementById('mm-prev-title');
+  const ps = document.getElementById('mm-prev-subtitle');
+  if (pe) pe.textContent = eyebrow;
+  if (pt) pt.textContent = title;
+  if (ps) ps.textContent = subtitle;
+}
+
+function mmRenderEditor() {
+  // Set intro fields
+  const eyeEl  = document.getElementById('mm-eyebrow');
+  const titEl  = document.getElementById('mm-title');
+  const subEl  = document.getElementById('mm-subtitle');
+  if (eyeEl)  eyeEl.value  = mmData.eyebrow  || '';
+  if (titEl)  titEl.value  = mmData.title    || '';
+  if (subEl)  subEl.value  = mmData.subtitle || '';
+
+  // Render section editors
+  const secEditor = document.getElementById('mm-sections-editor');
+  if (!secEditor) return;
+  secEditor.innerHTML = (mmData.sections || []).map(sec => `
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+        <div style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold);">Section: <input type="text" id="mm-sec-label-${sec.id}" value="${esc(sec.label)}" oninput="mmRenderPreview()" style="background:var(--surface2); border:1px solid var(--border); color:var(--gold); font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.2rem 0.5rem; border-radius:3px; width:180px;"></div>
+        <button class="btn btn-sm" onclick="mmAddCard('${sec.id}')">+ Add Card</button>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label">Section Description</label>
+        <input type="text" class="form-input" id="mm-sec-desc-${sec.id}" value="${esc(sec.desc)}" oninput="mmRenderPreview()">
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem;">
+        ${sec.cards.map(card => mmCardEditorHTML(sec.id, card)).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  mmRenderPreview();
+}
+
+function mmCardEditorHTML(secId, card) {
+  const prefix = 'mm-card-' + secId + '-' + card.id + '-';
+  return `
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:1rem;">
+      <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+        <div class="form-group" style="flex:0 0 60px;">
+          <label class="form-label">Icon</label>
+          <input type="text" class="form-input" id="${prefix}emoji" value="${card.emoji||''}" oninput="mmRenderPreview()" style="font-size:1.2rem; text-align:center; padding:0.3rem;">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-input" id="${prefix}title" value="${esc(card.title||'')}" oninput="mmRenderPreview()">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="${prefix}desc" rows="2" oninput="mmRenderPreview()" style="resize:vertical;">${esc(card.desc||'')}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Image URL (optional — replaces icon)</label>
+        <input type="text" class="form-input" id="${prefix}image" value="${esc(card.image||'')}" placeholder="https://…" oninput="mmRenderPreview()">
+      </div>
+      <div style="margin-top:0.75rem; text-align:right;">
+        <button class="btn btn-sm btn-ghost" style="color:var(--text-dim); font-size:0.7rem;" onclick="mmRemoveCard('${secId}','${card.id}')">Remove Card</button>
+      </div>
+    </div>
+  `;
+}
+
+function mmRenderPreview() {
+  const preview = document.getElementById('mm-sections-preview');
+  if (!preview || !mmData) return;
+
+  // Read live values from fields before rendering
+  const sections = mmData.sections.map(sec => {
+    const labelEl = document.getElementById('mm-sec-label-' + sec.id);
+    const descEl  = document.getElementById('mm-sec-desc-' + sec.id);
+    return {
+      ...sec,
+      label: labelEl ? labelEl.value : sec.label,
+      desc:  descEl  ? descEl.value  : sec.desc,
+      cards: sec.cards.map(card => {
+        const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
+        return {
+          ...card,
+          emoji: document.getElementById(prefix + 'emoji')?.value || card.emoji,
+          title: document.getElementById(prefix + 'title')?.value || card.title,
+          desc:  document.getElementById(prefix + 'desc')?.value  || card.desc,
+          image: document.getElementById(prefix + 'image')?.value || card.image,
+        };
+      })
+    };
+  });
+
+  preview.innerHTML = sections.map(sec => `
+    <div style="margin-bottom:2.5rem;">
+      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.3rem;">
+        <span style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold);">${esc(sec.label)}</span>
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+      <div style="font-size:0.88rem; color:var(--text-dim); font-style:italic; text-align:center; margin-bottom:1rem;">${esc(sec.desc)}</div>
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:1.25rem;">
+        ${sec.cards.map(card => `
+          <div style="width:220px; background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; cursor:pointer; transition:border-color 0.2s;">
+            ${card.image
+              ? `<img src="${card.image}" style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+              : ''
+            }
+            <div style="width:100%; aspect-ratio:16/9; background:var(--surface2); display:${card.image ? 'none' : 'flex'}; align-items:center; justify-content:center; font-size:2.2rem;">${card.emoji||'✦'}</div>
+            <div style="padding:0.85rem 1rem 1rem;">
+              <div style="font-family:'Cinzel',serif; font-size:0.85rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text); margin-bottom:0.3rem;">${esc(card.title)}</div>
+              <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.4;">${esc(card.desc)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function mmAddCard(secId) {
+  const sec = mmData.sections.find(s => s.id === secId);
+  if (!sec) return;
+  const newId = 'card' + Date.now();
+  sec.cards.push({ id: newId, emoji: '✦', title: 'New Card', desc: 'Description goes here.', image: '' });
+  mmRenderEditor();
+}
+
+function mmRemoveCard(secId, cardId) {
+  const sec = mmData.sections.find(s => s.id === secId);
+  if (!sec) return;
+  sec.cards = sec.cards.filter(c => c.id !== cardId);
+  mmRenderEditor();
+}
+
+// Load when tab is clicked
+const _origSwitchView = switchView;
+// Hook into switchView to load main menu data
+
 Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
@@ -3663,6 +3964,7 @@ Object.assign(window, {
   onMiniTagListDragStart, onMiniTagListDragOver, onMiniTagListDragLeave, onMiniTagListDrop,
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
   toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter, toggleSubFilter,
+  loadMainMenu, saveMainMenu, mmUpdatePreviewText, mmRenderPreview, mmAddCard, mmRemoveCard,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
