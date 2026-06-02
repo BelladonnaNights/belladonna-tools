@@ -157,7 +157,12 @@
     width: 100%; aspect-ratio: 16/9; background: var(--surface2);
     border-radius: 6px; display: flex; align-items: center; justify-content: center;
     font-size: 4rem; margin-bottom: 2rem; border: 1px solid var(--border);
+    overflow: hidden; position: relative;
   }
+  .desc-hero img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .desc-hero-emoji { position: relative; z-index: 1; }
   .desc-title {
     font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase; color: var(--text);
@@ -296,6 +301,9 @@
     .header-left { display: flex; align-items: center; gap: 0.6rem; padding-bottom: 0.6rem; }
     .wordmark-one { font-size: 1.1rem; }
     .wordmark-two { font-size: 0.78rem; }
+    #main-nav { border-top: 1px solid var(--border); width: 100%; }
+    #main-nav .nav-tab { flex: 1; text-align: center; padding: 0.55rem 0.25rem; font-size: 0.62rem; border-radius: 0; border: none; border-bottom: 2px solid transparent; }
+    #main-nav .nav-tab.active { border: none; border-bottom: 2px solid var(--gold); color: var(--gold); background: none; }
     .menu-page { padding: 1.5rem 1rem 3rem; }
     .menu-intro-title { font-size: 1.5rem; }
     .menu-card-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
@@ -325,6 +333,11 @@
       </div>
     </div>
   </div>
+  <nav class="nav-tabs" id="main-nav">
+    <button class="nav-tab active" id="nav-menu" onclick="navigateTo('menu')">Main Menu</button>
+    <button class="nav-tab" id="nav-themed" onclick="navigateTo('themed')">Themed Nights</button>
+    <button class="nav-tab" id="nav-singalongs" onclick="navigateTo('singalongs')">Sing-Alongs</button>
+  </nav>
 </header>
 
 <!-- ═══ MOBILE SIDEBAR BACKDROP ═══ -->
@@ -443,27 +456,6 @@
         </div>
       </div>
 
-      <!-- APPETIZERS -->
-      <div class="menu-section" id="section-appetizers">
-        <div class="menu-section-header">
-          <span class="menu-section-title">Appetizers</span>
-          <div class="menu-section-line"></div>
-        </div>
-        <div class="menu-section-desc">Add-on games and mini-events to spice up any night.</div>
-        <div class="menu-card-grid centered-row" id="appetizers-grid">
-
-          <div class="menu-card" onclick="navigateTo('minigames')">
-            <div class="menu-card-img-placeholder">🎲</div>
-            <div class="menu-card-body">
-              <div class="menu-card-title">Mini Games</div>
-              <div class="menu-card-desc">Quick-round interactive games — perfect between sets or as a standalone add-on.</div>
-              <div class="menu-card-arrow">→</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
       <!-- SPECIALTIES -->
       <div class="menu-section" id="section-specialties">
         <div class="menu-section-header">
@@ -505,6 +497,27 @@
             <div class="menu-card-body">
               <div class="menu-card-title">Ticketed Events</div>
               <div class="menu-card-desc">Premium productions sold as tickets — full show, full house.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- APPETIZERS -->
+      <div class="menu-section" id="section-appetizers">
+        <div class="menu-section-header">
+          <span class="menu-section-title">Appetizers</span>
+          <div class="menu-section-line"></div>
+        </div>
+        <div class="menu-section-desc">Add-on games and mini-events to spice up any night.</div>
+        <div class="menu-card-grid centered-row" id="appetizers-grid">
+
+          <div class="menu-card" onclick="navigateTo('minigames')">
+            <div class="menu-card-img-placeholder">🎲</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Mini Games</div>
+              <div class="menu-card-desc">Quick-round interactive games — perfect between sets or as a standalone add-on.</div>
               <div class="menu-card-arrow">→</div>
             </div>
           </div>
@@ -562,7 +575,7 @@
   <div class="view" id="view-bingo">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🎵</div>
+      <div class="desc-hero" id="desc-hero-bingo"><span class="desc-hero-emoji">🎵</span></div>
       <div class="desc-title">Music Bingo</div>
       <div class="desc-subtitle">Main Course</div>
       <div class="desc-body">
@@ -618,7 +631,7 @@
   <div class="view" id="view-karaoke">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🎤</div>
+      <div class="desc-hero" id="desc-hero-karaoke"><span class="desc-hero-emoji">🎤</span></div>
       <div class="desc-title">Karaoke</div>
       <div class="desc-subtitle">Main Course</div>
       <div class="desc-body">
@@ -632,7 +645,7 @@
   <div class="view" id="view-comedy">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">😂</div>
+      <div class="desc-hero" id="desc-hero-comedy"><span class="desc-hero-emoji">😂</span></div>
       <div class="desc-title">Comedy Nights</div>
       <div class="desc-subtitle">Featured</div>
       <div class="desc-body">
@@ -646,7 +659,7 @@
   <div class="view" id="view-openmic">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🎙️</div>
+      <div class="desc-hero" id="desc-hero-openmic"><span class="desc-hero-emoji">🎙️</span></div>
       <div class="desc-title">Open Mics</div>
       <div class="desc-subtitle">Featured</div>
       <div class="desc-body">
@@ -660,7 +673,7 @@
   <div class="view" id="view-private">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🥂</div>
+      <div class="desc-hero" id="desc-hero-private"><span class="desc-hero-emoji">🥂</span></div>
       <div class="desc-title">Private Parties</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
@@ -674,7 +687,7 @@
   <div class="view" id="view-holiday">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🎄</div>
+      <div class="desc-hero" id="desc-hero-holiday"><span class="desc-hero-emoji">🎄</span></div>
       <div class="desc-title">Holiday Parties</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
@@ -688,7 +701,7 @@
   <div class="view" id="view-ticketed">
     <div class="desc-view">
       <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero">🎟️</div>
+      <div class="desc-hero" id="desc-hero-ticketed"><span class="desc-hero-emoji">🎟️</span></div>
       <div class="desc-title">Ticketed Events</div>
       <div class="desc-subtitle">Specialty</div>
       <div class="desc-body">
@@ -832,6 +845,21 @@ async function loadMenuConfig() {
           if (descEl  && sec.desc)  descEl.textContent  = sec.desc;
         }
 
+        // Update desc-hero images for description pages
+        sec.cards.forEach(card => {
+          if (!card.image) return;
+          const hero = document.getElementById('desc-hero-' + card.id);
+          if (!hero) return;
+          // Insert image behind emoji
+          const existing = hero.querySelector('img');
+          if (existing) { existing.src = card.image; return; }
+          const img = document.createElement('img');
+          img.src = card.image;
+          img.alt = card.title || '';
+          img.onerror = function() { this.style.display = 'none'; };
+          hero.insertBefore(img, hero.firstChild);
+        });
+
         // Re-render cards
         grid.innerHTML = sec.cards.map(card => {
           const imgEl = card.image
@@ -866,6 +894,11 @@ function navigateTo(view) {
   currentView = view;
   closeFilterSidebar();
   window.scrollTo(0, 0);
+  // Update nav tab active state
+  document.querySelectorAll('#main-nav .nav-tab').forEach(t => t.classList.remove('active'));
+  const navMap = { menu:'nav-menu', themed:'nav-themed', singalongs:'nav-singalongs' };
+  const activeNav = navMap[view];
+  if (activeNav) document.getElementById(activeNav)?.classList.add('active');
   // Render the appropriate browse view
   if (view === 'themed') renderThemedNights();
   else if (view === 'trivia') renderTrivia();
