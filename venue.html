@@ -19,272 +19,285 @@
     background-image: radial-gradient(ellipse at 20% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
                       radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.03) 0%, transparent 60%);
   }
+
+  /* ── HEADER ── */
   .site-header {
     border-bottom: 1px solid var(--border-strong);
     padding: 1.5rem 2rem;
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     background: rgba(14,12,10,0.9); backdrop-filter: blur(8px);
-    position: sticky; top: 0; z-index: 100;
+    position: sticky; top: 0; z-index: 200;
   }
   .header-left { display: flex; align-items: center; gap: 14px; }
   .logo-img { width: 44px; height: 44px; object-fit: contain; }
-  .wordmark {
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-  }
+  .wordmark { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; display: flex; flex-direction: column; line-height: 1.2; }
   .wordmark-one { color: #FFFFFF; font-size: 1.6rem; }
   .wordmark-two { color: var(--gold); font-size: 1.1rem; }
-  .header-title { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.14em; text-transform: uppercase; font-family: 'Cinzel', serif; margin-top: 3px; }
-  .header-sub { font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.14em; text-transform: uppercase; }
-  .nav-tabs { display: flex; gap: 4px; }
-  .nav-tab {
-    padding: 0.5rem 1.1rem; border: 1px solid transparent; background: none;
-    color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 0.72rem;
-    letter-spacing: 0.12em; cursor: pointer; border-radius: 3px; transition: all 0.2s; text-transform: uppercase;
-  }
-  .nav-tab:hover { color: var(--gold-light); border-color: var(--border); }
-  .nav-tab.active { color: var(--gold); border-color: var(--border-strong); background: rgba(201,168,76,0.07); }
-  .main { flex: 1; min-width: 0; padding: 2rem; }
+
+  /* ── VIEWS ── */
   .view { display: none; }
   .view.active { display: block; }
-  #loading {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 6rem 2rem; gap: 1rem;
+
+  /* ── BACK BUTTON ── */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 0.45rem 0.9rem; border-radius: 3px;
+    cursor: pointer; transition: all 0.2s; margin-bottom: 1.5rem;
   }
-  .spinner {
-    width: 40px; height: 40px; border: 2px solid var(--border);
-    border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite;
+  .back-btn:hover { color: var(--gold); border-color: var(--border-strong); }
+
+  /* ── LANDING PAGE ── */
+  .menu-page { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+
+  .menu-intro {
+    text-align: center; margin-bottom: 3.5rem;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #loading p { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
-  .empty-state { text-align: center; padding: 6rem 2rem; color: var(--text-dim); }
-  .empty-state h2 { font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
-  .nights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+  .menu-intro-eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.75rem;
+  }
+  .menu-intro-title {
+    font-family: 'Cinzel', serif; font-size: 2.2rem; font-weight: 700;
+    color: var(--text); letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .menu-intro-sub {
+    font-size: 1.1rem; color: var(--text-muted); font-style: italic;
+    max-width: 520px; margin: 0 auto;
+  }
+  .menu-divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 0 auto 3rem; max-width: 400px;
+  }
+  .menu-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .menu-divider-ornament { color: var(--gold-dim); font-size: 0.8rem; flex-shrink: 0; }
+
+  /* ── MENU SECTION ── */
+  .menu-section { margin-bottom: 3.5rem; }
+  .menu-section-header {
+    display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.4rem;
+  }
+  .menu-section-title {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .menu-section-line { flex: 1; height: 1px; background: var(--border); }
+  .menu-section-desc {
+    font-size: 0.92rem; color: var(--text-dim); font-style: italic;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── MENU CARD GRID ── */
+  .menu-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ── MENU CARD ── */
+  .menu-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .menu-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .menu-card-img {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover;
+    display: block; background: var(--surface2);
+  }
+  .menu-card-img-placeholder {
+    width: 100%; aspect-ratio: 16/9;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: var(--text-dim);
+  }
+  .menu-card-body { padding: 1rem 1.1rem 1.2rem; }
+  .menu-card-title {
+    font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .menu-card-desc {
+    font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;
+  }
+  .menu-card-arrow {
+    position: absolute; bottom: 1rem; right: 1rem;
+    color: var(--gold-dim); font-size: 0.8rem; transition: color 0.2s;
+  }
+  .menu-card:hover .menu-card-arrow { color: var(--gold); }
+
+  /* ── BROWSE VIEW (Netflix-style sub-pages) ── */
+  .browse-view { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* ── DESCRIPTION VIEW (info pages) ── */
+  .desc-view { max-width: 800px; margin: 0 auto; padding: 2rem; }
+  .desc-hero {
+    width: 100%; aspect-ratio: 16/9; background: var(--surface2);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; margin-bottom: 2rem; border: 1px solid var(--border);
+  }
+  .desc-title {
+    font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .desc-subtitle {
+    font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem;
+  }
+  .desc-body {
+    font-size: 1.05rem; color: var(--text-muted); line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+  .desc-contact {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    border: 1px solid var(--border-strong); color: var(--gold);
+    font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.75rem 1.5rem; border-radius: 3px;
+    cursor: pointer; background: none; transition: all 0.2s;
+  }
+  .desc-contact:hover { background: rgba(201,168,76,0.08); }
+
+  /* ── FILTER SIDEBAR ── */
+  .app-layout { display: flex; align-items: flex-start; }
+  .filter-sidebar {
+    flex-shrink: 0; width: 0; overflow: hidden;
+    transition: width 0.25s ease; position: sticky; top: 72px;
+    max-height: calc(100vh - 72px); overflow-y: auto;
+    background: var(--surface); border-right: 1px solid var(--border);
+  }
+  .filter-sidebar.open { width: 280px; }
+  .sidebar-inner { width: 280px; }
+  .sidebar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 1rem 0.6rem; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .sidebar-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); }
+  .sidebar-clear { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color 0.2s; }
+  .sidebar-clear:hover { color: var(--gold); }
+  .accordion-section { border-bottom: 1px solid var(--border); }
+  .accordion-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.65rem 1rem; cursor: pointer; font-family: 'Cinzel', serif;
+    font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-muted); transition: color 0.2s; user-select: none;
+  }
+  .accordion-header:hover { color: var(--text); }
+  .accordion-header.has-active { color: var(--gold); }
+  .accordion-arrow { font-size: 0.55rem; transition: transform 0.2s; }
+  .accordion-body { display: none; padding-bottom: 0.75rem; }
+  .accordion-body.open { display: block; }
+  .sb-check-row { display: flex; align-items: center; gap: 7px; padding: 0.22rem 1rem; }
+  .sb-check-row label { font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+  .sb-label-active { color: var(--text) !important; }
+  .sb-empty { padding: 0.3rem 1rem; font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+  .sb-manage { padding: 0.6rem 1rem; font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); cursor: pointer; transition: color 0.2s; }
+  .sb-manage:hover { color: var(--gold); }
+
+  /* ── BROWSE GRIDS ── */
+  .browse-main { flex: 1; min-width: 0; padding: 2rem; }
+  .browse-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .sidebar-toggle-btn {
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 0.68rem;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 0.5rem 0.9rem;
+    border-radius: 3px; cursor: pointer; transition: all 0.2s;
+  }
+  .sidebar-toggle-btn:hover { border-color: var(--border-strong); color: var(--gold); }
+  .sidebar-toggle-btn.active { color: var(--gold); border-color: var(--border-strong); background: rgba(201,168,76,0.06); }
+  .search-wrap { flex: 1; position: relative; }
+  .search-wrap span { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+  .search-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: 0.6rem 0.9rem 0.6rem 2.4rem; font-family: 'Crimson Text', serif; font-size: 16px; width: 100%; outline: none; }
+  .active-filters-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; min-height: 0; }
+  .active-filter-pill {
+    display: inline-flex; align-items: center; gap: 5px; padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border-strong); border-radius: 20px; font-size: 0.78rem;
+    color: var(--text-muted); cursor: pointer; background: rgba(201,168,76,0.05);
+    transition: all 0.15s;
+  }
+  .active-filter-pill:hover { border-color: var(--gold); color: var(--gold); }
+  .pill-x { color: var(--gold-dim); font-size: 0.8rem; }
+  .nights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
   .minigames-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
   .night-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-    overflow: hidden; transition: border-color 0.2s, transform 0.2s; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden; cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
   }
   .night-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
-  .night-banner { aspect-ratio: 4/5; width: 100%; background: var(--surface2); position: relative; overflow: hidden; }
-  .night-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .night-info { padding: 1rem 1.2rem 1.2rem; }
-  .night-name { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; color: var(--gold-light); margin-bottom: 0.4rem; line-height: 1.3; }
-  .detail-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82);
-    z-index: 200; overflow-y: auto; padding: 2rem 1rem;
-  }
+  .night-card-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; background: var(--surface2); }
+  .night-card-body { padding: 0.75rem; }
+  .night-name { font-family: 'Cinzel', serif; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); margin-bottom: 0.3rem; }
+  .night-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.4; }
+  .empty-state { text-align: center; padding: 5rem 2rem; color: var(--text-dim); }
+  .empty-state h2 { font-family: 'Cinzel', serif; font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-muted); }
+
+  /* ── SPINNER ── */
+  #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 2rem; gap: 1rem; }
+  .spinner { width: 40px; height: 40px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* ── DETAIL OVERLAY ── */
+  .detail-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(14,12,10,0.92); overflow-y: auto; padding: 2rem; }
   .detail-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
-  .detail-panel { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; width: 100%; max-width: 560px; overflow: hidden; }
-  .detail-banner { aspect-ratio: 4/5; width: 100%; background: var(--surface2); position: relative; overflow: hidden; }
-  .detail-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .detail-body { padding: 1.5rem; }
-  .detail-name { font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700; color: var(--gold-light); margin-bottom: 1rem; line-height: 1.3; }
-  .detail-section-label {
-    font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.18em;
-    text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.5rem;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .detail-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .detail-cat-item { padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: var(--text-muted); }
-  .detail-cat-item:last-child { border-bottom: none; }
-  .detail-enhance-item { display: flex; gap: 10px; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; color: var(--text); }
-  .detail-enhance-item:last-child { border-bottom: none; }
-  .detail-enhance-item::before { content: '✦'; color: var(--gold-dim); flex-shrink: 0; margin-top: 1px; }
-  .close-btn {
-    display: block; width: 100%; padding: 0.8rem; background: none; border: none;
-    border-top: 1px solid var(--border); color: var(--text-muted);
-    font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.14em;
-    text-transform: uppercase; cursor: pointer; transition: color 0.2s, background 0.2s;
-  }
-  .close-btn:hover { color: var(--gold); background: rgba(201,168,76,0.05); }
-  .site-footer {
-    text-align: center; padding: 2rem; color: var(--text-dim); font-size: 0.8rem;
-    letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Cinzel', serif;
-    border-top: 1px solid var(--border); margin-top: 3rem;
-  }
-  /* ── SIDEBAR ── */
-  .app-layout { display:flex; align-items:flex-start; }
-  .filter-sidebar {
-    flex-shrink:0; width:0; overflow:hidden; transition:width 0.25s ease;
-    position:sticky; top:90px; max-height:calc(100vh - 90px); overflow-y:auto;
-    background:var(--surface); border-right:1px solid var(--border);
-  }
-  .filter-sidebar.open { width:280px; }
-  .sidebar-inner { width:280px; }
-  .sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.85rem 1rem 0.6rem;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-    z-index: 1;
-  }
-  .sidebar-title { font-family:'Cinzel',serif; font-size:0.72rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
-  .sidebar-clear { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); background:none; border:none; cursor:pointer; transition:color 0.2s; }
-  .sidebar-clear:hover { color:var(--gold); }
-  .accordion-section { border-bottom:1px solid var(--border); }
-  .accordion-section:last-child { border-bottom:none; }
-  .accordion-header { display:flex; align-items:center; justify-content:space-between; padding:0.7rem 0; cursor:pointer; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); transition:color 0.2s; user-select:none; }
-  .accordion-header:hover, .accordion-header.has-active { color:var(--gold); }
-  .accordion-arrow { font-size:0.6rem; transition:transform 0.2s; color:var(--text-dim); }
-  .accordion-header.open .accordion-arrow { transform:rotate(180deg); }
-  .accordion-body { display:none; padding-bottom:0.75rem; }
-  .accordion-body.open { display:block; }
-  .filter-option { display:flex; align-items:center; gap:8px; padding:0.3rem 0; cursor:pointer; font-size:0.88rem; color:var(--text-muted); transition:color 0.15s; }
-  .filter-option:hover, .filter-option.active { color:var(--text); }
-  .filter-option input[type="checkbox"] { accent-color:var(--gold); width:14px; height:14px; cursor:pointer; flex-shrink:0; }
-  .active-filters-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:1rem; }
-  .active-filter-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); border-radius:30px; font-size:0.75rem; color:var(--gold); font-family:'Cinzel',serif; letter-spacing:0.06em; cursor:pointer; }
-  .active-filter-pill:hover { background:rgba(201,168,76,0.2); }
-  .pill-x { color:var(--gold-dim); font-size:0.8rem; }
-  .sidebar-toggle-btn { display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.9rem; border:1px solid var(--border); background:none; color:var(--text-muted); font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; border-radius:4px; transition:all 0.2s; white-space:nowrap; }
-  .sidebar-toggle-btn:hover { border-color:var(--border-strong); color:var(--gold); }
-  .sidebar-toggle-btn.active { border-color:var(--gold-dim); color:var(--gold); background:rgba(201,168,76,0.08); }
-  .content-area { flex:1; min-width:0; }
+  .detail-card { background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; max-width: 700px; width: 100%; margin-top: 2rem; overflow: hidden; }
+  .detail-banner { width: 100%; max-height: 320px; object-fit: cover; display: block; }
+  .detail-body { padding: 1.5rem 2rem 2rem; }
+  .detail-close { position: absolute; top: 1.5rem; right: 2rem; background: none; border: none; color: var(--text-dim); font-size: 1.4rem; cursor: pointer; z-index: 10; transition: color 0.2s; }
+  .detail-close:hover { color: var(--text); }
+  .detail-title { font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); margin-bottom: 0.5rem; }
+  .detail-cats { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .detail-tag { display: inline-block; border: 1px solid var(--border); padding: 0.15rem 0.55rem; border-radius: 3px; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0.2rem; }
 
-  .filter-chip {
-    padding: 0.3rem 0.9rem;
-    border-radius: 30px;
-    border: 1px solid var(--border);
-    background: none;
-    color: var(--text-muted);
-    font-family: 'Cinzel', serif;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .filter-chip:hover { border-color: var(--border-strong); color: var(--text); }
-  .filter-chip.active { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.1); }
-
-
-  .sb-all { padding:0.5rem 1rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer; transition:color 0.15s; }
-  .sb-all:hover { color:var(--gold); }
-  .sb-type-section { border-bottom:1px solid var(--border); }
-  .sb-type-header { padding:0.5rem 1rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer; transition:color 0.15s; }
-  .sb-type-header:hover, .sb-type-header.active { color:var(--gold); }
-  .sb-count { margin-left:auto; color:var(--text-dim); font-size:0.65rem; }
-  .sb-subs { padding:0 0 0.4rem 0; }
-  .sb-sub { padding:0.28rem 1rem 0.28rem 2rem; font-family:'Crimson Text',serif; font-size:0.9rem; color:var(--text-muted); cursor:pointer; transition:color 0.15s; }
-  .sb-sub:hover { color:var(--text); }
-  .sb-sub.active { color:var(--gold); font-weight:600; }
-  .sb-divider { height:1px; background:var(--border); margin:0.4rem 0; }
-  .sb-dim-header { padding:0.5rem 1rem; font-family:'Cinzel',serif; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:color 0.15s; }
-  .sb-dim-header:hover, .sb-dim-header.has-active { color:var(--gold); }
-  .sb-check-row { display:flex; align-items:center; gap:7px; padding:0.22rem 1rem; }
-  .sb-check-row label { font-size:0.85rem; color:var(--text-muted); cursor:pointer; }
-  .sb-label-active { color:var(--text) !important; }
+  /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--surface); }
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    text-align: center; padding: 2rem; font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 4rem;
+  }
 
   /* ═══════════════════════════════════════════════
      MOBILE STYLES — max-width: 768px
      Swap this entire block to redesign mobile independently
      ═══════════════════════════════════════════════ */
   @media (max-width: 768px) {
-
-    /* ── Header: stack wordmark above, nav tabs below in own row ── */
-    .site-header {
-      flex-direction: column;
-      align-items: stretch;
-      padding: 0.75rem 1rem 0;
-      gap: 0;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding-bottom: 0.6rem;
-    }
+    .site-header { flex-direction: column; align-items: stretch; padding: 0.75rem 1rem 0; gap: 0; }
+    .header-left { display: flex; align-items: center; gap: 0.6rem; padding-bottom: 0.6rem; }
     .wordmark-one { font-size: 1.1rem; }
     .wordmark-two { font-size: 0.78rem; }
-
-    /* Nav tabs: own full-width row below header content */
-    .nav-tabs {
-      display: flex;
-      width: 100%;
-      border-top: 1px solid var(--border);
-      gap: 0;
-    }
-    .nav-tab {
-      flex: 1;
-      text-align: center;
-      padding: 0.55rem 0.25rem;
-      font-size: 0.58rem;
-      letter-spacing: 0.07em;
-      border-radius: 0;
-      border: none;
-      border-bottom: 2px solid transparent;
-    }
-    .nav-tab.active {
-      border: none;
-      border-bottom: 2px solid var(--gold);
-      color: var(--gold);
-      background: none;
-    }
-
-    /* ── Layout — no sidebar push on mobile ── */
+    .menu-page { padding: 1.5rem 1rem 3rem; }
+    .menu-intro-title { font-size: 1.5rem; }
+    .menu-card-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .menu-card-body { padding: 0.65rem 0.75rem 0.85rem; }
+    .menu-card-title { font-size: 0.78rem; }
+    .menu-card-desc { font-size: 0.78rem; }
     .app-layout { display: block; }
-    .main { padding: 1rem; }
-
-    /* ── Filter sidebar — 2/3 screen overlay ── */
-    .filter-sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 0;
-      height: 100vh;
-      max-height: 100vh;
-      z-index: 500;
-      overflow-y: auto;
-      border-right: none;
-      border-radius: 0 12px 12px 0;
-      box-shadow: 4px 0 24px rgba(0,0,0,0.6);
-      transition: width 0.25s ease;
-    }
-    .filter-sidebar.open {
-      width: 67vw;
-      max-width: 320px;
-    }
-
-    /* ── Grids — two columns ── */
-    .nights-grid,
-    .minigames-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-    }
-
-    /* ── Cards ── */
-    .night-card { font-size: 0.85rem; }
-    .night-name { font-size: 0.82rem; }
-
-    /* ── Toolbar row ── */
-    .sidebar-toggle-btn { padding: 0.45rem 0.75rem; font-size: 0.65rem; }
-
-    /* ── Nav tab text slightly larger ── */
-    .nav-tab { font-size: 0.65rem; }
-
-    /* ── Footer: two lines, centered ── */
-    .site-footer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.15rem;
-    }
-    .footer-diamond { font-size: 0.6rem; }
-
+    .browse-main { padding: 1rem; }
+    .filter-sidebar { position: fixed; top: 0; left: 0; width: 0; height: 100vh; max-height: 100vh; z-index: 500; overflow-y: auto; border-right: none; border-radius: 0 12px 12px 0; box-shadow: 4px 0 24px rgba(0,0,0,0.6); transition: width 0.25s ease; }
+    .filter-sidebar.open { width: 67vw; max-width: 320px; }
+    .nights-grid, .minigames-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .sidebar-toggle-btn { padding: 0.45rem 0.75rem; font-size: 0.62rem; }
+    .desc-view { padding: 1rem; }
+    .desc-title { font-size: 1.3rem; }
   }
 </style>
 </head>
@@ -295,115 +308,407 @@
     <img src="logo.png" alt="Belladonna" class="logo-img">
     <div>
       <div class="wordmark">
-        <span class="wordmark-one">Belladonna</span><span class="wordmark-two">Venue Menu</span>
+        <span class="wordmark-one">Belladonna</span>
+        <span class="wordmark-two">Venue Menu</span>
       </div>
     </div>
   </div>
-  <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('nights')">Themed Nights</button>
-    <button class="nav-tab" onclick="switchTab('trivia')">Trivia</button>
-    <button class="nav-tab" onclick="switchTab('minigames')">Mini Games</button>
-    <button class="nav-tab" onclick="switchTab('singalongs')">Sing-Alongs</button>
-  </nav>
 </header>
 
-<div class="app-layout">
-<aside id="venue-filter-sidebar" class="filter-sidebar">
+<!-- ═══ MOBILE SIDEBAR BACKDROP ═══ -->
+<div id="mobile-sidebar-backdrop" onclick="closeFilterSidebar()" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.45);"></div>
+
+<!-- ═══ FILTER SIDEBAR (shared across browse views) ═══ -->
+<aside id="filter-sidebar" class="filter-sidebar">
   <div class="sidebar-inner">
     <div class="sidebar-header">
       <span class="sidebar-title">Filters</span>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <button class="sidebar-clear" onclick="clearAllVenueSidebarFilters()">Clear All</button>
-        <button onclick="closeVenueSidebar()" style="background:none;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
+        <button class="sidebar-clear" onclick="clearAllFilters()">Clear All</button>
+        <button onclick="closeFilterSidebar()" style="background:none;border:none;color:var(--text-dim);font-size:1.1rem;cursor:pointer;line-height:1;padding:0 2px;transition:color 0.15s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">✕</button>
       </div>
     </div>
-    <div id="venue-sidebar-accordion"></div>
+    <div id="sidebar-accordion"></div>
   </div>
 </aside>
-<div id="mobile-sidebar-backdrop" onclick="closeVenueSidebar()" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.45);"></div>
-<main class="main" id="main-content">
-  <div id="loading">
-    <div class="spinner"></div>
-    <p>Summoning the lineup…</p>
-  </div>
 
-  <div class="view active" id="view-nights">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
-      <button class="sidebar-toggle-btn" id="nights-filter-toggle" onclick="toggleVenueSidebar('nights')">⧉ Filters</button>
-      <div style="flex:1;position:relative;">
-        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
-        <input type="search" id="nights-search-input" placeholder="Search themed nights…" oninput="renderNights()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+<!-- ═══ MAIN CONTENT ═══ -->
+<main id="main-content">
+
+  <!-- ══════════════════════════════════════
+       LANDING VIEW — The Menu
+  ══════════════════════════════════════ -->
+  <div class="view active" id="view-menu">
+    <div class="menu-page">
+
+      <div class="menu-intro">
+        <div class="menu-intro-eyebrow">Belladonna Audio Alchemies</div>
+        <div class="menu-intro-title">The Menu</div>
+        <div class="menu-intro-sub">Live entertainment crafted for your venue. Select a category to explore.</div>
+      </div>
+
+      <div class="menu-divider">
+        <div class="menu-divider-line"></div>
+        <div class="menu-divider-ornament">✦</div>
+        <div class="menu-divider-line"></div>
+      </div>
+
+      <!-- MAIN COURSES -->
+      <div class="menu-section" id="section-mains">
+        <div class="menu-section-header">
+          <span class="menu-section-title">Main Courses</span>
+          <div class="menu-section-line"></div>
+        </div>
+        <div class="menu-section-desc">Our signature offerings — the heart of every great night.</div>
+        <div class="menu-card-grid" id="mains-grid">
+
+          <div class="menu-card" onclick="navigateTo('karaoke')">
+            <div class="menu-card-img-placeholder">🎤</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Karaoke</div>
+              <div class="menu-card-desc">High-energy hosted karaoke nights that keep the whole bar singing.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('trivia')">
+            <div class="menu-card-img-placeholder">🧠</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Trivia</div>
+              <div class="menu-card-desc">Team trivia nights with custom categories for every crowd.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('bingo')">
+            <div class="menu-card-img-placeholder">🎵</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Music Bingo</div>
+              <div class="menu-card-desc">Bingo meets the dance floor — guests race to match songs they know and love.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- FEATURES -->
+      <div class="menu-section" id="section-features">
+        <div class="menu-section-header">
+          <span class="menu-section-title">Featured</span>
+          <div class="menu-section-line"></div>
+        </div>
+        <div class="menu-section-desc">Specialty performances and interactive shows worth headlining.</div>
+        <div class="menu-card-grid" id="features-grid">
+
+          <div class="menu-card" onclick="navigateTo('singalongs')">
+            <div class="menu-card-img-placeholder">🎶</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Sing-Alongs</div>
+              <div class="menu-card-desc">Hosted sing-along events built around iconic artists, eras, and moments.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('comedy')">
+            <div class="menu-card-img-placeholder">😂</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Comedy Nights</div>
+              <div class="menu-card-desc">Stand-up and comedy showcases that pack the room and raise the tab.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('openmic')">
+            <div class="menu-card-img-placeholder">🎙️</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Open Mics</div>
+              <div class="menu-card-desc">Community-driven open mic nights — music, spoken word, and everything in between.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- APPETIZERS -->
+      <div class="menu-section" id="section-appetizers">
+        <div class="menu-section-header">
+          <span class="menu-section-title">Appetizers</span>
+          <div class="menu-section-line"></div>
+        </div>
+        <div class="menu-section-desc">Add-on games and mini-events to spice up any night.</div>
+        <div class="menu-card-grid" id="appetizers-grid">
+
+          <div class="menu-card" onclick="navigateTo('minigames')">
+            <div class="menu-card-img-placeholder">🎲</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Mini Games</div>
+              <div class="menu-card-desc">Quick-round interactive games — perfect between sets or as a standalone add-on.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SPECIALTIES -->
+      <div class="menu-section" id="section-specialties">
+        <div class="menu-section-header">
+          <span class="menu-section-title">Specialties</span>
+          <div class="menu-section-line"></div>
+        </div>
+        <div class="menu-section-desc">Custom, seasonal, and ticketed events built around your vision.</div>
+        <div class="menu-card-grid" id="specialties-grid">
+
+          <div class="menu-card" onclick="navigateTo('themed')">
+            <div class="menu-card-img-placeholder">🌙</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Themed Nights</div>
+              <div class="menu-card-desc">Fully produced themed events — décor, games, playlist, and hosting all in one.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('private')">
+            <div class="menu-card-img-placeholder">🥂</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Private Parties</div>
+              <div class="menu-card-desc">Birthdays, buyouts, and celebrations — custom packages for private events.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('holiday')">
+            <div class="menu-card-img-placeholder">🎄</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Holiday Parties</div>
+              <div class="menu-card-desc">Seasonal productions designed to fill your venue and spread the cheer.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+          <div class="menu-card" onclick="navigateTo('ticketed')">
+            <div class="menu-card-img-placeholder">🎟️</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">Ticketed Events</div>
+              <div class="menu-card-desc">Premium productions sold as tickets — full show, full house.</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end menu-page -->
+  </div><!-- end view-menu -->
+
+
+  <!-- ══════════════════════════════════════
+       BROWSE VIEWS (Netflix-style)
+  ══════════════════════════════════════ -->
+
+  <!-- THEMED NIGHTS browse -->
+  <div class="view" id="view-themed">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="themed-filter-btn" onclick="toggleFilterSidebar('themed')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="themed-search" placeholder="Search themed nights…" oninput="renderThemedNights()">
+          </div>
+        </div>
+        <div id="active-filters-bar-themed" class="active-filters-bar"></div>
+        <div id="themed-grid" class="nights-grid"></div>
+        <div id="themed-empty" class="empty-state" style="display:none;"><h2>No Themed Nights Published Yet</h2></div>
       </div>
     </div>
-    <div id="active-filters-bar-nights" class="active-filters-bar"></div>
-    <div id="nights-empty" class="empty-state" style="display:none;"><h2>Nothing Published Yet</h2><p>Check back soon.</p></div>
-    <div class="nights-grid" id="nights-grid"></div>
   </div>
 
+  <!-- TRIVIA browse -->
   <div class="view" id="view-trivia">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
-      <button class="sidebar-toggle-btn" id="trivia-filter-toggle" onclick="toggleVenueSidebar('trivia')">⧉ Filters</button>
-      <div style="flex:1;position:relative;">
-        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
-        <input type="search" id="trivia-search-input" placeholder="Search trivia…" oninput="renderTrivia()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="trivia-filter-btn" onclick="toggleFilterSidebar('trivia')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="trivia-search" placeholder="Search trivia…" oninput="renderTrivia()">
+          </div>
+        </div>
+        <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
+        <div id="trivia-grid" class="minigames-grid"></div>
+        <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2></div>
       </div>
     </div>
-    <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
-    <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="trivia-grid"></div>
   </div>
 
-  <div class="view" id="view-minigames">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
-      <button class="sidebar-toggle-btn" id="mini-filter-toggle" onclick="toggleVenueSidebar('minigames')">⧉ Filters</button>
-      <div style="flex:1;position:relative;">
-        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
-        <input type="search" id="mini-search-input" placeholder="Search mini games…" oninput="renderMiniGames()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+  <!-- MUSIC BINGO browse -->
+  <div class="view" id="view-bingo">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="bingo-filter-btn" onclick="toggleFilterSidebar('bingo')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="bingo-search" placeholder="Search music bingo…" oninput="renderBingo()">
+          </div>
+        </div>
+        <div id="active-filters-bar-bingo" class="active-filters-bar"></div>
+        <div id="bingo-grid" class="minigames-grid"></div>
+        <div id="bingo-empty" class="empty-state" style="display:none;"><h2>No Music Bingo Published Yet</h2></div>
       </div>
     </div>
-    <div id="active-filters-bar-mini" class="active-filters-bar"></div>
-    <div id="minigames-empty" class="empty-state" style="display:none;"><h2>No Mini Games Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="minigames-grid"></div>
   </div>
 
+  <!-- SING-ALONGS browse -->
   <div class="view" id="view-singalongs">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;flex-wrap:wrap;">
-      <button class="sidebar-toggle-btn" id="singa-filter-toggle" onclick="toggleVenueSidebar('singalongs')">⧉ Filters</button>
-      <div style="flex:1;position:relative;">
-        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
-        <input type="search" id="singa-search-input" placeholder="Search sing-alongs…" oninput="renderSingAlongs()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="singa-filter-btn" onclick="toggleFilterSidebar('singalongs')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="singa-search" placeholder="Search sing-alongs…" oninput="renderSingAlongs()">
+          </div>
+        </div>
+        <div id="active-filters-bar-singa" class="active-filters-bar"></div>
+        <div id="singa-grid" class="minigames-grid"></div>
+        <div id="singa-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Published Yet</h2></div>
       </div>
     </div>
-    <div id="active-filters-bar-singa" class="active-filters-bar"></div>
-    <div id="singalongs-empty" class="empty-state" style="display:none;"><h2>No Sing-Alongs Yet</h2><p>Check back soon.</p></div>
-    <div class="minigames-grid" id="singalongs-grid"></div>
   </div>
-</main>
-</div><!-- end app-layout -->
 
-<div class="detail-overlay" id="detail-overlay" onclick="handleOverlayClick(event)">
-  <div class="detail-panel">
-    <div class="detail-banner" id="detail-banner"></div>
-    <div class="detail-body">
-      <div class="detail-name" id="detail-name"></div>
-      <div id="detail-tags" style="display:none; gap:5px; flex-wrap:wrap; margin-bottom:0.75rem;"></div>
-      <div id="detail-description-section" style="display:none; margin-bottom:1.25rem;">
-        <p id="detail-description" style="font-size:1rem; color:var(--text-muted); line-height:1.7; font-style:italic;"></p>
-      </div>
-      <div id="detail-cats-section">
-        <div class="detail-section-label" id="detail-cats-label">Categories</div>
-        <div class="detail-cat-item" id="detail-cats"></div>
-      </div>
-      <div id="detail-enhancements-section" style="display:none;">
-        <div class="detail-section-label">Night Enhancements</div>
-        <div id="detail-enhancements"></div>
+  <!-- MINI GAMES browse -->
+  <div class="view" id="view-minigames">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="mini-filter-btn" onclick="toggleFilterSidebar('minigames')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="mini-search" placeholder="Search mini games…" oninput="renderMiniGames()">
+          </div>
+        </div>
+        <div id="active-filters-bar-mini" class="active-filters-bar"></div>
+        <div id="minigames-grid" class="minigames-grid"></div>
+        <div id="mini-empty" class="empty-state" style="display:none;"><h2>No Mini Games Published Yet</h2></div>
       </div>
     </div>
-    <button class="close-btn" onclick="closeDetail()">Close</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       DESCRIPTION VIEWS (info pages)
+  ══════════════════════════════════════ -->
+
+  <!-- KARAOKE -->
+  <div class="view" id="view-karaoke">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">🎤</div>
+      <div class="desc-title">Karaoke</div>
+      <div class="desc-subtitle">Main Course</div>
+      <div class="desc-body">
+        Belladonna's hosted karaoke nights bring high energy, tight production, and a host who knows how to work a room. We handle the equipment, the song library, the hype, and the flow — all you have to do is keep the drinks coming. Whether it's a casual weeknight or a packed Saturday, our karaoke nights are built to drive traffic, extend dwell time, and keep guests coming back.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Book This Night</button>
+    </div>
+  </div>
+
+  <!-- COMEDY NIGHTS -->
+  <div class="view" id="view-comedy">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">😂</div>
+      <div class="desc-title">Comedy Nights</div>
+      <div class="desc-subtitle">Featured</div>
+      <div class="desc-body">
+        Comedy nights are coming to the Belladonna lineup. We're developing a rotating showcase format featuring local and touring comedians, hosted sets, and crowd-work-friendly rooms. More details coming soon — reach out if you want to be first on the roster.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Get In Touch</button>
+    </div>
+  </div>
+
+  <!-- OPEN MICS -->
+  <div class="view" id="view-openmic">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">🎙️</div>
+      <div class="desc-title">Open Mics</div>
+      <div class="desc-subtitle">Featured</div>
+      <div class="desc-body">
+        Our open mic format is designed to build community and fill slower nights with something worth staying for. Musicians, poets, comedians, storytellers — all welcome. We host, we promote, we handle sign-ups. You provide the stage.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Get In Touch</button>
+    </div>
+  </div>
+
+  <!-- PRIVATE PARTIES -->
+  <div class="view" id="view-private">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">🥂</div>
+      <div class="desc-title">Private Parties</div>
+      <div class="desc-subtitle">Specialty</div>
+      <div class="desc-body">
+        Birthdays, buyouts, corporate events, and celebrations of all kinds. We build custom entertainment packages tailored to your guest list, your vibe, and your space. Trivia, bingo, karaoke, themed nights — or any combination thereof. Private bookings get a dedicated host and a fully customized experience from start to finish.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Book a Private Event</button>
+    </div>
+  </div>
+
+  <!-- HOLIDAY PARTIES -->
+  <div class="view" id="view-holiday">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">🎄</div>
+      <div class="desc-title">Holiday Parties</div>
+      <div class="desc-subtitle">Specialty</div>
+      <div class="desc-body">
+        From Halloween haunts to Christmas chaos to New Year countdowns — our holiday productions are fully themed, fully hosted, and designed to fill your venue during the biggest nights of the year. We bring the season to life with themed trivia, bingo, games, and décor energy that turns a regular night into an event.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Plan Your Holiday Event</button>
+    </div>
+  </div>
+
+  <!-- TICKETED EVENTS -->
+  <div class="view" id="view-ticketed">
+    <div class="desc-view">
+      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+      <div class="desc-hero">🎟️</div>
+      <div class="desc-title">Ticketed Events</div>
+      <div class="desc-subtitle">Specialty</div>
+      <div class="desc-body">
+        Premium productions sold as ticketed experiences — think elaborately themed nights, limited-capacity events, and one-of-a-kind shows that sell out in advance. We handle ticketing, promotion, and production. You host the event and reap the benefits of a pre-sold, excited crowd walking through your door.
+      </div>
+      <button class="desc-contact" onclick="window.location.href='mailto:belladonnanights@gmail.com'">✦ Discuss a Ticketed Event</button>
+    </div>
+  </div>
+
+</main><!-- end main-content -->
+
+<!-- ═══ NIGHT DETAIL OVERLAY ═══ -->
+<div class="detail-overlay" id="detail-overlay" onclick="handleOverlayClick(event)">
+  <div class="detail-card" id="detail-card" style="position:relative;">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <img id="detail-banner" class="detail-banner" src="" alt="" style="display:none;">
+    <div class="detail-body">
+      <div class="detail-title" id="detail-title"></div>
+      <div class="detail-cats" id="detail-cats"></div>
+      <div id="detail-tags"></div>
+    </div>
   </div>
 </div>
 
-<footer class="site-footer" id="site-footer"><span class="footer-line1">Belladonna Audio Alchemies</span><span class="footer-diamond"> ✦ </span><span class="footer-line2">Seattle–Tacoma</span></footer>
+<footer class="site-footer" id="site-footer">
+  <span class="footer-line1">Belladonna Audio Alchemies</span><span class="footer-diamond"> ✦ </span><span class="footer-line2">Seattle–Tacoma</span>
+</footer>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -417,631 +722,317 @@ const firebaseConfig = {
   messagingSenderId: "981934324501",
   appId: "1:981934324501:web:9ba85ffde67d2d2b95c71c"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ── DATA ──
 let publishedNights = [];
-let publishedMiniGames = [];
-let venueMiniTags = [];
-let venueNightTags = [];
-let activeNightFilters = new Set();
-let nightFiltersVisible = false;
-let activeMiniFilters = new Set();
-let miniFiltersVisible = false;
-let venueSingaTags = [];
-let activeSingaFilters = new Set();
-let singaFiltersVisible = false;
-let publishedSingAlongs = [];
-let venueTriviaTagsList = [];
-let activeTriviaFilters = new Set();
-let triviaFiltersVisible = false;
-let publishedTrivia = [];
+let publishedCategories = [];
+let filterDimOptions = { genre:[], tone:[], era:[], audience:[] };
+const DEFAULTS = {
+  genre: ['Horror/Spooky','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime','Fantasy','Sci-Fi'],
+  tone: ['Cozy','Dark','Chaotic','Chill','High-Energy','Emotional','Silly'],
+  era: ['70s','80s','90s','2000s','2010s','Current','Classic/Timeless'],
+  audience: ['All Ages','Adults Only','Date Night','Girls Night','Families','21+']
+};
+const DIM_LABELS = { genre: 'Genre', tone: 'Tone', era: 'Era', audience: 'Audience' };
 
-function esc(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ── FILTER STATE ──
+const activeSidebarFilters = { genre: new Set(), tone: new Set(), era: new Set(), audience: new Set() };
+let currentFilterTab = null;
+
+function hasSidebarFilters() {
+  return Object.values(activeSidebarFilters).some(s => s.size > 0);
+}
+function itemMatchesFilters(item) {
+  for (const dim of ['genre','tone','era','audience']) {
+    const active = activeSidebarFilters[dim];
+    if (!active || active.size === 0) continue;
+    const vals = (item[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
+    if (!vals.some(v => active.has(v))) return false;
+  }
+  return true;
+}
+function nightMatchesFilters(night) {
+  for (const dim of ['genre','tone','era','audience']) {
+    const active = activeSidebarFilters[dim];
+    if (!active || active.size === 0) continue;
+    const nightVals = (night[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
+    if (nightVals.some(v => active.has(v))) continue;
+    const catIds = night.categoryIds || [];
+    const catMatch = catIds.length > 0 && publishedCategories.some(c =>
+      (catIds.includes(c._id) || catIds.includes(c.name)) &&
+      (c[dim]||'').split(',').map(v=>v.trim()).filter(Boolean).some(v => active.has(v))
+    );
+    if (!catMatch) return false;
+  }
+  return true;
 }
 
-function switchTab(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(t => {
-    const lmap = {nights:'night', trivia:'trivia', minigames:'mini', singalongs:'sing'};
-    if (t.textContent.toLowerCase().includes(lmap[name]||name)) t.classList.add('active');
-  });
+// ── LOAD DATA ──
+async function loadFilterDims() {
+  try {
+    const d = (await getDoc(doc(db,'config','filterDimensions'))).data() || {};
+    filterDimOptions.genre    = (d.genre    && d.genre.length)    ? d.genre    : DEFAULTS.genre;
+    filterDimOptions.tone     = (d.tone     && d.tone.length)     ? d.tone     : DEFAULTS.tone;
+    filterDimOptions.era      = (d.era      && d.era.length)      ? d.era      : DEFAULTS.era;
+    filterDimOptions.audience = (d.audience && d.audience.length) ? d.audience : DEFAULTS.audience;
+  } catch(e) { filterDimOptions = { ...DEFAULTS }; }
 }
 
 async function load() {
   try {
     const [nightsSnap, catsSnap] = await Promise.all([
-      getDocs(collection(db, 'nights')),
-      getDocs(collection(db, 'categories'))
+      getDocs(collection(db,'nights')),
+      getDocs(collection(db,'categories'))
     ]);
-    publishedNights = nightsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(n => n.published).sort((a,b) => (a.position??9999) - (b.position??9999));
-    publishedMiniGames = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => (c.publishedTabs||[]).includes('mini') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t))))
-      .sort((a,b) => (a.position??9999) - (b.position??9999));
-
-    publishedSingAlongs = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => { const tabs = c.publishedTabs||[]; const types = (c.type||'').toLowerCase().split(',').map(t=>t.trim()); return tabs.includes('singa') || (c.published && types.some(t => t.includes('sing'))); })
-      .sort((a,b) => (a.position??9999) - (b.position??9999));
-
-    publishedTrivia = catsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))
-      .filter(c => (c.publishedTabs||[]).includes('trivia') || (c.published && (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t === 'trivia' || t === 'full trivia')))
-      .sort((a,b) => (a.position??9999) - (b.position??9999));
-
-    try {
-      const ntSnap = await getDoc(doc(db, 'config', 'nightTags'));
-      venueNightTags = ntSnap.exists() ? (ntSnap.data().tags || []) : ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime'];
-    } catch(e) { venueNightTags = ['Spooky/Dark','Comedy','Romance','Music','Kids/Family','TV/Film','Fashion','Holiday','Nostalgia','Mystery/Crime']; }
-    try {
-      const mSnap = await getDoc(doc(db, 'config', 'miniTags'));
-      venueMiniTags = mSnap.exists() ? (mSnap.data().tags || []) : ['Music','Party','Team Play','Quick Round','Holiday'];
-    } catch(e) { venueMiniTags = ['Music','Party','Team Play','Quick Round','Holiday']; }
-    try {
-      const sSnap = await getDoc(doc(db, 'config', 'singaTags'));
-      venueSingaTags = sSnap.exists() ? (sSnap.data().tags || []) : ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin'];
-    } catch(e) { venueSingaTags = ['Pop','Rock/Emo','Holiday','Artist-Specific','Oldies','Latin']; }
-    try {
-      const rvSnap = await getDoc(doc(db, 'config', 'triviaTags'));
-      venueTriviaTagsList = rvSnap.exists() ? (rvSnap.data().tags || []) : ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports'];
-    } catch(e) { venueTriviaTagsList = ['Pop Culture','TV Shows','Movies','Music','Spooky','Books','Sports']; }
-  } catch(e) { console.error('Load error:', e); }
-
-  await loadVenueFilterDims();
-  document.getElementById('loading').style.display = 'none';
-  renderNights();
-  renderTrivia();
-  renderMiniGames();
-  renderSingAlongs();
-}
-
-function renderNightFilterChips() {
-  const bar = document.getElementById('night-filter-chips');
-  if (!bar) return;
-  const allActive = activeNightFilters.size === 0;
-  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearNightFilters()">All</button>`
-    + venueNightTags.map(t =>
-      `<button class="filter-chip${activeNightFilters.has(t) ? ' active' : ''}" onclick="toggleNightFilter('${t.replace(/'/g,"\'")}'">${t}</button>`
-    ).join('');
-}
-
-function clearNightFilters() { activeNightFilters.clear(); renderNightFilterChips(); renderNights(); }
-function toggleNightFilter(tag) {
-  if (activeNightFilters.has(tag)) activeNightFilters.delete(tag); else activeNightFilters.add(tag);
-  renderNightFilterChips(); renderNights();
-}
-function toggleNightFilters() {
-  nightFiltersVisible = !nightFiltersVisible;
-  const ns = document.getElementById('nights-filter-section'); if (ns) ns.style.display = nightFiltersVisible ? 'flex' : 'none';
-  const nb = document.getElementById('nights-filter-visibility-btn'); if (nb) nb.style.color = nightFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-  renderNightFilterChips();
-}
-
-function renderNights() {
-  renderNightFilterChips();
-  const grid = document.getElementById('nights-grid');
-  const empty = document.getElementById('nights-empty');
-  const searchQ = (document.getElementById('nights-search-input')?.value || '').toLowerCase().trim();
-  let filtered = activeNightFilters.size > 0
-    ? publishedNights.filter(n => [...activeNightFilters].every(f => (n.filterTags||[]).includes(f)))
-    : publishedNights;
-  if (searchQ) filtered = filtered.filter(n => n.name.toLowerCase().includes(searchQ) || (n.description||'').toLowerCase().includes(searchQ));
-  if (venueHasSidebarFilters()) filtered = filtered.filter(n => venueItemMatchesFilters(n));
-  if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML=''; return; }
-  empty.style.display = 'none';
-  grid.innerHTML = filtered.map((n, i) => {
-    const realIdx = publishedNights.indexOf(n);
-    const bgColor = n.bannerColor ? `background:${n.bannerColor};` : '';
-    const bannerImg = n.bannerData ? `<img src="${n.bannerData}" alt="${esc(n.name)}">` : '';
-    return `<div class="night-card" onclick="openNightDetail(${realIdx})">
-      <div class="night-banner" style="${bgColor}">${bannerImg}</div>
-      <div class="night-info">
-        <div class="night-name">${esc(n.name)}</div>
-        ${n.description ? `<p style="font-size:0.88rem;color:var(--text-muted);line-height:1.55;font-style:italic;">${esc(n.description)}</p>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderMiniFilterChips() {
-  const bar = document.getElementById('mini-filter-chips');
-  if (!bar) return;
-  bar.style.display = miniFiltersVisible ? 'flex' : 'none';
-  const allActive = activeMiniFilters.size === 0;
-  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearMiniFilters()">All</button>`
-    + venueMiniTags.map(t =>
-      `<button class="filter-chip${activeMiniFilters.has(t) ? ' active' : ''}" onclick="toggleMiniFilter('${t.replace(/'/g,"\\'")}'">${t}</button>`
-    ).join('');
-  const btn = document.getElementById('mini-filter-visibility-btn');
-  if (btn) btn.style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-}
-
-function clearMiniFilters() {
-  activeMiniFilters.clear();
-  renderMiniFilterChips();
-  renderMiniGames();
-}
-
-function toggleMiniFilter(tag) {
-  if (activeMiniFilters.has(tag)) activeMiniFilters.delete(tag);
-  else activeMiniFilters.add(tag);
-  renderMiniFilterChips();
-  renderMiniGames();
-}
-
-function toggleMiniFilterVisibility() {
-  miniFiltersVisible = !miniFiltersVisible;
-  const ms = document.getElementById('mini-filter-section'); if (ms) ms.style.display = miniFiltersVisible ? 'flex' : 'none';
-  const mb = document.getElementById('mini-filter-visibility-btn'); if (mb) mb.style.color = miniFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-  renderMiniFilterChips();
-}
-
-function renderMiniGames() {
-  renderMiniFilterChips();
-  const grid = document.getElementById('minigames-grid');
-  const empty = document.getElementById('minigames-empty');
-  let filtered = activeMiniFilters.size > 0
-    ? publishedMiniGames.filter(c => {
-        const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
-        return [...activeMiniFilters].every(f => catTags.includes(f));
-      })
-    : publishedMiniGames;
-  if (venueHasSidebarFilters()) filtered = filtered.filter(c => venueItemMatchesFilters(c));
-  if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
-  empty.style.display = 'none';
-  grid.innerHTML = filtered.map((c, i) => {
-    const realIdx = publishedMiniGames.indexOf(c);
-    const src = c.miniGameImage || c.bannerData || null;
-    const bannerImg = src ? `<img src="${src}" alt="${esc(c.name)}">` : '';
-    const tagHtml = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean)
-      .map(t=>`<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;padding:2px 8px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;">${esc(t)}</span>`).join('');
-    return `<div class="night-card" onclick="openMiniDetail(${realIdx})">
-      <div class="night-banner" style="background:var(--surface2);">${bannerImg}</div>
-      <div class="night-info">
-        <div class="night-name">${esc(c.name)}</div>
-        ${c.theme ? `<p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">${esc(c.theme)}</p>` : ''}
-        ${tagHtml ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:0.3rem;">${tagHtml}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openNightDetail(i) {
-  const n = publishedNights[i];
-  const bannerEl = document.getElementById('detail-banner');
-  bannerEl.style.cssText = n.bannerColor ? `background:${n.bannerColor};` : '';
-  bannerEl.innerHTML = n.bannerData ? `<img src="${n.bannerData}" alt="${esc(n.name)}">` : '';
-  document.getElementById('detail-name').textContent = n.name;
-  document.getElementById('detail-cats-label').textContent = 'Categories';
-
-  const tagsEl = document.getElementById('detail-tags');
-  const tags = n.nightTagsList || [];
-  tagsEl.innerHTML = tags.map(t=>`<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.7rem;padding:2px 9px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;">${esc(t)}</span>`).join('');
-  tagsEl.style.display = tags.length ? 'flex' : 'none';
-
-  const descSection = document.getElementById('detail-description-section');
-  if (n.description) { document.getElementById('detail-description').textContent = n.description; descSection.style.display = 'block'; }
-  else descSection.style.display = 'none';
-
-  const cats = n.categoryIds || [];
-  document.getElementById('detail-cats-section').style.display = 'block';
-  document.getElementById('detail-cats').innerHTML = cats.length
-    ? cats.map(id => `<div class="detail-cat-item">${esc(id)}</div>`).join('')
-    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No categories listed</div>`;
-
-  const enhancements = n.enhancements || [];
-  const enhSection = document.getElementById('detail-enhancements-section');
-  if (enhancements.length) {
-    document.getElementById('detail-enhancements').innerHTML = enhancements.map(e=>`<div class="detail-enhance-item">${esc(e)}</div>`).join('');
-    enhSection.style.display = 'block';
-  } else enhSection.style.display = 'none';
-
-  document.getElementById('detail-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function openMiniDetail(i) {
-  const c = publishedMiniGames[i];
-  const src = c.miniGameImage || c.bannerData || null;
-  const bannerEl = document.getElementById('detail-banner');
-  bannerEl.style.cssText = 'background:var(--surface2);';
-  bannerEl.innerHTML = src ? `<img src="${src}" alt="${esc(c.name)}">` : '';
-  document.getElementById('detail-name').textContent = c.name;
-  document.getElementById('detail-cats-label').textContent = 'Details';
-  document.getElementById('detail-tags').style.display = 'none';
-  document.getElementById('detail-description-section').style.display = 'none';
-  document.getElementById('detail-enhancements-section').style.display = 'none';
-  document.getElementById('detail-cats-section').style.display = 'block';
-  const shows = c.shows || [];
-  document.getElementById('detail-cats').innerHTML = shows.length
-    ? `<div class="detail-cat-item" style="white-space:normal;color:var(--text-muted);">${shows.map(s=>esc(s)).join(' ')}</div>`
-    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
-  document.getElementById('detail-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeDetail() {
-  document.getElementById('detail-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('detail-overlay')) closeDetail();
-}
-
-function renderTriviaFilterChips() {
-  const bar = document.getElementById('trivia-filter-chips');
-  if (!bar) return;
-  bar.style.display = triviaFiltersVisible ? 'flex' : 'none';
-  const allActive = activeTriviaFilters.size === 0;
-  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearTriviaFilters()">All</button>`
-    + venueTriviaTagsList.map(t =>
-      `<button class="filter-chip${activeTriviaFilters.has(t) ? ' active' : ''}" onclick="toggleTriviaFilter('${t.replace(/'/g,"\\'")}'">${t}</button>`
-    ).join('');
-  const btn = document.getElementById('trivia-filter-visibility-btn');
-  if (btn) btn.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-}
-function clearTriviaFilters() { activeTriviaFilters.clear(); renderTriviaFilterChips(); renderTrivia(); }
-function toggleTriviaFilter(tag) {
-  if (activeTriviaFilters.has(tag)) activeTriviaFilters.delete(tag); else activeTriviaFilters.add(tag);
-  renderTriviaFilterChips(); renderTrivia();
-}
-function toggleTriviaFilterVisibility() {
-  triviaFiltersVisible = !triviaFiltersVisible;
-  const ts = document.getElementById('trivia-filter-section'); if (ts) ts.style.display = triviaFiltersVisible ? 'flex' : 'none';
-  const tb = document.getElementById('trivia-filter-visibility-btn'); if (tb) tb.style.color = triviaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-  renderTriviaFilterChips();
-}
-
-function renderTrivia() {
-  renderTriviaFilterChips();
-  const grid = document.getElementById('trivia-grid');
-  const empty = document.getElementById('trivia-empty');
-  const triviaQ = (document.getElementById('trivia-search-input')?.value||'').toLowerCase().trim();
-  let filtered = activeTriviaFilters.size > 0
-    ? publishedTrivia.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeTriviaFilters].every(f=>ct.includes(f)); })
-    : publishedTrivia;
-  if (triviaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(triviaQ)||(c.theme||'').toLowerCase().includes(triviaQ));
-  if (Object.values(venueActiveSidebarFilters).some(s=>s.size>0)) filtered = filtered.filter(c => venueItemMatchesFilters(c));
-  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
-  empty.style.display = 'none';
-  grid.innerHTML = filtered.map((c, i) => {
-    const realIdx = publishedTrivia.indexOf(c);
-    const portraitSrc = c.miniGameImage || c.bannerData || null;
-    const bgColor = c.bannerColor ? `background:${c.bannerColor};` : '';
-    const bannerImg = portraitSrc ? `<img src="${portraitSrc}" alt="${esc(c.name)}">` : '';
-    return `<div class="night-card" onclick="openTriviaDetail(${realIdx})">
-      <div class="night-banner" style="${bgColor}background:var(--surface2);">${bannerImg}</div>
-      <div class="night-info">
-        <div class="night-name">${esc(c.name)}</div>
-        ${c.theme ? `<p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.3rem;">${esc(c.theme)}</p>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openTriviaDetail(i) {
-  const c = publishedTrivia[i];
-  const bannerEl = document.getElementById('detail-banner');
-  const triviaSrc = c.miniGameImage || c.bannerData || null;
-  bannerEl.style.cssText = c.bannerColor ? `background:${c.bannerColor};` : 'background:var(--surface2);';
-  bannerEl.innerHTML = triviaSrc ? `<img src="${triviaSrc}" alt="${esc(c.name)}">` : '';
-  document.getElementById('detail-name').textContent = c.name;
-  document.getElementById('detail-cats-label').textContent = 'Shows & Titles';
-  document.getElementById('detail-tags').style.display = 'none';
-  document.getElementById('detail-description-section').style.display = 'none';
-  document.getElementById('detail-enhancements-section').style.display = 'none';
-  document.getElementById('detail-cats-section').style.display = 'block';
-  const shows = c.shows || [];
-  document.getElementById('detail-cats').innerHTML = shows.length
-    ? shows.map(s=>`<div class="detail-cat-item">${esc(s)}</div>`).join('')
-    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
-  document.getElementById('detail-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function renderSingaFilterChips() {
-  const bar = document.getElementById('singa-filter-chips');
-  if (!bar) return; // element not in DOM — old pill system
-  bar.style.display = singaFiltersVisible ? 'flex' : 'none';
-  const allActive = activeSingaFilters.size === 0;
-  bar.innerHTML = `<button class="filter-chip${allActive ? ' active' : ''}" onclick="clearSingaFilters()">All</button>`
-    + venueSingaTags.map(t =>
-      `<button class="filter-chip${activeSingaFilters.has(t) ? ' active' : ''}" onclick="toggleSingaFilter('${t.replace(/'/g,"\\'")}'">${t}</button>`
-    ).join('');
-  const btn = document.getElementById('singa-filter-visibility-btn');
-  if (btn) btn.style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-}
-
-function clearSingaFilters() { activeSingaFilters.clear(); renderSingaFilterChips(); renderSingAlongs(); }
-function toggleSingaFilter(tag) {
-  if (activeSingaFilters.has(tag)) activeSingaFilters.delete(tag); else activeSingaFilters.add(tag);
-  renderSingaFilterChips(); renderSingAlongs();
-}
-function toggleSingaFilterVisibility() {
-  singaFiltersVisible = !singaFiltersVisible;
-  const ss = document.getElementById('singa-filter-section'); if (ss) ss.style.display = singaFiltersVisible ? 'flex' : 'none';
-  const sb = document.getElementById('singa-filter-visibility-btn'); if (sb) sb.style.color = singaFiltersVisible ? 'var(--gold)' : 'var(--text-muted)';
-  renderSingaFilterChips();
-}
-
-function renderSingAlongs() {
-  renderSingaFilterChips();
-  const grid = document.getElementById('singalongs-grid');
-  const empty = document.getElementById('singalongs-empty');
-  const singaQ = (document.getElementById('singa-search-input')?.value||'').toLowerCase().trim();
-  let filtered = activeSingaFilters.size > 0
-    ? publishedSingAlongs.filter(c => { const ct=(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean); return [...activeSingaFilters].every(f=>ct.includes(f)); })
-    : publishedSingAlongs;
-  if (singaQ) filtered = filtered.filter(c => c.name.toLowerCase().includes(singaQ)||(c.theme||'').toLowerCase().includes(singaQ));
-  if (venueHasSidebarFilters()) filtered = filtered.filter(venueItemMatchesFilters);
-  if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
-  empty.style.display = 'none';
-  grid.innerHTML = filtered.map((c, i) => {
-    const realIdx = publishedSingAlongs.indexOf(c);
-    const src = c.miniGameImage || c.bannerData || null;
-    const bannerImg = src ? `<img src="${src}" alt="${esc(c.name)}">` : '';
-    const tagHtml = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean)
-      .map(t=>`<span style="background:rgba(60,80,100,0.25);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;padding:2px 8px;border-radius:3px;font-family:'Cinzel',serif;letter-spacing:0.06em;">${esc(t)}</span>`).join('');
-    return `<div class="night-card" onclick="openSingaDetail(${realIdx})">
-      <div class="night-banner" style="background:var(--surface2);">${bannerImg}</div>
-      <div class="night-info">
-        <div class="night-name">${esc(c.name)}</div>
-        ${c.theme ? `<p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">${esc(c.theme)}</p>` : ''}
-        ${tagHtml ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:0.3rem;">${tagHtml}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openSingaDetail(i) {
-  const c = publishedSingAlongs[i];
-  const src = c.miniGameImage || c.bannerData || null;
-  const bannerEl = document.getElementById('detail-banner');
-  bannerEl.style.cssText = 'background:var(--surface2);';
-  bannerEl.innerHTML = src ? `<img src="${src}" alt="${esc(c.name)}">` : '';
-  document.getElementById('detail-name').textContent = c.name;
-  document.getElementById('detail-cats-label').textContent = 'Details';
-  document.getElementById('detail-tags').style.display = 'none';
-  document.getElementById('detail-description-section').style.display = 'none';
-  document.getElementById('detail-enhancements-section').style.display = 'none';
-  document.getElementById('detail-cats-section').style.display = 'block';
-  const shows = c.shows || [];
-  document.getElementById('detail-cats').innerHTML = shows.length
-    ? `<div style="white-space:pre-wrap;line-height:1.7;color:var(--text-muted);font-size:0.95rem;">${shows.filter(s=>s.trim()).map(s=>esc(s.trim())).join('\n')}</div>`
-    : `<div class="detail-cat-item" style="color:var(--text-dim);font-style:italic;">No details listed</div>`;
-  document.getElementById('detail-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-// ═══════════════════════════════════════════════
-// VENUE SIDEBAR FILTER SYSTEM
-// ═══════════════════════════════════════════════
-const VENUE_DIM_LABELS = { genre:'Genre', tone:'Tone', era:'Era', audience:'Audience' };
-let venueFilterDimOptions = { genre:[], tone:[], era:[], audience:[] };
-// Global sidebar filter state for venue
-const venueActiveSidebarFilters = { genre:new Set(), tone:new Set(), era:new Set(), audience:new Set() };
-function venueTabFilters(tab) { return venueActiveSidebarFilters; }
-let venueCurrentSidebarTab = null;
-
-async function loadVenueFilterDims() {
-  const DEFAULTS = {
-    genre:    ['Horror','Comedy','Romance','Music','Mystery/Crime','Fantasy','TV/Film','Fashion','Kids/Family','Nostalgia','Sports','Books'],
-    tone:     ['Cozy','Dark','Chaotic','Dramatic','Campy','Emotional','Wholesome','Glamorous','Spicy','Feel-Good'],
-    era:      ['70s','80s','90s','Y2K','2010s','Retro','VHS','Tumblr Era','Holiday','Classic'],
-    audience: ['Adults','Kids/Family','Date Night','Girls Night','Teens','All Ages','Party Crowd']
-  };
-  try {
-    const snap = await getDoc(doc(db, 'config', 'filterDimensions'));
-    if (snap.exists()) {
-      const d = snap.data();
-      venueFilterDimOptions.genre    = (d.genre    && d.genre.length)    ? d.genre    : DEFAULTS.genre;
-      venueFilterDimOptions.tone     = (d.tone     && d.tone.length)     ? d.tone     : DEFAULTS.tone;
-      venueFilterDimOptions.era      = (d.era      && d.era.length)      ? d.era      : DEFAULTS.era;
-      venueFilterDimOptions.audience = (d.audience && d.audience.length) ? d.audience : DEFAULTS.audience;
-    } else {
-      venueFilterDimOptions = { ...DEFAULTS };
-    }
+    publishedNights = nightsSnap.docs.map(d => ({_id:d.id,...d.data()}))
+      .filter(n => n.published).sort((a,b) => (a.position||999)-(b.position||999));
+    publishedCategories = catsSnap.docs.map(d => ({_id:d.id,...d.data()}));
+    await loadFilterDims();
   } catch(e) {
-    venueFilterDimOptions = { ...DEFAULTS };
+    console.error('Load error:', e);
   }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('view-menu').classList.add('active');
 }
 
-async function toggleVenueSidebar(tab) {
-  const sidebar = document.getElementById('venue-filter-sidebar');
-  if (venueCurrentSidebarTab === tab && sidebar.classList.contains('open')) {
-    sidebar.classList.remove('open');
-    venueCurrentSidebarTab = null;
-    updateVenueSidebarToggleBtns();
-  } else {
-    venueCurrentSidebarTab = tab;
-    sidebar.classList.remove('hidden');
-    sidebar.classList.add('open');
-    updateVenueSidebarToggleBtns();
-    if (!venueFilterDimOptions.genre.length) await loadVenueFilterDims();
-    renderVenueSidebarAccordion(tab);
-  }
+// ── NAVIGATION ──
+let currentView = 'menu';
+function navigateTo(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+  currentView = view;
+  closeFilterSidebar();
+  window.scrollTo(0, 0);
+  // Render the appropriate browse view
+  if (view === 'themed') renderThemedNights();
+  else if (view === 'trivia') renderTrivia();
+  else if (view === 'bingo') renderBingo();
+  else if (view === 'singalongs') renderSingAlongs();
+  else if (view === 'minigames') renderMiniGames();
 }
 
-
-function closeVenueSidebar() {
-  const sidebar = document.getElementById('venue-filter-sidebar');
+// ── FILTER SIDEBAR ──
+async function toggleFilterSidebar(tab) {
+  const sidebar = document.getElementById('filter-sidebar');
   const backdrop = document.getElementById('mobile-sidebar-backdrop');
-  sidebar.classList.remove('open');
-  if (backdrop) backdrop.style.display = 'none';
-  venueCurrentSidebarTab = null;
-  updateVenueSidebarToggleBtns();
-}
-
-function updateVenueSidebarToggleBtns() {
-  ['nights','trivia','mini','singa'].forEach(id => {
-    const btn = document.getElementById(`${id}-filter-toggle`);
-    if (btn) btn.classList.remove('active');
-  });
-  const tabToId = {nights:'nights',trivia:'trivia',minigames:'mini',singalongs:'singa'};
-  if (venueCurrentSidebarTab && tabToId[venueCurrentSidebarTab]) {
-    const btn = document.getElementById(`${tabToId[venueCurrentSidebarTab]}-filter-toggle`);
-    if (btn) btn.classList.add('active');
+  if (currentFilterTab === tab && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    if (backdrop) backdrop.style.display = 'none';
+    currentFilterTab = null;
+  } else {
+    currentFilterTab = tab;
+    sidebar.classList.add('open');
+    if (backdrop && window.innerWidth <= 768) backdrop.style.display = 'block';
+    if (!filterDimOptions.genre.length) await loadFilterDims();
+    renderSidebarAccordion(tab);
   }
+  updateFilterBtns();
 }
 
-function renderVenueSidebarAccordion(tab) {
-  var acc = document.getElementById('venue-sidebar-accordion');
+function closeFilterSidebar() {
+  document.getElementById('filter-sidebar').classList.remove('open');
+  const backdrop = document.getElementById('mobile-sidebar-backdrop');
+  if (backdrop) backdrop.style.display = 'none';
+  currentFilterTab = null;
+  updateFilterBtns();
+}
+
+function updateFilterBtns() {
+  document.querySelectorAll('.sidebar-toggle-btn').forEach(b => {
+    const tab = b.id.replace('-filter-btn','');
+    b.classList.toggle('active', currentFilterTab === tab && document.getElementById('filter-sidebar').classList.contains('open'));
+  });
+}
+
+function renderSidebarAccordion(tab) {
+  const acc = document.getElementById('sidebar-accordion');
   if (!acc) return;
-  var vDims = {genre:'Genre', tone:'Tone', era:'Era', audience:'Audience'};
-  var lines = [];
-  Object.keys(vDims).forEach(function(dim) {
-    var opts = venueFilterDimOptions[dim] || [];
-    var active = venueActiveSidebarFilters[dim];
-    var isActive = active && active.size > 0;
-    var badge = isActive ? ' (' + active.size + ')' : '';
-    var optsHtml = '';
+  let html = '';
+  Object.keys(DIM_LABELS).forEach(function(dim) {
+    const opts = filterDimOptions[dim] || [];
+    const active = activeSidebarFilters[dim];
+    const isActive = active && active.size > 0;
+    const badge = isActive ? ' (' + active.size + ')' : '';
+    let optsHtml = '';
     opts.forEach(function(opt) {
-      var chk = (active && active.has(opt));
-      var sid = 'vsf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
-      var safeOpt = opt.replace(/'/g, "\'");
+      const chk = (active && active.has(opt));
+      const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
+      const safeOpt = opt.replace(/'/g,"\\'");
       optsHtml += '<div class="sb-check-row">'
-        + '<input type="checkbox" id="' + sid + '" ' + (chk?'checked':'')
-        + ' onchange="toggleVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')"'
+        + '<input type="checkbox" id="' + safeId + '" ' + (chk?'checked':'')
+        + ' onchange="toggleSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',this.checked,\'' + tab + '\')"'
         + ' style="accent-color:var(--gold);width:13px;height:13px;cursor:pointer;flex-shrink:0;">'
-        + '<label for="' + sid + '" style="font-size:0.85rem;color:' + (chk?'var(--text)':'var(--text-muted)') + ';cursor:pointer;line-height:1.4;">' + opt + '</label>'
+        + '<label for="' + safeId + '" style="font-size:0.85rem;color:' + (chk?'var(--text)':'var(--text-muted)') + ';cursor:pointer;line-height:1.4;">' + opt + '</label>'
         + '</div>';
     });
-    if (!opts.length) optsHtml = '<div style="padding:0.2rem 1rem;font-size:0.8rem;color:var(--text-dim);font-style:italic;">No options yet</div>';
-    lines.push('<div class="sb-dim-section">'
-      + '<div class="sb-dim-header ' + (isActive?'has-active':'') + '" onclick="venueToggleAccordion(\'' + dim + '\')">' 
-      + '<span>' + vDims[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
-      + '<span class="sb-arrow accordion-arrow" id="v-arrow-' + dim + '">&#9660;</span></div>'
-      + '<div class="accordion-body" id="v-acc-body-' + dim + '">' + optsHtml + '</div>'
-      + '</div>');
+    if (!opts.length) optsHtml = '<div class="sb-empty">None yet</div>';
+    html += '<div class="accordion-section">'
+      + '<div class="accordion-header ' + (isActive?'has-active':'') + '" onclick="toggleAccordion(\'' + dim + '\')">'
+      + '<span>' + DIM_LABELS[dim].toUpperCase() + '<span style="color:var(--gold-dim);font-size:0.65rem;">' + badge + '</span></span>'
+      + '<span class="accordion-arrow" id="arrow-' + dim + '">&#9660;</span>'
+      + '</div>'
+      + '<div class="accordion-body" id="acc-body-' + dim + '">' + optsHtml + '</div>'
+      + '</div>';
   });
-  acc.innerHTML = lines.join('');
+  acc.innerHTML = html;
 }
 
-function venueToggleAccordion(dim) {
-  const body = document.getElementById('v-acc-body-' + dim);
-  const header = body ? body.previousElementSibling : null;
-  const arrow = document.getElementById('v-arrow-' + dim);
+function toggleAccordion(dim) {
+  const body = document.getElementById('acc-body-' + dim);
+  const arrow = document.getElementById('arrow-' + dim);
   if (!body) return;
   const isOpen = body.classList.contains('open');
   body.classList.toggle('open', !isOpen);
-  if (header) header.classList.toggle('open', !isOpen);
   if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
-function toggleVenueSidebarFilter(dim, opt, checked, tab) {
-  if (checked) venueActiveSidebarFilters[dim].add(opt);
-  else venueActiveSidebarFilters[dim].delete(opt);
-  // Update in place - don't rebuild accordion
-  const safeId = 'vsf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi, '-');
+function toggleSidebarFilter(dim, opt, checked, tab) {
+  if (checked) activeSidebarFilters[dim].add(opt);
+  else activeSidebarFilters[dim].delete(opt);
+  const safeId = 'sf-' + dim + '-' + opt.replace(/[^a-z0-9]/gi,'-');
   const cb = document.getElementById(safeId);
-  if (cb) {
-    cb.checked = checked;
-    const lbl = cb.nextElementSibling;
-    if (lbl) lbl.style.color = checked ? 'var(--text)' : 'var(--text-muted)';
-  }
-  const active = venueActiveSidebarFilters[dim];
-  const header = document.querySelector('#v-acc-body-' + dim + ' ~ *') || document.getElementById('v-acc-body-' + dim)?.previousElementSibling;
-  if (header) {
-    const badge = header.querySelector('span span');
-    if (badge) badge.textContent = active.size > 0 ? ' (' + active.size + ')' : '';
-    header.classList.toggle('has-active', active.size > 0);
-  }
-  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
-  venueTabRender(tab);
+  if (cb) { cb.checked = checked; const lbl = cb.nextElementSibling; if (lbl) lbl.style.color = checked ? 'var(--text)' : 'var(--text-muted)'; }
+  const active = activeSidebarFilters[dim];
+  const header = document.querySelector('#acc-body-' + dim)?.previousElementSibling;
+  if (header) { const badge = header.querySelector('span span'); if (badge) badge.textContent = active.size > 0 ? ' (' + active.size + ')' : ''; header.classList.toggle('has-active', active.size > 0); }
+  renderAllFilterPills();
+  reRenderCurrentBrowse();
 }
 
-function removeVenueSidebarFilter(dim, opt, tab) {
-  venueActiveSidebarFilters[dim].delete(opt);
-  if (venueCurrentSidebarTab) renderVenueSidebarAccordion(venueCurrentSidebarTab);
-  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
-  venueTabRender(tab || venueCurrentSidebarTab || 'nights');
+function clearAllFilters() {
+  Object.keys(activeSidebarFilters).forEach(dim => activeSidebarFilters[dim].clear());
+  if (currentFilterTab) renderSidebarAccordion(currentFilterTab);
+  renderAllFilterPills();
+  reRenderCurrentBrowse();
 }
 
-function clearAllVenueSidebarFilters() {
-  Object.keys(venueActiveSidebarFilters).forEach(dim => venueActiveSidebarFilters[dim].clear());
-  ['nights','trivia','minigames','singalongs'].forEach(t => renderVenueActiveFilterPills(t));
-  if (venueCurrentSidebarTab) renderVenueSidebarAccordion(venueCurrentSidebarTab);
-  ['nights','trivia','minigames','singalongs'].forEach(t => venueTabRender(t));
+function removeFilter(dim, opt) {
+  activeSidebarFilters[dim].delete(opt);
+  if (currentFilterTab) renderSidebarAccordion(currentFilterTab);
+  renderAllFilterPills();
+  reRenderCurrentBrowse();
 }
 
-function venueHasSidebarFilters() {
-  return Object.values(venueActiveSidebarFilters).some(s => s.size > 0);
+function reRenderCurrentBrowse() {
+  if (currentView === 'themed') renderThemedNights();
+  else if (currentView === 'trivia') renderTrivia();
+  else if (currentView === 'bingo') renderBingo();
+  else if (currentView === 'singalongs') renderSingAlongs();
+  else if (currentView === 'minigames') renderMiniGames();
 }
 
-function venueItemMatchesFilters(item) {
-  for (const dim of ['genre','tone','era','audience']) {
-    const active = venueActiveSidebarFilters[dim];
-    if (!active || active.size === 0) continue;
-    const vals = (item[dim]||'').split(',').map(v=>v.trim()).filter(Boolean);
-    if (!vals.some(v=>active.has(v))) return false;
-  }
-  return true;
-}
-
-function renderVenueActiveFilterPills(tab) {
-  const barId = {nights:'active-filters-bar-nights',trivia:'active-filters-bar-trivia',minigames:'active-filters-bar-mini',singalongs:'active-filters-bar-singa'}[tab];
-  const bar = document.getElementById(barId);
-  if (!bar) return;
-  const pills = [];
-  Object.keys(venueActiveSidebarFilters).forEach(function(dim) {
-    venueActiveSidebarFilters[dim].forEach(function(opt) {
-      const safeOpt = opt.replace(/'/g, "\'");
-      pills.push('<span class="active-filter-pill" onclick="removeVenueSidebarFilter(\'' + dim + '\',\'' + safeOpt + '\',\'' + tab + '\')">'
-        + '<span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;">' + VENUE_DIM_LABELS[dim] + '</span>'
-        + '&nbsp;' + opt + '&nbsp;<span class="pill-x">✕</span>'
-        + '</span>');
+function renderAllFilterPills() {
+  const barIds = { themed:'active-filters-bar-themed', trivia:'active-filters-bar-trivia', bingo:'active-filters-bar-bingo', singalongs:'active-filters-bar-singa', minigames:'active-filters-bar-mini' };
+  Object.values(barIds).forEach(barId => {
+    const bar = document.getElementById(barId);
+    if (!bar) return;
+    let html = '';
+    Object.keys(activeSidebarFilters).forEach(dim => {
+      activeSidebarFilters[dim].forEach(opt => {
+        const safeOpt = opt.replace(/'/g,"\\'");
+        html += '<span class="active-filter-pill" onclick="removeFilter(\'' + dim + '\',\'' + safeOpt + '\')">'
+          + '<span style="color:var(--text-dim);font-size:0.65rem;text-transform:uppercase;margin-right:3px;">' + DIM_LABELS[dim] + '</span>'
+          + opt + ' <span class="pill-x">✕</span></span>';
+      });
     });
+    bar.innerHTML = html;
   });
-  bar.innerHTML = pills.join('');
 }
 
-function venueTabRender(tab) {
-  // Filters are global — re-render all tabs
-  renderNights();
-  renderTrivia();
-  renderMiniGames();
-  renderSingAlongs();
+// ── RENDER FUNCTIONS ──
+function renderThemedNights() {
+  const grid = document.getElementById('themed-grid');
+  const empty = document.getElementById('themed-empty');
+  if (!grid) return;
+  const q = (document.getElementById('themed-search')?.value||'').toLowerCase().trim();
+  let filtered = publishedNights;
+  if (q) filtered = filtered.filter(n => n.name.toLowerCase().includes(q)||(n.description||'').toLowerCase().includes(q));
+  if (hasSidebarFilters()) filtered = filtered.filter(n => nightMatchesFilters(n));
+  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map((n,i) => {
+    const img = n.bannerData ? `<img class="night-card-img" src="${n.bannerData}" alt="${esc(n.name)}" loading="lazy">` : `<div class="night-card-img" style="display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">🌙</div>`;
+    return `<div class="night-card" onclick="openNightDetail(${publishedNights.indexOf(n)})">${img}<div class="night-card-body"><div class="night-name">${esc(n.name)}</div>${n.description?`<div class="night-desc">${esc(n.description)}</div>`:''}</div></div>`;
+  }).join('');
 }
 
-window.switchTab = switchTab;
-window.openNightDetail = openNightDetail;
-window.toggleVenueSidebar = toggleVenueSidebar;
-window.closeVenueSidebar = closeVenueSidebar;
-window.clearAllVenueSidebarFilters = clearAllVenueSidebarFilters;
-window.venueToggleAccordion = venueToggleAccordion;
-window.toggleVenueSidebarFilter = toggleVenueSidebarFilter;
-window.removeVenueSidebarFilter = removeVenueSidebarFilter;
-window.openMiniDetail = openMiniDetail;
-window.closeDetail = closeDetail;
-window.handleOverlayClick = handleOverlayClick;
-window.clearMiniFilters = clearMiniFilters;
-window.toggleMiniFilter = toggleMiniFilter;
-window.toggleMiniFilterVisibility = toggleMiniFilterVisibility;
-window.clearNightFilters = clearNightFilters;
-window.toggleNightFilter = toggleNightFilter;
-window.toggleNightFilters = toggleNightFilters;
-window.clearTriviaFilters = clearTriviaFilters;
-window.toggleTriviaFilter = toggleTriviaFilter;
-window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
-window.clearMiniFilters = clearMiniFilters;
-window.toggleMiniFilter = toggleMiniFilter;
-window.toggleMiniFilterVisibility = toggleMiniFilterVisibility;
-window.clearSingaFilters = clearSingaFilters;
-window.toggleSingaFilter = toggleSingaFilter;
-window.toggleSingaFilterVisibility = toggleSingaFilterVisibility;
-window.toggleTriviaFilter = toggleTriviaFilter;
-window.toggleTriviaFilterVisibility = toggleTriviaFilterVisibility;
-window.openTriviaDetail = openTriviaDetail;
-window.clearSingaFilters = clearSingaFilters;
-window.toggleSingaFilter = toggleSingaFilter;
-window.toggleSingaFilterVisibility = toggleSingaFilterVisibility;
-window.openSingaDetail = openSingaDetail;
+function isTrivia(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t==='trivia'||t==='full trivia'); }
+function isBingo(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('bingo')); }
+function isMiniGame(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t)); }
+function isSingAlong(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('sing')); }
 
-load();
+function renderCategoryGrid(gridId, emptyId, filterFn) {
+  const grid = document.getElementById(gridId);
+  const empty = document.getElementById(emptyId);
+  if (!grid) return;
+  const searchId = { 'trivia-grid':'trivia-search','bingo-grid':'bingo-search','singa-grid':'singa-search','minigames-grid':'mini-search' }[gridId];
+  const q = (document.getElementById(searchId)?.value||'').toLowerCase().trim();
+  let filtered = publishedCategories.filter(c => (c.publishedTabs||[]).length > 0 || c.published).filter(filterFn);
+  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q)||(c.theme||'').toLowerCase().includes(q));
+  if (hasSidebarFilters()) filtered = filtered.filter(itemMatchesFilters);
+  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
+  empty.style.display='none';
+  grid.innerHTML = filtered.map(c => {
+    const img = c.miniGameImage||c.bannerData;
+    const imgEl = img ? `<img class="night-card-img" src="${img}" alt="${esc(c.name)}" loading="lazy" style="aspect-ratio:4/5;">` : `<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">🎵</div>`;
+    return `<div class="night-card">${imgEl}<div class="night-card-body"><div class="night-name">${esc(c.name)}</div>${c.notes?`<div class="night-desc">${esc(c.notes)}</div>`:''}</div></div>`;
+  }).join('');
+}
+
+function renderTrivia() {
+  renderCategoryGrid('trivia-grid','trivia-empty', c => isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published));
+}
+function renderBingo() {
+  renderCategoryGrid('bingo-grid','bingo-empty', c => isBingo(c) && c.published);
+}
+function renderSingAlongs() {
+  renderCategoryGrid('singa-grid','singa-empty', c => isSingAlong(c) && ((c.publishedTabs||[]).includes('singa') || c.published));
+}
+function renderMiniGames() {
+  renderCategoryGrid('minigames-grid','mini-empty', c => isMiniGame(c) && ((c.publishedTabs||[]).includes('mini') || c.published));
+}
+
+// ── NIGHT DETAIL ──
+function openNightDetail(i) {
+  const n = publishedNights[i];
+  if (!n) return;
+  document.getElementById('detail-title').textContent = n.name;
+  document.getElementById('detail-cats').textContent = n.categoryIds?.length ? n.categoryIds.length + ' categories' : '';
+  const banner = document.getElementById('detail-banner');
+  if (n.bannerData) { banner.src = n.bannerData; banner.style.display='block'; } else { banner.style.display='none'; }
+  document.getElementById('detail-tags').innerHTML = (n.filterTags||[]).map(t=>`<span class="detail-tag">${esc(t)}</span>`).join('');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('detail-overlay')) closeDetail(); }
+
+function esc(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── INIT ──
+document.getElementById('view-menu').classList.remove('active');
+document.getElementById('loading').style.display = 'flex';
+load().then(() => {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('view-menu').classList.add('active');
+});
+
+// ── EXPOSE TO WINDOW ──
+Object.assign(window, {
+  navigateTo, toggleFilterSidebar, closeFilterSidebar,
+  toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
+  openNightDetail, closeDetail, handleOverlayClick,
+  renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames
+});
 </script>
+
+<!-- Loading overlay -->
+<div id="loading" style="display:none; position:fixed; inset:0; background:var(--ink); z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:1rem;">
+  <div class="spinner"></div>
+  <p>Loading the menu…</p>
+</div>
+
 </body>
 </html>
