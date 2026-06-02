@@ -86,7 +86,7 @@
   .menu-section-line { flex: 1; height: 1px; background: var(--border); }
   .menu-section-desc {
     font-size: 0.92rem; color: var(--text-dim); font-style: italic;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.25rem; text-align: center;
   }
 
   /* ── MENU CARD GRID ── */
@@ -94,6 +94,18 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1.25rem;
+    justify-items: center;
+  }
+  /* For sections with fewer cards than columns, center the row */
+  .menu-card-grid.centered-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+  .menu-card-grid.centered-row .menu-card {
+    width: 260px;
+    flex: 0 0 260px;
   }
 
   /* ── MENU CARD ── */
@@ -360,7 +372,7 @@
           <div class="menu-section-line"></div>
         </div>
         <div class="menu-section-desc">Our signature offerings — the heart of every great night.</div>
-        <div class="menu-card-grid" id="mains-grid">
+        <div class="menu-card-grid centered-row" id="mains-grid">
 
           <div class="menu-card" onclick="navigateTo('karaoke')">
             <div class="menu-card-img-placeholder">🎤</div>
@@ -399,7 +411,7 @@
           <div class="menu-section-line"></div>
         </div>
         <div class="menu-section-desc">Specialty performances and interactive shows worth headlining.</div>
-        <div class="menu-card-grid" id="features-grid">
+        <div class="menu-card-grid centered-row" id="features-grid">
 
           <div class="menu-card" onclick="navigateTo('singalongs')">
             <div class="menu-card-img-placeholder">🎶</div>
@@ -438,7 +450,7 @@
           <div class="menu-section-line"></div>
         </div>
         <div class="menu-section-desc">Add-on games and mini-events to spice up any night.</div>
-        <div class="menu-card-grid" id="appetizers-grid">
+        <div class="menu-card-grid centered-row" id="appetizers-grid">
 
           <div class="menu-card" onclick="navigateTo('minigames')">
             <div class="menu-card-img-placeholder">🎲</div>
@@ -459,7 +471,7 @@
           <div class="menu-section-line"></div>
         </div>
         <div class="menu-section-desc">Custom, seasonal, and ticketed events built around your vision.</div>
-        <div class="menu-card-grid" id="specialties-grid">
+        <div class="menu-card-grid centered-row" id="specialties-grid">
 
           <div class="menu-card" onclick="navigateTo('themed')">
             <div class="menu-card-img-placeholder">🌙</div>
@@ -790,12 +802,65 @@ async function load() {
       .filter(n => n.published).sort((a,b) => (a.position||999)-(b.position||999));
     publishedCategories = catsSnap.docs.map(d => ({_id:d.id,...d.data()}));
     await loadFilterDims();
+  await loadMenuConfig();
   } catch(e) {
     console.error('Load error:', e);
   }
   document.getElementById('loading').style.display = 'none';
   document.getElementById('view-menu').classList.add('active');
 }
+
+// ── MENU CONFIG FROM FIREBASE ──
+async function loadMenuConfig() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'mainMenu'));
+    if (!snap.exists()) return; // use static HTML defaults
+    const data = snap.data();
+
+    // Update intro text
+    if (data.eyebrow)  document.querySelectorAll('.menu-intro-eyebrow').forEach(el => el.textContent = data.eyebrow);
+    if (data.title)    document.querySelectorAll('.menu-intro-title').forEach(el => el.textContent = data.title);
+    if (data.subtitle) document.querySelectorAll('.menu-intro-sub').forEach(el => el.textContent = data.subtitle);
+
+    // Update section labels and descriptions
+    if (data.sections) {
+      data.sections.forEach(sec => {
+        const grid = document.getElementById(sec.id + '-grid');
+        if (!grid) return;
+
+        // Update section label
+        const secEl = grid.closest('.menu-section');
+        if (secEl) {
+          const labelEl = secEl.querySelector('.menu-section-title');
+          const descEl  = secEl.querySelector('.menu-section-desc');
+          if (labelEl && sec.label) labelEl.textContent = sec.label;
+          if (descEl  && sec.desc)  descEl.textContent  = sec.desc;
+        }
+
+        // Re-render cards
+        grid.innerHTML = sec.cards.map(card => {
+          const imgEl = card.image
+            ? `<img class="menu-card-img" src="${card.image}" alt="${escHtml(card.title)}" loading="lazy" onerror="this.style.display='none'; this.nextSibling.style.display='flex';">`
+            : '';
+          const placeholderStyle = card.image ? 'display:none;' : '';
+          return `<div class="menu-card" onclick="navigateTo('${card.id}')">
+            ${imgEl}
+            <div class="menu-card-img-placeholder" style="${placeholderStyle}">${card.emoji || '✦'}</div>
+            <div class="menu-card-body">
+              <div class="menu-card-title">${escHtml(card.title)}</div>
+              <div class="menu-card-desc">${escHtml(card.desc)}</div>
+              <div class="menu-card-arrow">→</div>
+            </div>
+          </div>`;
+        }).join('');
+      });
+    }
+  } catch(e) {
+    console.warn('Could not load menu config:', e);
+  }
+}
+
+function escHtml(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── NAVIGATION ──
 let currentView = 'menu';
