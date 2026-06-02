@@ -3832,10 +3832,6 @@ function mmCardEditorHTML(secId, card) {
       style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:1rem; cursor:grab; position:relative; transition:border-color 0.15s, opacity 0.15s;">
     <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
       <span style="color:var(--text-dim); font-size:1rem; cursor:grab; flex-shrink:0; user-select:none;" title="Drag to reorder">⠿</span>
-      <div class="form-group" style="flex:0 0 55px; margin:0;">
-        <label class="form-label" style="font-size:0.6rem;">Icon</label>
-        <input type="text" class="form-input" id="${prefix}emoji" value="${card.emoji||''}" oninput="mmRenderPreview()" style="font-size:1.1rem; text-align:center; padding:0.25rem;">
-      </div>
       <div class="form-group" style="flex:1; margin:0;">
         <label class="form-label" style="font-size:0.6rem;">Title</label>
         <input type="text" class="form-input" id="${prefix}title" value="${esc(card.title||'')}" oninput="mmRenderPreview()">
@@ -3872,7 +3868,6 @@ function mmRenderPreview() {
         const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
         return {
           ...card,
-          emoji: document.getElementById(prefix + 'emoji')?.value || card.emoji,
           title: document.getElementById(prefix + 'title')?.value || card.title,
           desc:  document.getElementById(prefix + 'desc')?.value  || card.desc,
           image: document.getElementById(prefix + 'image')?.value || card.image,
@@ -3895,7 +3890,7 @@ function mmRenderPreview() {
               ? `<img src="${card.image}" style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
               : ''
             }
-            <div style="width:100%; aspect-ratio:16/9; background:var(--surface2); display:${card.image ? 'none' : 'flex'}; align-items:center; justify-content:center; font-size:2.2rem;">${card.emoji||'✦'}</div>
+            <div style="width:100%; aspect-ratio:16/9; background:var(--surface2); display:${card.image ? 'none' : 'block'};"></div>
             <div style="padding:0.85rem 1rem 1rem;">
               <div style="font-family:'Cinzel',serif; font-size:0.85rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text); margin-bottom:0.3rem;">${esc(card.title)}</div>
               <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.4;">${esc(card.desc)}</div>
@@ -3990,7 +3985,6 @@ function mmReadFieldsIntoData() {
       if (t)   card.title = t.value;
       if (d)   card.desc  = d.value;
       if (img) card.image = img.value;
-      if (em)  card.emoji = em.value;
     });
   });
 }
