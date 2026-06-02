@@ -3761,32 +3761,7 @@ async function loadMainMenu() {
 }
 
 async function saveMainMenu() {
-  // Read current field values back into mmData
-  mmData.eyebrow  = document.getElementById('mm-eyebrow')?.value || mmData.eyebrow;
-  mmData.title    = document.getElementById('mm-title')?.value   || mmData.title;
-  mmData.subtitle = document.getElementById('mm-subtitle')?.value|| mmData.subtitle;
-
-  // Read card fields
-  mmData.sections.forEach(sec => {
-    // Section desc
-    const secDesc = document.getElementById('mm-sec-desc-' + sec.id);
-    if (secDesc) sec.desc = secDesc.value;
-    // Section label
-    const secLabel = document.getElementById('mm-sec-label-' + sec.id);
-    if (secLabel) sec.label = secLabel.value;
-    // Cards
-    sec.cards.forEach(card => {
-      const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
-      const t = document.getElementById(prefix + 'title');
-      const d = document.getElementById(prefix + 'desc');
-      const img = document.getElementById(prefix + 'image');
-      const em = document.getElementById(prefix + 'emoji');
-      if (t) card.title = t.value;
-      if (d) card.desc  = d.value;
-      if (img) card.image = img.value;
-      if (em) card.emoji = em.value;
-    });
-  });
+  mmReadFieldsIntoData();
 
   try {
     await setDoc(doc(db, 'config', 'mainMenu'), mmData);
@@ -3842,31 +3817,43 @@ function mmRenderEditor() {
 
 function mmCardEditorHTML(secId, card) {
   const prefix = 'mm-card-' + secId + '-' + card.id + '-';
-  return `
-    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:1rem;">
-      <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
-        <div class="form-group" style="flex:0 0 60px;">
-          <label class="form-label">Icon</label>
-          <input type="text" class="form-input" id="${prefix}emoji" value="${card.emoji||''}" oninput="mmRenderPreview()" style="font-size:1.2rem; text-align:center; padding:0.3rem;">
-        </div>
-        <div class="form-group" style="flex:1;">
-          <label class="form-label">Title</label>
-          <input type="text" class="form-input" id="${prefix}title" value="${esc(card.title||'')}" oninput="mmRenderPreview()">
-        </div>
+  const imgVal = card.image || '';
+  const imgPreview = imgVal
+    ? `<img src="${imgVal}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;margin-bottom:0.5rem;display:block;" onerror="this.style.display='none'">`
+    : '';
+  return `<div class="mm-card-editor"
+      data-sec="${secId}" data-card="${card.id}"
+      draggable="true"
+      ondragstart="mmDragStart(event,'${secId}','${card.id}')"
+      ondragover="mmDragOver(event)"
+      ondragleave="mmDragLeave(event)"
+      ondrop="mmDrop(event,'${secId}','${card.id}')"
+      ondragend="mmDragEnd(event)"
+      style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:1rem; cursor:grab; position:relative; transition:border-color 0.15s, opacity 0.15s;">
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+      <span style="color:var(--text-dim); font-size:1rem; cursor:grab; flex-shrink:0; user-select:none;" title="Drag to reorder">⠿</span>
+      <div class="form-group" style="flex:0 0 55px; margin:0;">
+        <label class="form-label" style="font-size:0.6rem;">Icon</label>
+        <input type="text" class="form-input" id="${prefix}emoji" value="${card.emoji||''}" oninput="mmRenderPreview()" style="font-size:1.1rem; text-align:center; padding:0.25rem;">
       </div>
-      <div class="form-group" style="margin-bottom:0.75rem;">
-        <label class="form-label">Description</label>
-        <textarea class="form-input" id="${prefix}desc" rows="2" oninput="mmRenderPreview()" style="resize:vertical;">${esc(card.desc||'')}</textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Image URL (optional — replaces icon)</label>
-        <input type="text" class="form-input" id="${prefix}image" value="${esc(card.image||'')}" placeholder="https://…" oninput="mmRenderPreview()">
-      </div>
-      <div style="margin-top:0.75rem; text-align:right;">
-        <button class="btn btn-sm btn-ghost" style="color:var(--text-dim); font-size:0.7rem;" onclick="mmRemoveCard('${secId}','${card.id}')">Remove Card</button>
+      <div class="form-group" style="flex:1; margin:0;">
+        <label class="form-label" style="font-size:0.6rem;">Title</label>
+        <input type="text" class="form-input" id="${prefix}title" value="${esc(card.title||'')}" oninput="mmRenderPreview()">
       </div>
     </div>
-  `;
+    <div class="form-group" style="margin-bottom:0.75rem;">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" id="${prefix}desc" rows="2" oninput="mmRenderPreview()" style="resize:vertical;">${esc(card.desc||'')}</textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Image URL <span style="color:var(--text-dim);font-style:italic;font-size:0.7rem;text-transform:none;letter-spacing:0;">(replaces icon)</span></label>
+      <div id="${prefix}img-preview">${imgPreview}</div>
+      <input type="text" class="form-input" id="${prefix}image" value="${esc(imgVal)}" placeholder="https://…" oninput="mmUpdateImagePreview('${prefix}')">
+    </div>
+    <div style="margin-top:0.75rem; text-align:right;">
+      <button class="btn btn-sm btn-ghost" style="color:var(--text-dim); font-size:0.7rem;" onclick="mmRemoveCard('${secId}','${card.id}')">✕ Remove</button>
+    </div>
+  </div>`;
 }
 
 function mmRenderPreview() {
@@ -3935,6 +3922,92 @@ function mmRemoveCard(secId, cardId) {
   mmRenderEditor();
 }
 
+
+// ── MAIN MENU DRAG AND DROP ──
+let mmDragSec = null;
+let mmDragCardId = null;
+
+function mmDragStart(event, secId, cardId) {
+  mmDragSec = secId;
+  mmDragCardId = cardId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.currentTarget.style.opacity = '0.4';
+}
+
+function mmDragEnd(event) {
+  event.currentTarget.style.opacity = '';
+  document.querySelectorAll('.mm-card-editor').forEach(el => {
+    el.style.borderColor = '';
+    el.style.borderTopColor = '';
+  });
+}
+
+function mmDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  const target = event.currentTarget;
+  target.style.borderTopColor = 'var(--gold)';
+}
+
+function mmDragLeave(event) {
+  event.currentTarget.style.borderTopColor = '';
+}
+
+function mmDrop(event, targetSecId, targetCardId) {
+  event.preventDefault();
+  event.currentTarget.style.borderTopColor = '';
+  if (mmDragSec !== targetSecId || mmDragCardId === targetCardId) return;
+
+  // Commit current field values before reordering
+  mmReadFieldsIntoData();
+
+  const sec = mmData.sections.find(s => s.id === targetSecId);
+  if (!sec) return;
+  const fromIdx = sec.cards.findIndex(c => c.id === mmDragCardId);
+  const toIdx   = sec.cards.findIndex(c => c.id === targetCardId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [moved] = sec.cards.splice(fromIdx, 1);
+  sec.cards.splice(toIdx, 0, moved);
+  mmRenderEditor();
+}
+
+function mmReadFieldsIntoData() {
+  if (!mmData) return;
+  mmData.eyebrow  = document.getElementById('mm-eyebrow')?.value  || mmData.eyebrow;
+  mmData.title    = document.getElementById('mm-title')?.value    || mmData.title;
+  mmData.subtitle = document.getElementById('mm-subtitle')?.value || mmData.subtitle;
+  mmData.sections.forEach(sec => {
+    const secLabel = document.getElementById('mm-sec-label-' + sec.id);
+    const secDesc  = document.getElementById('mm-sec-desc-'  + sec.id);
+    if (secLabel) sec.label = secLabel.value;
+    if (secDesc)  sec.desc  = secDesc.value;
+    sec.cards.forEach(card => {
+      const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
+      const t   = document.getElementById(prefix + 'title');
+      const d   = document.getElementById(prefix + 'desc');
+      const img = document.getElementById(prefix + 'image');
+      const em  = document.getElementById(prefix + 'emoji');
+      if (t)   card.title = t.value;
+      if (d)   card.desc  = d.value;
+      if (img) card.image = img.value;
+      if (em)  card.emoji = em.value;
+    });
+  });
+}
+
+function mmUpdateImagePreview(prefix) {
+  const input = document.getElementById(prefix + 'image');
+  const previewDiv = document.getElementById(prefix + 'img-preview');
+  if (!input || !previewDiv) return;
+  const url = input.value.trim();
+  if (url) {
+    previewDiv.innerHTML = `<img src="${url}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:4px;margin-bottom:0.5rem;display:block;" onerror="this.style.display='none'">`;
+  } else {
+    previewDiv.innerHTML = '';
+  }
+  mmRenderPreview();
+}
+
 // Load when tab is clicked
 const _origSwitchView = switchView;
 // Hook into switchView to load main menu data
@@ -3965,6 +4038,7 @@ Object.assign(window, {
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
   toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter, toggleSubFilter,
   loadMainMenu, saveMainMenu, mmUpdatePreviewText, mmRenderPreview, mmAddCard, mmRemoveCard,
+  mmDragStart, mmDragEnd, mmDragOver, mmDragLeave, mmDrop, mmUpdateImagePreview,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
   renderTrivia, clearTriviaFilters, toggleTriviaFilter, toggleTriviaFilterVisibility,
