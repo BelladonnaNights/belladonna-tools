@@ -3846,6 +3846,27 @@ function mmCardEditorHTML(secId, card) {
       <div id="${prefix}img-preview">${imgPreview}</div>
       <input type="text" class="form-input" id="${prefix}image" value="${esc(imgVal)}" placeholder="https://…" oninput="mmUpdateImagePreview('${prefix}')">
     </div>
+    <div class="form-group" style="margin-top:0.75rem;">
+      <label class="form-label" style="font-size:0.6rem;">Venue: Navigate To <span style="color:var(--text-dim);font-style:italic;text-transform:none;letter-spacing:0;">(which browse tab this card opens)</span></label>
+      <select class="form-input" id="${prefix}venueView" style="font-size:0.8rem;">
+        <option value="">— none / description page —</option>
+        <option value="trivia"${card.venueView==='trivia'?' selected':''}>Trivia</option>
+        <option value="bingo"${card.venueView==='bingo'?' selected':''}>Music Bingo</option>
+        <option value="singalongs"${card.venueView==='singalongs'?' selected':''}>Sing-Alongs</option>
+        <option value="minigames"${card.venueView==='minigames'?' selected':''}>Mini Games</option>
+        <option value="themed"${card.venueView==='themed'?' selected':''}>Themed Nights</option>
+        <option value="karaoke"${card.venueView==='karaoke'?' selected':''}>Karaoke</option>
+        <option value="comedy"${card.venueView==='comedy'?' selected':''}>Comedy Nights</option>
+        <option value="openmic"${card.venueView==='openmic'?' selected':''}>Open Mics</option>
+        <option value="private"${card.venueView==='private'?' selected':''}>Private Parties</option>
+        <option value="holiday"${card.venueView==='holiday'?' selected':''}>Holiday Parties</option>
+        <option value="ticketed"${card.venueView==='ticketed'?' selected':''}>Ticketed Events</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-top:0.5rem;">
+      <label class="form-label" style="font-size:0.6rem;">Venue: Pre-apply Type Filter <span style="color:var(--text-dim);font-style:italic;text-transform:none;letter-spacing:0;">(e.g. "Book Trivia" — filters shown cards on arrival)</span></label>
+      <input type="text" class="form-input" id="${prefix}venueFilterType" value="${esc(card.venueFilterType||'')}" placeholder="e.g. Book Trivia, Mini Game…" style="font-size:0.8rem;">
+    </div>
     <div style="margin-top:0.75rem; text-align:right;">
       <button class="btn btn-sm btn-ghost" style="color:var(--text-dim); font-size:0.7rem;" onclick="mmRemoveCard('${secId}','${card.id}')">✕ Remove</button>
     </div>
@@ -3982,9 +4003,13 @@ function mmReadFieldsIntoData() {
       const d   = document.getElementById(prefix + 'desc');
       const img = document.getElementById(prefix + 'image');
       const em  = document.getElementById(prefix + 'emoji');
+      const vv  = document.getElementById(prefix + 'venueView');
+      const vf  = document.getElementById(prefix + 'venueFilterType');
       if (t)   card.title = t.value;
       if (d)   card.desc  = d.value;
       if (img) card.image = img.value;
+      if (vv)  card.venueView = vv.value;
+      if (vf)  card.venueFilterType = vf.value.trim();
     });
   });
 }
