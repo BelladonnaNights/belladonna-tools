@@ -879,7 +879,10 @@ async function loadMenuConfig() {
             ? `<img class="menu-card-img" src="${card.image}" alt="${escHtml(card.title)}" loading="lazy" onerror="this.style.display='none'; this.nextSibling.style.display='flex';">`
             : '';
           const placeholderStyle = card.image ? 'display:none;' : '';
-          return `<div class="menu-card" onclick="navigateTo('${card.id}')">
+          const destView = card.venueView || card.id;
+          const safeFilter = (card.venueFilterType || '').replace(/'/g, "\\'");
+          const filterArg = safeFilter ? `, '${safeFilter}'` : '';
+          return `<div class="menu-card" onclick="navigateTo('${destView}'${filterArg})">
             ${imgEl}
             <div class="menu-card-img-placeholder" style="${placeholderStyle}">${card.emoji || '✦'}</div>
             <div class="menu-card-body">
@@ -900,11 +903,15 @@ function escHtml(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 
 // ── NAVIGATION ──
 let currentView = 'menu';
-function navigateTo(view) {
+// pendingTypeFilter: when navigating with a type filter, the render function picks this up
+let pendingTypeFilter = null;
+
+function navigateTo(view, typeFilter) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const el = document.getElementById('view-' + view);
   if (el) el.classList.add('active');
   currentView = view;
+  pendingTypeFilter = typeFilter || null;
   closeFilterSidebar();
   window.scrollTo(0, 0);
   // Update nav tab active state
@@ -1076,15 +1083,38 @@ function renderCategoryGrid(gridId, emptyId, filterFn) {
   if (!grid) return;
   const searchId = { 'trivia-grid':'trivia-search','bingo-grid':'bingo-search','singa-grid':'singa-search','minigames-grid':'mini-search' }[gridId];
   const q = (document.getElementById(searchId)?.value||'').toLowerCase().trim();
+  // If navigated here with a type filter, apply it and clear the pending filter
+  const typeFilter = pendingTypeFilter ? pendingTypeFilter.toLowerCase().trim() : null;
+  if (pendingTypeFilter) pendingTypeFilter = null;
+
   let filtered = publishedCategories.filter(c => (c.publishedTabs||[]).length > 0 || c.published).filter(filterFn);
+
+  // Apply type filter if present — match against the category's type field (any comma-separated segment)
+  if (typeFilter) {
+    filtered = filtered.filter(c =>
+      (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t => t === typeFilter)
+    );
+  }
+
   if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q)||(c.theme||'').toLowerCase().includes(q));
   if (hasSidebarFilters()) filtered = filtered.filter(itemMatchesFilters);
+
+  // Show a "filtered by" header pill if a type filter is active
+  const toolbarId = { 'trivia-grid':'active-filters-bar-trivia','bingo-grid':'active-filters-bar-bingo','singa-grid':'active-filters-bar-singa','minigames-grid':'active-filters-bar-mini' }[gridId];
+  if (toolbarId) {
+    const bar = document.getElementById(toolbarId);
+    if (bar && typeFilter) {
+      const label = typeFilter.replace(/\w/g, l => l.toUpperCase());
+      bar.innerHTML = '<span class="active-filter-pill" style="pointer-events:none;">' + label + '</span>';
+    }
+  }
+
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display='none';
   grid.innerHTML = filtered.map(c => {
     const img = c.miniGameImage||c.bannerData;
-    const imgEl = img ? `<img class="night-card-img" src="${img}" alt="${esc(c.name)}" loading="lazy" style="aspect-ratio:4/5;">` : `<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">🎵</div>`;
-    return `<div class="night-card">${imgEl}<div class="night-card-body"><div class="night-name">${esc(c.name)}</div>${c.notes?`<div class="night-desc">${esc(c.notes)}</div>`:''}</div></div>`;
+    const imgEl = img ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">' : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">\uD83C\uDFB5</div>';
+    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + (c.notes ? '<div class="night-desc">' + esc(c.notes) + '</div>' : '') + '</div></div>';
   }).join('');
 }
 
