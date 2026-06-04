@@ -577,6 +577,7 @@
             <input type="search" class="search-input" id="trivia-search" placeholder="Search trivia…" oninput="renderTrivia()">
           </div>
         </div>
+        <div id="trivia-type-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
         <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
         <div id="trivia-grid" class="minigames-grid"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2></div>
@@ -905,6 +906,8 @@ function escHtml(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 let currentView = 'menu';
 // pendingTypeFilter: when navigating with a type filter, the render function picks this up
 let pendingTypeFilter = null;
+// Active type-chip filter for the trivia view (null = show all)
+let activeTriviaTypeFilter = null;
 
 function navigateTo(view, typeFilter) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -912,6 +915,8 @@ function navigateTo(view, typeFilter) {
   if (el) el.classList.add('active');
   currentView = view;
   pendingTypeFilter = typeFilter || null;
+  // Reset trivia type filter when navigating away from trivia
+  if (view !== 'trivia') activeTriviaTypeFilter = null;
   closeFilterSidebar();
   window.scrollTo(0, 0);
   // Update nav tab active state
@@ -1072,7 +1077,7 @@ function renderThemedNights() {
   }).join('');
 }
 
-function isTrivia(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t==='trivia'||t==='full trivia'); }
+function isTrivia(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('trivia')); }
 function isBingo(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('bingo')); }
 function isMiniGame(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t)); }
 function isSingAlong(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('sing')); }
@@ -1083,31 +1088,10 @@ function renderCategoryGrid(gridId, emptyId, filterFn) {
   if (!grid) return;
   const searchId = { 'trivia-grid':'trivia-search','bingo-grid':'bingo-search','singa-grid':'singa-search','minigames-grid':'mini-search' }[gridId];
   const q = (document.getElementById(searchId)?.value||'').toLowerCase().trim();
-  // If navigated here with a type filter, apply it and clear the pending filter
-  const typeFilter = pendingTypeFilter ? pendingTypeFilter.toLowerCase().trim() : null;
-  if (pendingTypeFilter) pendingTypeFilter = null;
 
   let filtered = publishedCategories.filter(c => (c.publishedTabs||[]).length > 0 || c.published).filter(filterFn);
-
-  // Apply type filter if present — match against the category's type field (any comma-separated segment)
-  if (typeFilter) {
-    filtered = filtered.filter(c =>
-      (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t => t === typeFilter)
-    );
-  }
-
   if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q)||(c.theme||'').toLowerCase().includes(q));
   if (hasSidebarFilters()) filtered = filtered.filter(itemMatchesFilters);
-
-  // Show a "filtered by" header pill if a type filter is active
-  const toolbarId = { 'trivia-grid':'active-filters-bar-trivia','bingo-grid':'active-filters-bar-bingo','singa-grid':'active-filters-bar-singa','minigames-grid':'active-filters-bar-mini' }[gridId];
-  if (toolbarId) {
-    const bar = document.getElementById(toolbarId);
-    if (bar && typeFilter) {
-      const label = typeFilter.replace(/\w/g, l => l.toUpperCase());
-      bar.innerHTML = '<span class="active-filter-pill" style="pointer-events:none;">' + label + '</span>';
-    }
-  }
 
   if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
   empty.style.display='none';
@@ -1118,9 +1102,62 @@ function renderCategoryGrid(gridId, emptyId, filterFn) {
   }).join('');
 }
 
-function renderTrivia() {
-  renderCategoryGrid('trivia-grid','trivia-empty', c => isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published));
+// ── TRIVIA TYPE CHIPS ──
+function renderTriviaTypeChips() {
+  const bar = document.getElementById('trivia-type-chips');
+  if (!bar) return;
+  const triviaPublished = publishedCategories.filter(c =>
+    isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published)
+  );
+  const typeSet = new Set();
+  triviaPublished.forEach(c => {
+    (c.type||'').split(',').map(t => t.trim()).filter(t => t.toLowerCase().includes('trivia')).forEach(t => typeSet.add(t));
+  });
+  const types = [...typeSet].sort();
+  if (types.length <= 1) { bar.innerHTML = ''; return; }
+  const allActive = activeTriviaTypeFilter === null;
+  let html = '<button class="filter-chip' + (allActive ? ' active' : '') + '" onclick="setTriviaTypeFilter(null)">All</button>';
+  types.forEach(t => {
+    const isAct = activeTriviaTypeFilter && activeTriviaTypeFilter.toLowerCase() === t.toLowerCase();
+    html += '<button class="filter-chip' + (isAct ? ' active' : '') + '" onclick="setTriviaTypeFilter(' + JSON.stringify(t) + ')">' + esc(t) + '</button>';
+  });
+  bar.innerHTML = html;
 }
+
+function setTriviaTypeFilter(type) {
+  activeTriviaTypeFilter = type;
+  renderTrivia();
+}
+
+function renderTrivia() {
+  if (pendingTypeFilter) { activeTriviaTypeFilter = pendingTypeFilter; pendingTypeFilter = null; }
+  renderTriviaTypeChips();
+  const typeFilter = activeTriviaTypeFilter ? activeTriviaTypeFilter.toLowerCase().trim() : null;
+  const grid = document.getElementById('trivia-grid');
+  const empty = document.getElementById('trivia-empty');
+  if (!grid) return;
+  const q = (document.getElementById('trivia-search')?.value||'').toLowerCase().trim();
+
+  let filtered = publishedCategories.filter(c =>
+    isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published)
+  );
+  if (typeFilter) {
+    filtered = filtered.filter(c =>
+      (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t => t === typeFilter)
+    );
+  }
+  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q)||(c.theme||'').toLowerCase().includes(q));
+  if (hasSidebarFilters()) filtered = filtered.filter(itemMatchesFilters);
+
+  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
+  empty.style.display='none';
+  grid.innerHTML = filtered.map(c => {
+    const img = c.miniGameImage||c.bannerData;
+    const imgEl = img ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">' : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">\uD83E\uDDE0</div>';
+    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + (c.notes ? '<div class="night-desc">' + esc(c.notes) + '</div>' : '') + '</div></div>';
+  }).join('');
+}
+
 function renderBingo() {
   renderCategoryGrid('bingo-grid','bingo-empty', c => isBingo(c) && c.published);
 }
@@ -1157,7 +1194,7 @@ load().then(() => {
 
 // ── EXPOSE TO WINDOW ──
 Object.assign(window, {
-  navigateTo, toggleFilterSidebar, closeFilterSidebar,
+  navigateTo, setTriviaTypeFilter, toggleFilterSidebar, closeFilterSidebar,
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
   renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames
