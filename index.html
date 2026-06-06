@@ -1792,7 +1792,7 @@ function renderLibTypePills() {
   }
   types.forEach(t => {
     const active = activeLibTypeFilters.has(t);
-    html += '<button onclick="toggleLibTypeFilter(' + JSON.stringify(t) + ')" class="filter-chip' + (active ? ' active' : '') + '" style="font-size:0.62rem;padding:3px 10px;">' + esc(t) + '</button>';
+    html += '<button onclick="toggleLibTypeFilter(\'' + t.replace(/'/g, "\\'") + '\')" class="filter-chip' + (active ? ' active' : '') + '" style="font-size:0.62rem;padding:3px 10px;">' + esc(t) + '</button>';
   });
   bar.innerHTML = html;
 }
