@@ -1113,8 +1113,14 @@ function renderTrivia() {
     isTrivia(c) && (c.published || (c.publishedTabs||[]).length > 0)
   );
   if (typeFilter) {
+    // Specific sub-type requested (e.g. "book trivia") — show only that type
     filtered = filtered.filter(c =>
       (c.type||'').toLowerCase().split(',').map(t => t.trim()).some(t => t === typeFilter)
+    );
+  } else {
+    // Plain "Trivia" view — show only exact trivia, exclude sub-types like book trivia
+    filtered = filtered.filter(c =>
+      (c.type||'').toLowerCase().split(',').map(t => t.trim()).some(t => t === 'trivia' || t === 'full trivia')
     );
   }
 
