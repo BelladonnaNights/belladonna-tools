@@ -570,15 +570,7 @@
     <div class="app-layout">
       <div class="browse-main">
         <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-        <div class="browse-toolbar">
-          <button class="sidebar-toggle-btn" id="trivia-filter-btn" onclick="toggleFilterSidebar('trivia')">⧉ Filters</button>
-          <div class="search-wrap">
-            <span>🔍</span>
-            <input type="search" class="search-input" id="trivia-search" placeholder="Search trivia…" oninput="renderTrivia()">
-          </div>
-        </div>
-        <div id="trivia-type-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.5rem;"></div>
-        <div id="active-filters-bar-trivia" class="active-filters-bar"></div>
+        <div id="trivia-view-title" style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;"></div>
         <div id="trivia-grid" class="minigames-grid"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2></div>
       </div>
@@ -1102,68 +1094,41 @@ function renderCategoryGrid(gridId, emptyId, filterFn) {
   }).join('');
 }
 
-// ── TRIVIA TYPE CHIPS ──
-function renderTriviaTypeChips() {
-  const bar = document.getElementById('trivia-type-chips');
-  if (!bar) return;
-  const triviaPublished = publishedCategories.filter(c =>
-    isTrivia(c) && (c.published || (c.publishedTabs||[]).length > 0)
-  );
-  const typeSet = new Set();
-  triviaPublished.forEach(c => {
-    (c.type||'').split(',').map(t => t.trim()).filter(t => t.toLowerCase().includes('trivia')).forEach(t => typeSet.add(t));
-  });
-  const types = [...typeSet].sort();
-  if (types.length === 0) { bar.innerHTML = ''; return; }
-  const allActive = activeTriviaTypeFilter === null;
-  let html = '';
-  if (!allActive) {
-    html += '<button onclick="setTriviaTypeFilter(null)" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:30px;border:1px solid rgba(139,58,42,0.5);background:rgba(139,58,42,0.12);color:#C0654F;font-family:\'Cinzel\',serif;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">✕ All</button>';
-  } else {
-    html += '<button class="filter-chip active" onclick="setTriviaTypeFilter(null)">All</button>';
-  }
-  types.forEach(t => {
-    // Store lowercase for consistent comparison; display original case
-    const tLow = t.toLowerCase();
-    const isAct = activeTriviaTypeFilter && activeTriviaTypeFilter.toLowerCase() === tLow;
-    html += '<button class="filter-chip' + (isAct ? ' active' : '') + '" onclick="setTriviaTypeFilter(' + JSON.stringify(tLow) + ')">' + esc(t) + '</button>';
-  });
-  bar.innerHTML = html;
-}
-
-function setTriviaTypeFilter(type) {
-  activeTriviaTypeFilter = type;
-  renderTrivia();
-}
-
 function renderTrivia() {
-  if (pendingTypeFilter) { activeTriviaTypeFilter = pendingTypeFilter.toLowerCase().trim(); pendingTypeFilter = null; }
-  renderTriviaTypeChips();
-  const typeFilter = activeTriviaTypeFilter ? activeTriviaTypeFilter.toLowerCase().trim() : null;
+  // Consume pending type filter from menu card navigation
+  const typeFilter = pendingTypeFilter ? pendingTypeFilter.toLowerCase().trim() : (activeTriviaTypeFilter || null);
+  if (pendingTypeFilter) { activeTriviaTypeFilter = typeFilter; pendingTypeFilter = null; }
+
+  // Update the view title to reflect which sub-type is showing
+  const titleEl = document.getElementById('trivia-view-title');
+  if (titleEl) titleEl.textContent = activeTriviaTypeFilter
+    ? activeTriviaTypeFilter.replace(/\b\w/g, l => l.toUpperCase())
+    : 'Trivia';
+
   const grid = document.getElementById('trivia-grid');
   const empty = document.getElementById('trivia-empty');
   if (!grid) return;
-  const q = (document.getElementById('trivia-search')?.value||'').toLowerCase().trim();
 
   let filtered = publishedCategories.filter(c =>
     isTrivia(c) && (c.published || (c.publishedTabs||[]).length > 0)
   );
   if (typeFilter) {
     filtered = filtered.filter(c =>
-      (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t => t === typeFilter)
+      (c.type||'').toLowerCase().split(',').map(t => t.trim()).some(t => t === typeFilter)
     );
   }
-  if (q) filtered = filtered.filter(c => c.name.toLowerCase().includes(q)||(c.theme||'').toLowerCase().includes(q));
-  if (hasSidebarFilters()) filtered = filtered.filter(itemMatchesFilters);
 
-  if (!filtered.length) { empty.style.display='block'; grid.innerHTML=''; return; }
-  empty.style.display='none';
+  if (!filtered.length) { empty.style.display = 'block'; grid.innerHTML = ''; return; }
+  empty.style.display = 'none';
   grid.innerHTML = filtered.map(c => {
-    const img = c.miniGameImage||c.bannerData;
-    const imgEl = img ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">' : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">\uD83E\uDDE0</div>';
+    const img = c.miniGameImage || c.bannerData;
+    const imgEl = img
+      ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">'
+      : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">🧠</div>';
     return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + (c.notes ? '<div class="night-desc">' + esc(c.notes) + '</div>' : '') + '</div></div>';
   }).join('');
 }
+
 
 function renderBingo() {
   renderCategoryGrid('bingo-grid','bingo-empty', c => isBingo(c) && c.published);
@@ -1201,7 +1166,7 @@ load().then(() => {
 
 // ── EXPOSE TO WINDOW ──
 Object.assign(window, {
-  navigateTo, setTriviaTypeFilter, toggleFilterSidebar, closeFilterSidebar,
+  navigateTo, toggleFilterSidebar, closeFilterSidebar,
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
   renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames
