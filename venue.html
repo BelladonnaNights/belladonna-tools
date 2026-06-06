@@ -1107,19 +1107,26 @@ function renderTriviaTypeChips() {
   const bar = document.getElementById('trivia-type-chips');
   if (!bar) return;
   const triviaPublished = publishedCategories.filter(c =>
-    isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published)
+    isTrivia(c) && (c.published || (c.publishedTabs||[]).length > 0)
   );
   const typeSet = new Set();
   triviaPublished.forEach(c => {
     (c.type||'').split(',').map(t => t.trim()).filter(t => t.toLowerCase().includes('trivia')).forEach(t => typeSet.add(t));
   });
   const types = [...typeSet].sort();
-  if (types.length <= 1) { bar.innerHTML = ''; return; }
+  if (types.length === 0) { bar.innerHTML = ''; return; }
   const allActive = activeTriviaTypeFilter === null;
-  let html = '<button class="filter-chip' + (allActive ? ' active' : '') + '" onclick="setTriviaTypeFilter(null)">All</button>';
+  let html = '';
+  if (!allActive) {
+    html += '<button onclick="setTriviaTypeFilter(null)" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:30px;border:1px solid rgba(139,58,42,0.5);background:rgba(139,58,42,0.12);color:#C0654F;font-family:\'Cinzel\',serif;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">✕ All</button>';
+  } else {
+    html += '<button class="filter-chip active" onclick="setTriviaTypeFilter(null)">All</button>';
+  }
   types.forEach(t => {
-    const isAct = activeTriviaTypeFilter && activeTriviaTypeFilter.toLowerCase() === t.toLowerCase();
-    html += '<button class="filter-chip' + (isAct ? ' active' : '') + '" onclick="setTriviaTypeFilter(' + JSON.stringify(t) + ')">' + esc(t) + '</button>';
+    // Store lowercase for consistent comparison; display original case
+    const tLow = t.toLowerCase();
+    const isAct = activeTriviaTypeFilter && activeTriviaTypeFilter.toLowerCase() === tLow;
+    html += '<button class="filter-chip' + (isAct ? ' active' : '') + '" onclick="setTriviaTypeFilter(' + JSON.stringify(tLow) + ')">' + esc(t) + '</button>';
   });
   bar.innerHTML = html;
 }
@@ -1130,7 +1137,7 @@ function setTriviaTypeFilter(type) {
 }
 
 function renderTrivia() {
-  if (pendingTypeFilter) { activeTriviaTypeFilter = pendingTypeFilter; pendingTypeFilter = null; }
+  if (pendingTypeFilter) { activeTriviaTypeFilter = pendingTypeFilter.toLowerCase().trim(); pendingTypeFilter = null; }
   renderTriviaTypeChips();
   const typeFilter = activeTriviaTypeFilter ? activeTriviaTypeFilter.toLowerCase().trim() : null;
   const grid = document.getElementById('trivia-grid');
@@ -1139,7 +1146,7 @@ function renderTrivia() {
   const q = (document.getElementById('trivia-search')?.value||'').toLowerCase().trim();
 
   let filtered = publishedCategories.filter(c =>
-    isTrivia(c) && ((c.publishedTabs||[]).includes('trivia') || c.published)
+    isTrivia(c) && (c.published || (c.publishedTabs||[]).length > 0)
   );
   if (typeFilter) {
     filtered = filtered.filter(c =>
