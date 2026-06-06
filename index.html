@@ -934,12 +934,7 @@
         <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
         <input type="search" id="search-input" placeholder="Search shows, artists, titles, themes…" oninput="runSearch()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-trivia" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Trivia</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-bingo" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Bingo</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-singa" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Sing</label>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);"><input type="checkbox" id="lib-show-mini" checked onchange="renderLibrary()" style="accent-color:var(--gold);width:13px;height:13px;"> Mini</label>
-      </div>
+      <div id="lib-type-pills" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;"></div>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add</button>
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
@@ -1777,32 +1772,59 @@ function renderMiniGames() {
   }).join('');
 }
 
-function renderLibrary() {
-  const typeF = '';
-  const themeF = '';
-  const tagF = '';
-  const showTrivia = document.getElementById('lib-show-trivia').checked;
-  const showBingo  = document.getElementById('lib-show-bingo').checked;
-  const showSinga  = document.getElementById('lib-show-singa').checked;
-  const showMini   = document.getElementById('lib-show-mini').checked;
+// ── LIBRARY TYPE PILL FILTER STATE ──
+const activeLibTypeFilters = new Set(); // empty = show all
 
+function renderLibTypePills() {
+  const bar = document.getElementById('lib-type-pills');
+  if (!bar) return;
+  // Collect all unique types from the full category list
+  const typeSet = new Set();
+  categories.forEach(c => {
+    (c.type||'').split(',').map(t => t.trim()).filter(Boolean).forEach(t => typeSet.add(t));
+  });
+  const types = [...typeSet].sort((a,b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  if (!types.length) { bar.innerHTML = ''; return; }
+  const hasActive = activeLibTypeFilters.size > 0;
+  let html = '';
+  if (hasActive) {
+    html += '<button onclick="clearLibTypeFilters()" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:30px;border:1px solid rgba(139,58,42,0.5);background:rgba(139,58,42,0.12);color:#C0654F;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">✕ Clear</button>';
+  }
+  types.forEach(t => {
+    const active = activeLibTypeFilters.has(t);
+    html += '<button onclick="toggleLibTypeFilter(' + JSON.stringify(t) + ')" class="filter-chip' + (active ? ' active' : '') + '" style="font-size:0.62rem;padding:3px 10px;">' + esc(t) + '</button>';
+  });
+  bar.innerHTML = html;
+}
+
+function toggleLibTypeFilter(type) {
+  if (activeLibTypeFilters.has(type)) activeLibTypeFilters.delete(type);
+  else activeLibTypeFilters.add(type);
+  renderLibTypePills();
+  renderLibrary();
+}
+
+function clearLibTypeFilters() {
+  activeLibTypeFilters.clear();
+  renderLibTypePills();
+  renderLibrary();
+}
+
+function renderLibrary() {
+  renderLibTypePills();
   let filtered = categories.filter(c => {
-    const t = (c.type||'').toLowerCase();
-    if (!showBingo  && isBingo(c))     return false;
-    if (!showSinga  && isSingAlong(c)) return false;
-    if (!showMini   && isMiniGame(c))  return false;
-    if (!showTrivia && isTrivia(c) && !isMiniGame(c) && !isSingAlong(c) && !isBingo(c)) return false;
-    if (typeF && c.type !== typeF) return false;
-    if (themeF && c.theme !== themeF) return false;
-    if (tagF && !(c.tags||'').split(',').map(t=>t.trim()).includes(tagF)) return false;
+    if (activeLibTypeFilters.size > 0) {
+      const catTypes = (c.type||'').split(',').map(t => t.trim()).filter(Boolean);
+      if (!catTypes.some(t => activeLibTypeFilters.has(t))) return false;
+    }
     if (!catMatchesSidebarFilters(c)) return false;
     return true;
   });
 
   document.getElementById('lib-results-meta').textContent =
-    `${filtered.length} of ${categories.length} categories`;
+    filtered.length + ' of ' + categories.length + ' categories';
 
-  document.getElementById('lib-empty').style.display = (categories.length === 0 || (!showBingo && categories.every(isBingo))) ? 'block' : 'none';
+  document.getElementById('lib-empty').style.display = categories.length === 0 ? 'block' : 'none';
   document.getElementById('category-grid').innerHTML = filtered.map(c => categoryCardHTML(c, categories.indexOf(c), '')).join('');
 }
 
@@ -4038,6 +4060,7 @@ const _origSwitchView = switchView;
 Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
+  toggleLibTypeFilter, clearLibTypeFilters,
   closeCatModal, saveCategoryFromModal,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
