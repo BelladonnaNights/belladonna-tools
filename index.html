@@ -1788,7 +1788,7 @@ function renderLibTypePills() {
   const hasActive = activeLibTypeFilters.size > 0;
   let html = '';
   if (hasActive) {
-    html += '<button onclick="clearLibTypeFilters()" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:30px;border:1px solid rgba(139,58,42,0.5);background:rgba(139,58,42,0.12);color:#C0654F;font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">✕ Clear</button>';
+    html += '<button onclick="clearLibTypeFilters()" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:30px;border:1px solid rgba(139,58,42,0.5);background:rgba(139,58,42,0.12);color:#C0654F;font-family:Cinzel,serif;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;">\u2715 Clear</button>';
   }
   types.forEach(t => {
     const active = activeLibTypeFilters.has(t);
