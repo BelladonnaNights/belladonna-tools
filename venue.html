@@ -714,6 +714,7 @@
         Premium productions sold as ticketed experiences — think elaborately themed nights, limited-capacity events, and one-of-a-kind shows that sell out in advance. We handle ticketing, promotion, and production. You host the event and reap the benefits of a pre-sold, excited crowd walking through your door.
       </div>
       <button class="desc-contact" onclick="window.location.href='mailto:contact@belladonnanights.com'">✦ Discuss a Ticketed Event</button>
+      <button class="desc-contact" onclick="window.open('https://www.belladonnanights.com/buytickets', '_blank')" style="margin-top:0.75rem;">✦ View Our Current Ticketed Events</button>
     </div>
   </div>
 
@@ -1090,7 +1091,7 @@ function renderCategoryGrid(gridId, emptyId, filterFn) {
   grid.innerHTML = filtered.map(c => {
     const img = c.miniGameImage||c.bannerData;
     const imgEl = img ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">' : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">\uD83C\uDFB5</div>';
-    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + (c.notes ? '<div class="night-desc">' + esc(c.notes) + '</div>' : '') + '</div></div>';
+    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + '</div></div>';
   }).join('');
 }
 
@@ -1131,7 +1132,7 @@ function renderTrivia() {
     const imgEl = img
       ? '<img class="night-card-img" src="' + img + '" alt="' + esc(c.name) + '" loading="lazy" style="aspect-ratio:4/5;">'
       : '<div class="night-card-img" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text-dim);font-size:2rem;">🧠</div>';
-    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + (c.notes ? '<div class="night-desc">' + esc(c.notes) + '</div>' : '') + '</div></div>';
+    return '<div class="night-card">' + imgEl + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div>' + '</div></div>';
   }).join('');
 }
 
