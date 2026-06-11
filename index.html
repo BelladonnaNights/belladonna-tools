@@ -4314,7 +4314,7 @@ function renderSeasonalAdmin() {
         + '</div>'
         + '<div style="font-size:0.82rem;color:var(--text-dim);margin-top:2px;">' + esc(dateStr) + (ev.desc ? ' — ' + esc(ev.desc.slice(0,60)) + (ev.desc.length>60?'…':'') : '') + '</div>'
         + '</div>'
-        + '<button class="btn btn-sm btn-ghost" onclick="openSeasonalModal(' + JSON.stringify(ev.id) + ')">Edit</button>'
+        + '<button class="btn btn-sm btn-ghost" onclick="openSeasonalModal(\'' + ev.id.replace(/'/g, "\\'") + '\')" >Edit</button>'
         + '</div>';
     }).join('');
 
