@@ -910,6 +910,7 @@
     <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
     <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
+    <button class="nav-tab" onclick="switchView('seasonal')">Seasonal</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
 </header>
@@ -1130,6 +1131,25 @@
     <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
       <button class="btn" onclick="saveMainMenu()">Save Changes</button>
       <button class="btn btn-ghost" onclick="loadMainMenu()">Discard & Reload</button>
+    </div>
+  </div>
+
+
+  <!-- ═══ SEASONAL EVENTS VIEW ═══ -->
+  <div class="view" id="view-seasonal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div class="section-title" style="margin-bottom:0.25rem;">Seasonal Events</div>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Rolling calendar of upcoming events. Active events show in the <em>Coming Up</em> carousel on the venue menu.</p>
+      </div>
+      <button class="btn" onclick="openSeasonalModal()">+ Add Event</button>
+    </div>
+
+    <!-- Month-grouped list -->
+    <div id="seasonal-by-month"></div>
+    <div id="seasonal-empty" style="display:none;text-align:center;padding:4rem 2rem;color:var(--text-dim);">
+      <div style="font-family:Cinzel,serif;font-size:0.85rem;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.5rem;">No Events Yet</div>
+      <p style="font-size:0.9rem;">Add your first seasonal event to start building the rolling calendar.</p>
     </div>
   </div>
 
@@ -1470,6 +1490,102 @@
   </div>
 </div>
 
+<!-- ═══ SEASONAL EVENT MODAL ═══ -->
+<div class="modal-backdrop" id="seasonal-modal" style="display:none;">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <span class="modal-title" id="seasonal-modal-title">Add Seasonal Event</span>
+      <button class="modal-close" onclick="closeSeasonalModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Event Name *</label>
+          <input type="text" id="se-name" placeholder="e.g. Halloween Night, Pride Month, Cinco de Mayo">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(optional, 4:5 card face)</span></label>
+          <input type="text" id="se-image" placeholder="https://…">
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Short Description <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(shown on card)</span></label>
+          <textarea id="se-desc" rows="2" placeholder="e.g. A night of drag, disco, and pride anthems."></textarea>
+        </div>
+
+        <!-- DATE TYPE toggle -->
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Date Type</label>
+          <div style="display:flex;gap:8px;margin-bottom:0.75rem;">
+            <button id="se-type-month-btn" class="btn btn-sm" onclick="setSeasonalDateType('month')" style="flex:1;">📅 Month / Season</button>
+            <button id="se-type-exact-btn" class="btn btn-sm btn-ghost" onclick="setSeasonalDateType('exact')" style="flex:1;">📌 Exact Date</button>
+          </div>
+
+          <!-- Month-only fields -->
+          <div id="se-month-fields">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Month</label>
+                <select id="se-month">
+                  <option value="1">January</option><option value="2">February</option>
+                  <option value="3">March</option><option value="4">April</option>
+                  <option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option>
+                  <option value="9">September</option><option value="10">October</option>
+                  <option value="11">November</option><option value="12">December</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Day of Month <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                <input type="number" id="se-day" min="1" max="31" placeholder="e.g. 31">
+              </div>
+            </div>
+            <p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;margin-top:0.25rem;">Shows in carousel: 2 weeks before this month starts through 1 week before month ends. If a day is set, shows 1 month before that day.</p>
+          </div>
+
+          <!-- Exact date fields -->
+          <div id="se-exact-fields" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Exact Date</label>
+              <input type="date" id="se-exact-date">
+            </div>
+            <p style="color:var(--text-dim);font-size:0.82rem;font-style:italic;margin-top:0.25rem;">Shows in carousel exactly 1 month before this date.</p>
+          </div>
+        </div>
+
+        <!-- Recurrence -->
+        <div class="form-group" style="grid-column:1/-1;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="se-recurring" style="accent-color:var(--gold);width:17px;height:17px;">
+            <span style="font-family:Cinzel,serif;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);">Repeats Every Year</span>
+          </label>
+          <p style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Uncheck for one-time events (concerts, special occasions). Checked events roll back automatically each year.</p>
+        </div>
+
+        <!-- Always On override -->
+        <div class="form-group" style="grid-column:1/-1;border-top:1px solid var(--border);padding-top:0.85rem;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="se-always-on" style="accent-color:var(--gold);width:17px;height:17px;" onchange="seToggleAlwaysOn()">
+            <span style="font-family:Cinzel,serif;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);">Always Show in Carousel</span>
+          </label>
+          <p style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Override all date logic — this event stays in the carousel year-round until you turn it off. Use for ongoing series like <em>Belladonna Through the Decades</em>.</p>
+          <div id="se-always-on-off-wrap" style="display:none;margin-top:0.6rem;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <input type="checkbox" id="se-always-off" style="accent-color:#8B3A2A;width:17px;height:17px;">
+              <span style="font-family:Cinzel,serif;font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#C0654F;">Temporarily Hidden</span>
+            </label>
+            <p style="font-size:0.8rem;color:var(--text-dim);margin-top:4px;">Check to hide it from the carousel right now without deleting it or changing its settings.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="se-delete-btn" onclick="deleteSeasonalEvent()" style="display:none;margin-right:auto;">Delete</button>
+      <button class="btn btn-ghost" onclick="closeSeasonalModal()">Cancel</button>
+      <button class="btn" onclick="saveSeasonalEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -1587,6 +1703,8 @@ async function loadData() {
   }
   loadingEl.style.display = 'none';
   renderLibrary();
+  // Load seasonal events in background (non-blocking)
+  loadSeasonalEvents().catch(()=>{});
 }
 
 async function compressBanner(dataUrl, maxW=800, quality=0.7) {
@@ -1682,6 +1800,7 @@ async function batchSaveCats(cats) {
 // ═══════════════════════════════════════════════
 function switchView(name) {
   if (name === 'mainmenu' && !mmData) loadMainMenu();
+  if (name === 'seasonal') renderSeasonalAdmin();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
@@ -4057,10 +4176,261 @@ function mmUpdateImagePreview(prefix) {
 const _origSwitchView = switchView;
 // Hook into switchView to load main menu data
 
+
+// ═══════════════════════════════════════════════════════
+// SEASONAL EVENTS
+// Stored in Firestore: config/seasonalEvents  →  { events: [...] }
+//
+// Event shape:
+//  { id, name, desc, image, dateType: 'month'|'exact',
+//    month: 1-12, day: 1-31|null,   // for dateType=month
+//    exactDate: 'YYYY-MM-DD',        // for dateType=exact
+//    recurring: bool }
+// ═══════════════════════════════════════════════════════
+
+let seasonalEvents = [];
+let seEditingId = null;
+const MONTH_NAMES = ['','January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+
+// ── LOAD ──
+async function loadSeasonalEvents() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
+    seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
+  } catch(e) { seasonalEvents = []; }
+}
+
+// ── SAVE TO FIREBASE ──
+async function persistSeasonalEvents() {
+  await setDoc(doc(db, 'config', 'seasonalEvents'), { events: seasonalEvents });
+}
+
+// ── VISIBILITY LOGIC ──
+// Returns true if this event should currently appear in the "Coming Up" carousel
+function seIsActive(ev) {
+  if (ev.alwaysOn) return !ev.alwaysOff; // year-round override
+  const now = new Date();
+  const today = { y: now.getFullYear(), m: now.getMonth()+1, d: now.getDate() };
+
+  if (ev.dateType === 'exact') {
+    if (!ev.exactDate) return false;
+    const [ey, em, ed] = ev.exactDate.split('-').map(Number);
+    // Show from 30 days before the exact date up to the day of
+    const target = new Date(ey, em-1, ed);
+    const diff = (target - now) / 86400000; // days
+    return diff >= 0 && diff <= 30;
+  }
+
+  // dateType === 'month'
+  const m = Number(ev.month);
+  if (!m) return false;
+
+  if (ev.day) {
+    // Has a specific day — show 30 days before that day
+    // Figure out which year's occurrence to check (current or next)
+    const occurrences = ev.recurring
+      ? [new Date(today.y, m-1, ev.day), new Date(today.y+1, m-1, ev.day)]
+      : [new Date(today.y, m-1, ev.day)];
+    return occurrences.some(target => {
+      const diff = (target - now) / 86400000;
+      return diff >= 0 && diff <= 30;
+    });
+  }
+
+  // Generic month — show from 2 weeks before month starts through 1 week before month ends
+  // Check current year and next year
+  const years = ev.recurring ? [today.y, today.y+1] : [today.y];
+  return years.some(y => {
+    const monthStart = new Date(y, m-1, 1);
+    const monthEnd   = new Date(y, m, 0); // last day of month
+    const windowStart = new Date(monthStart); windowStart.setDate(windowStart.getDate() - 14);
+    const windowEnd   = new Date(monthEnd);   windowEnd.setDate(windowEnd.getDate() - 7);
+    return now >= windowStart && now <= windowEnd;
+  });
+}
+
+// ── ADMIN: RENDER BY MONTH ──
+function renderSeasonalAdmin() {
+  const container = document.getElementById('seasonal-by-month');
+  const emptyEl   = document.getElementById('seasonal-empty');
+  if (!container) return;
+
+  if (!seasonalEvents.length) {
+    container.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  // Group by month (exact-date events go in their month; one-time past events get flagged)
+  const groups = {}; // key: month 1-12 or 'exact'
+  const now = new Date();
+
+  seasonalEvents.forEach(ev => {
+    let m;
+    if (ev.dateType === 'exact') {
+      m = ev.exactDate ? Number(ev.exactDate.split('-')[1]) : 0;
+    } else {
+      m = Number(ev.month) || 0;
+    }
+    if (!groups[m]) groups[m] = [];
+    groups[m].push(ev);
+  });
+
+  // Sort month keys
+  const keys = Object.keys(groups).map(Number).sort((a,b) => {
+    // Rotate sort so current month is first, wrapping around
+    const cur = now.getMonth()+1;
+    const am = ((a - cur + 12) % 12);
+    const bm = ((b - cur + 12) % 12);
+    return am - bm;
+  });
+
+  container.innerHTML = keys.map(m => {
+    const label = m ? MONTH_NAMES[m] : 'Unscheduled';
+    const evs = groups[m];
+    const rows = evs.map(ev => {
+      const active = seIsActive(ev);
+      const alwaysBadge = ev.alwaysOn
+        ? (ev.alwaysOff
+            ? '<span style="background:rgba(139,58,42,0.2);border:1px solid rgba(139,58,42,0.4);color:#C0654F;padding:1px 8px;border-radius:3px;font-size:0.65rem;font-family:Cinzel,serif;letter-spacing:0.08em;text-transform:uppercase;">Hidden</span>'
+            : '<span style="background:rgba(42,107,58,0.2);border:1px solid rgba(42,107,58,0.5);color:#5AC47A;padding:1px 8px;border-radius:3px;font-size:0.65rem;font-family:Cinzel,serif;letter-spacing:0.08em;text-transform:uppercase;">Always On</span>')
+        : '';
+      const badge = (!ev.alwaysOn && active)
+        ? '<span style="background:rgba(42,107,58,0.2);border:1px solid rgba(42,107,58,0.5);color:#5AC47A;padding:1px 8px;border-radius:3px;font-size:0.65rem;font-family:Cinzel,serif;letter-spacing:0.08em;text-transform:uppercase;">Live</span>'
+        : '';
+      const oneTime = !ev.recurring
+        ? '<span style="background:rgba(139,100,30,0.15);border:1px solid rgba(139,100,30,0.35);color:#C9A84C;padding:1px 8px;border-radius:3px;font-size:0.65rem;font-family:Cinzel,serif;letter-spacing:0.08em;text-transform:uppercase;">One-Time</span>'
+        : '';
+      const dateStr = ev.dateType === 'exact'
+        ? ev.exactDate
+        : (ev.day ? MONTH_NAMES[Number(ev.month)] + ' ' + ev.day : MONTH_NAMES[Number(ev.month)]);
+
+      return '<div style="display:flex;align-items:center;gap:10px;padding:0.65rem 0;border-bottom:1px solid var(--border);">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-family:Cinzel,serif;font-size:0.82rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+        + esc(ev.name) + ' ' + alwaysBadge + ' ' + badge + ' ' + oneTime
+        + '</div>'
+        + '<div style="font-size:0.82rem;color:var(--text-dim);margin-top:2px;">' + esc(dateStr) + (ev.desc ? ' — ' + esc(ev.desc.slice(0,60)) + (ev.desc.length>60?'…':'') : '') + '</div>'
+        + '</div>'
+        + '<button class="btn btn-sm btn-ghost" onclick="openSeasonalModal(' + JSON.stringify(ev.id) + ')">Edit</button>'
+        + '</div>';
+    }).join('');
+
+    return '<div style="margin-bottom:2rem;">'
+      + '<div class="section-title" style="margin-bottom:0.5rem;">' + label + '</div>'
+      + rows
+      + '</div>';
+  }).join('');
+}
+
+// ── MODAL ──
+let seCurrentDateType = 'month';
+
+function setSeasonalDateType(type) {
+  seCurrentDateType = type;
+  document.getElementById('se-month-fields').style.display = type === 'month' ? '' : 'none';
+  document.getElementById('se-exact-fields').style.display = type === 'exact' ? '' : 'none';
+  document.getElementById('se-type-month-btn').className = 'btn btn-sm' + (type === 'month' ? '' : ' btn-ghost');
+  document.getElementById('se-type-exact-btn').className = 'btn btn-sm' + (type === 'exact' ? '' : ' btn-ghost');
+}
+
+function openSeasonalModal(id) {
+  seEditingId = id || null;
+  const ev = id ? seasonalEvents.find(e => e.id === id) : null;
+
+  document.getElementById('seasonal-modal-title').textContent = ev ? 'Edit Seasonal Event' : 'Add Seasonal Event';
+  document.getElementById('se-name').value   = ev ? ev.name  : '';
+  document.getElementById('se-image').value  = ev ? (ev.image||'') : '';
+  document.getElementById('se-desc').value   = ev ? (ev.desc||'') : '';
+  document.getElementById('se-recurring').checked = ev ? !!ev.recurring : true;
+  document.getElementById('se-delete-btn').style.display = ev ? '' : 'none';
+  const alwaysOn = ev ? !!ev.alwaysOn : false;
+  document.getElementById('se-always-on').checked = alwaysOn;
+  document.getElementById('se-always-off').checked = ev ? !!ev.alwaysOff : false;
+  document.getElementById('se-always-on-off-wrap').style.display = alwaysOn ? '' : 'none';
+
+  const dtype = ev ? (ev.dateType || 'month') : 'month';
+  setSeasonalDateType(dtype);
+
+  if (dtype === 'month') {
+    document.getElementById('se-month').value = ev ? (ev.month || 1) : new Date().getMonth()+1;
+    document.getElementById('se-day').value   = ev ? (ev.day || '') : '';
+  } else {
+    document.getElementById('se-exact-date').value = ev ? (ev.exactDate || '') : '';
+  }
+
+  document.getElementById('seasonal-modal').style.display = 'flex';
+}
+
+function closeSeasonalModal() {
+  document.getElementById('seasonal-modal').style.display = 'none';
+  seEditingId = null;
+}
+
+function seToggleAlwaysOn() {
+  const on = document.getElementById('se-always-on').checked;
+  document.getElementById('se-always-on-off-wrap').style.display = on ? '' : 'none';
+  if (!on) document.getElementById('se-always-off').checked = false;
+}
+
+async function saveSeasonalEvent() {
+  const name = document.getElementById('se-name').value.trim();
+  if (!name) { alert('Event name is required.'); return; }
+
+  const ev = {
+    id:        seEditingId || ('se_' + Date.now()),
+    name,
+    desc:      document.getElementById('se-desc').value.trim(),
+    image:     document.getElementById('se-image').value.trim(),
+    recurring:  document.getElementById('se-recurring').checked,
+    alwaysOn:   document.getElementById('se-always-on').checked,
+    alwaysOff:  document.getElementById('se-always-off').checked,
+    dateType:   seCurrentDateType,
+  };
+
+  if (seCurrentDateType === 'month') {
+    ev.month = Number(document.getElementById('se-month').value);
+    const dayVal = document.getElementById('se-day').value.trim();
+    ev.day = dayVal ? Number(dayVal) : null;
+  } else {
+    ev.exactDate = document.getElementById('se-exact-date').value;
+  }
+
+  if (seEditingId) {
+    const idx = seasonalEvents.findIndex(e => e.id === seEditingId);
+    if (idx >= 0) seasonalEvents[idx] = ev;
+  } else {
+    seasonalEvents.push(ev);
+  }
+
+  try {
+    await persistSeasonalEvents();
+    showToast('Event saved');
+  } catch(e) { showToast('Save failed: ' + e.message, true); }
+
+  closeSeasonalModal();
+  renderSeasonalAdmin();
+}
+
+async function deleteSeasonalEvent() {
+  if (!seEditingId) return;
+  if (!confirm('Delete this event?')) return;
+  seasonalEvents = seasonalEvents.filter(e => e.id !== seEditingId);
+  try {
+    await persistSeasonalEvents();
+    showToast('Event deleted');
+  } catch(e) { showToast('Delete failed', true); }
+  closeSeasonalModal();
+  renderSeasonalAdmin();
+}
+
 Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   toggleLibTypeFilter, clearLibTypeFilters,
+  openSeasonalModal, closeSeasonalModal, saveSeasonalEvent, deleteSeasonalEvent, setSeasonalDateType, renderSeasonalAdmin, seToggleAlwaysOn,
   closeCatModal, saveCategoryFromModal,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
