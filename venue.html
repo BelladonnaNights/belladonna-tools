@@ -1304,10 +1304,12 @@ function initCarouselTouch(track) {
 function renderComingUp() {
   const section = document.getElementById('coming-up-section');
   const track   = document.getElementById('carousel-track');
-  if (!section || !track) return;
+  if (!section || !track) { console.log('[carousel] elements not found'); return; }
 
-  const active = seasonalEvents.filter(seIsActive);
-  if (!active.length) { section.style.display = 'none'; return; }
+  console.log('[carousel] seasonalEvents:', seasonalEvents.length, seasonalEvents);
+  const active = seasonalEvents.length > 0 ? seasonalEvents : []; // show all for debug
+  seasonalEvents.forEach(ev => console.log('[carousel] seIsActive(' + ev.name + '):', seIsActive(ev), ev));
+  if (!active.length) { section.style.display = 'none'; console.log('[carousel] no active events'); return; }
   section.style.display = '';
 
   const cardHTML = ev => {
