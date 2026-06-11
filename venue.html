@@ -1312,13 +1312,11 @@ function renderComingUp() {
 
   const cardHTML = ev => {
     const dateStr = seDisplayDate(ev);
-    const img = ev.image
-      ? '<img class="event-card-img" src="' + esc(ev.image) + '" alt="' + esc(ev.name) + '" loading="lazy">'
-      : '<div class="event-card-placeholder"><div class="event-card-placeholder-icon">\u2726</div><div class="event-card-placeholder-month">' + esc(dateStr) + '</div></div>';
-    return '<div class="event-card" onclick="openSeasonalPopup(\'' + ev.id.replace(/'/g, "\\'") + '\')\">' + img
-      + '<div class="event-card-body"><div class="event-card-name">' + esc(ev.name) + '</div>'
-      + (dateStr ? '<div class="event-card-date">' + esc(dateStr) + '</div>' : '')
-      + '</div></div>';
+    const imgTag = ev.image
+      ? `<img class="event-card-img" src="${esc(ev.image)}" alt="${esc(ev.name)}" loading="lazy">`
+      : `<div class="event-card-placeholder"><div class="event-card-placeholder-icon">&#x2726;</div><div class="event-card-placeholder-month">${esc(dateStr)}</div></div>`;
+    const safeId = ev.id.replace(/'/g, "\\'");
+    return `<div class="event-card" onclick="openSeasonalPopup('${safeId}')">${imgTag}<div class="event-card-body"><div class="event-card-name">${esc(ev.name)}</div>${dateStr ? `<div class="event-card-date">${esc(dateStr)}</div>` : ''}</div></div>`;
   };
 
   // Double the cards for seamless loop
