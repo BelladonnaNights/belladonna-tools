@@ -1192,11 +1192,13 @@
           <div class="section-title" style="margin-bottom:0.25rem;">Booking Requests</div>
           <p style="color:var(--text-muted);font-size:0.9rem;">Incoming requests from venues. Mark as Confirmed or Declined.</p>
         </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-ghost" id="bk-filter-all"       onclick="setRequestFilter('all')">All</button>
-          <button class="btn btn-sm btn-ghost" id="bk-filter-new"       onclick="setRequestFilter('new')">New</button>
-          <button class="btn btn-sm btn-ghost" id="bk-filter-confirmed" onclick="setRequestFilter('confirmed')">Confirmed</button>
-          <button class="btn btn-sm btn-ghost" id="bk-filter-declined"  onclick="setRequestFilter('declined')">Declined</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" id="bk-filter-all"         onclick="setRequestFilter('all')">All</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-new"         onclick="setRequestFilter('new')">New</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-in-progress" onclick="setRequestFilter('in-progress')">In Progress</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-confirmed"   onclick="setRequestFilter('confirmed')">Confirmed</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-declined"    onclick="setRequestFilter('declined')">Declined</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-history"     onclick="setRequestFilter('history')">History</button>
         </div>
       </div>
       <div id="requests-list"></div>
@@ -4615,7 +4617,7 @@ function listenRequests() {
 
 function setRequestFilter(f) {
   requestFilter = f;
-  ['all','new','confirmed','declined'].forEach(x => {
+  ['all','new','in-progress','confirmed','declined','history'].forEach(x => {
     const btn = document.getElementById('bk-filter-' + x);
     if (btn) btn.className = 'btn btn-sm' + (x === f ? '' : ' btn-ghost');
   });
@@ -4634,7 +4636,8 @@ function renderRequests() {
   empty.style.display = 'none';
 
   list.innerHTML = filtered.map(req => {
-    const statusColor = { new: '#C9A84C', confirmed: '#5AC47A', declined: '#C0654F' }[req.status] || 'var(--text-dim)';
+    const statusColor = { new: '#C9A84C', 'in-progress': '#7BA7C7', confirmed: '#5AC47A', declined: '#C0654F', history: 'var(--text-dim)' }[req.status] || 'var(--text-dim)';
+    const statusLabel = { new: 'New', 'in-progress': 'In Progress', confirmed: 'Confirmed', declined: 'Declined', history: 'History' }[req.status] || req.status;
     const items = (req.items || []).map(i =>
       '<div style="font-size:0.88rem;color:var(--text-muted);padding:0.25rem 0;border-bottom:1px solid var(--border);">'
       + '<span style="font-family:Cinzel,serif;font-size:0.72rem;text-transform:uppercase;color:var(--text);">' + esc(i.name) + '</span>'
@@ -4651,14 +4654,17 @@ function renderRequests() {
       + '<div style="font-size:0.85rem;color:var(--text-muted);">' + esc(req.contactName || '') + (req.email ? ' · ' + esc(req.email) : '') + (req.phone ? ' · ' + esc(req.phone) : '') + '</div>'
       + '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:3px;">' + ts + '</div>'
       + '</div>'
-      + '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:' + statusColor + ';border:1px solid currentColor;padding:2px 10px;border-radius:3px;white-space:nowrap;">' + (req.status||'new') + '</span>'
+      + '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:' + statusColor + ';border:1px solid currentColor;padding:2px 10px;border-radius:3px;white-space:nowrap;">' + statusLabel + '</span>'
       + '</div>'
       + '<div style="margin-bottom:0.75rem;">' + items + '</div>'
       + (req.notes ? '<div style="font-size:0.88rem;color:var(--text-muted);font-style:italic;margin-bottom:0.75rem;padding:0.5rem;background:var(--surface2);border-radius:4px;">' + esc(req.notes) + '</div>' : '')
-      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-      + (req.status !== 'confirmed' ? '<button class="btn btn-sm" onclick="updateRequestStatus(\'' + req._id + '\',\'confirmed\')">✓ Confirm</button>' : '')
-      + (req.status !== 'declined'  ? '<button class="btn btn-sm btn-danger" onclick="updateRequestStatus(\'' + req._id + '\',\'declined\')">✕ Decline</button>' : '')
-      + '<button class="btn btn-sm btn-ghost" onclick="window.location.href=\'mailto:' + (req.email||'') + '\'">Reply by Email</button>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+      + (req.status !== 'in-progress' ? '<button class="btn btn-sm btn-ghost" style="color:#7BA7C7;border-color:rgba(123,167,199,0.5);" onclick="updateRequestStatus(\'' + req._id + '\',\'in-progress\')">⟳ In Progress</button>' : '')
+      + (req.status !== 'confirmed'   ? '<button class="btn btn-sm" onclick="updateRequestStatus(\'' + req._id + '\',\'confirmed\')">✓ Confirm</button>' : '')
+      + (req.status !== 'declined'    ? '<button class="btn btn-sm btn-danger" onclick="updateRequestStatus(\'' + req._id + '\',\'declined\')">✕ Decline</button>' : '')
+      + (req.status !== 'history'     ? '<button class="btn btn-sm btn-ghost" onclick="updateRequestStatus(\'' + req._id + '\',\'history\')">📁 History</button>' : '')
+      + '<button class="btn btn-sm btn-ghost" onclick="window.location.href=\'mailto:' + (req.email||'') + '\'">✉ Reply</button>'
+      + '<button class="btn btn-sm btn-ghost" style="color:#C0654F;border-color:rgba(192,101,79,0.4);margin-left:auto;" onclick="deleteRequest(\'' + req._id + '\')">🗑 Delete</button>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -4667,7 +4673,16 @@ function renderRequests() {
 async function updateRequestStatus(id, status) {
   try {
     await updateDoc(doc(db, 'bookingRequests', id), { status });
+    showToast('Updated to ' + status);
   } catch(e) { showToast('Update failed', true); }
+}
+
+async function deleteRequest(id) {
+  if (!confirm('Permanently delete this request?')) return;
+  try {
+    await deleteDoc(doc(db, 'bookingRequests', id));
+    showToast('Request deleted');
+  } catch(e) { showToast('Delete failed', true); }
 }
 
 Object.assign(window, {
@@ -4675,7 +4690,7 @@ Object.assign(window, {
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   toggleLibTypeFilter, clearLibTypeFilters,
   openSeasonalModal, closeSeasonalModal, saveSeasonalEvent, deleteSeasonalEvent, setSeasonalDateType, renderSeasonalAdmin, seToggleAlwaysOn,
-  switchBookingsTab, adminCalNav, adminCalToggle, setCalMode, saveAvailability, setRequestFilter, updateRequestStatus, initBookingsTab,
+  switchBookingsTab, adminCalNav, adminCalToggle, setCalMode, saveAvailability, setRequestFilter, updateRequestStatus, deleteRequest, initBookingsTab,
   closeCatModal, saveCategoryFromModal,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
