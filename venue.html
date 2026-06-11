@@ -1193,7 +1193,11 @@ async function loadSeasonalEvents() {
   try {
     const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
     seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
-  } catch(e) { seasonalEvents = []; }
+    console.log('[seasonal] loaded', seasonalEvents.length, 'events from Firestore, exists:', snap.exists());
+  } catch(e) {
+    console.error('[seasonal] LOAD ERROR:', e);
+    seasonalEvents = [];
+  }
   renderComingUp();
 }
 
@@ -1306,10 +1310,13 @@ function renderComingUp() {
   const track   = document.getElementById('carousel-track');
   if (!section || !track) { console.log('[carousel] elements not found'); return; }
 
-  console.log('[carousel] seasonalEvents:', seasonalEvents.length, seasonalEvents);
-  const active = seasonalEvents.length > 0 ? seasonalEvents : []; // show all for debug
-  seasonalEvents.forEach(ev => console.log('[carousel] seIsActive(' + ev.name + '):', seIsActive(ev), ev));
-  if (!active.length) { section.style.display = 'none'; console.log('[carousel] no active events'); return; }
+  console.log('[carousel] seasonalEvents count:', seasonalEvents.length);
+  // FORCE SHOW with test card if empty, so we can confirm rendering works
+  const testEvents = seasonalEvents.length > 0 ? seasonalEvents : [{
+    id: 'test-1', name: 'Test Event', desc: 'Carousel render test', image: '',
+    alwaysOn: true, alwaysOff: false, dateType: 'month', month: 6
+  }];
+  const active = testEvents;
   section.style.display = '';
 
   const cardHTML = ev => {
