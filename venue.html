@@ -642,6 +642,7 @@
     .desc-title { font-size: 1.3rem; }
   }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -1134,6 +1135,9 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// ── EMAILJS INIT ──
+emailjs.init('PYAxWRvcETE-JmFYj');
 
 // ── DATA ──
 let publishedNights = [];
@@ -1990,18 +1994,15 @@ async function submitCart() {
     // Save to Firestore
     await addDoc(collection(db, 'bookingRequests'), payload);
 
-    // Send email via mailto fallback (EmailJS or backend would be ideal but mailto works without backend)
-    const subject = encodeURIComponent('New Booking Request — ' + venue);
-    const body = encodeURIComponent(
-      'New booking request from ' + venue + '\n\n'
-      + 'Contact: ' + name + '\n'
-      + 'Email: ' + email + '\n'
-      + 'Phone: ' + (phone || 'Not provided') + '\n\n'
-      + 'Requested Events:\n'
-      + items.map(i => '  • ' + i.name + ' — ' + i.scheduling).join('\n')
-      + (notes ? '\n\nNotes: ' + notes : '')
-    );
-    window.open('mailto:contact@belladonnanights.com?subject=' + subject + '&body=' + body);
+    // Send email notification via EmailJS (fires silently, no action needed from venue)
+    await emailjs.send('service_aapds0d', 'template_y9ijdjg', {
+      venue_name:    venue,
+      contact_name:  name,
+      email:         email,
+      phone:         phone || 'Not provided',
+      items:         items.map(i => '• ' + i.name + ' — ' + i.scheduling).join('\n'),
+      notes:         notes || 'None',
+    });
 
     // Clear cart and show confirmation
     cart = [];
