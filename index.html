@@ -1491,7 +1491,7 @@
 </div>
 
 <!-- ═══ SEASONAL EVENT MODAL ═══ -->
-<div class="modal-backdrop" id="seasonal-modal" style="display:none;">
+<div class="modal-backdrop" id="seasonal-modal">
   <div class="modal" style="max-width:560px;">
     <div class="modal-header">
       <span class="modal-title" id="seasonal-modal-title">Add Seasonal Event</span>
@@ -4361,11 +4361,11 @@ function openSeasonalModal(id) {
     document.getElementById('se-exact-date').value = ev ? (ev.exactDate || '') : '';
   }
 
-  document.getElementById('seasonal-modal').style.display = 'flex';
+  document.getElementById('seasonal-modal').classList.add('open');
 }
 
 function closeSeasonalModal() {
-  document.getElementById('seasonal-modal').style.display = 'none';
+  document.getElementById('seasonal-modal').classList.remove('open');
   seEditingId = null;
 }
 
@@ -4405,25 +4405,26 @@ async function saveSeasonalEvent() {
     seasonalEvents.push(ev);
   }
 
+  closeSeasonalModal();
+  renderSeasonalAdmin();
+
   try {
     await persistSeasonalEvents();
     showToast('Event saved');
   } catch(e) { showToast('Save failed: ' + e.message, true); }
-
-  closeSeasonalModal();
-  renderSeasonalAdmin();
 }
 
 async function deleteSeasonalEvent() {
   if (!seEditingId) return;
   if (!confirm('Delete this event?')) return;
   seasonalEvents = seasonalEvents.filter(e => e.id !== seEditingId);
+  closeSeasonalModal();
+  renderSeasonalAdmin();
+
   try {
     await persistSeasonalEvents();
     showToast('Event deleted');
   } catch(e) { showToast('Delete failed', true); }
-  closeSeasonalModal();
-  renderSeasonalAdmin();
 }
 
 Object.assign(window, {
