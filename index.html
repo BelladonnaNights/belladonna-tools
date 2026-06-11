@@ -911,6 +911,7 @@
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
     <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
     <button class="nav-tab" onclick="switchView('seasonal')">Seasonal</button>
+    <button class="nav-tab" onclick="switchView('bookings')">Bookings</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
 </header>
@@ -1134,6 +1135,75 @@
     </div>
   </div>
 
+
+
+  <!-- ═══ BOOKINGS TAB ═══ -->
+  <div class="view" id="view-bookings">
+
+    <!-- Sub-nav -->
+    <div style="display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:0.75rem;">
+      <button class="nav-tab active" id="bk-tab-cal"  onclick="switchBookingsTab('calendar')">Availability Calendar</button>
+      <button class="nav-tab"        id="bk-tab-req"  onclick="switchBookingsTab('requests')">
+        Requests
+        <span id="bk-new-badge" style="display:none;background:var(--gold);color:var(--ink);font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:5px;">0</span>
+      </button>
+    </div>
+
+    <!-- ── AVAILABILITY CALENDAR ── -->
+    <div id="bk-view-calendar">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+        <div>
+          <div class="section-title" style="margin-bottom:0.25rem;">Availability Calendar</div>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Mark dates as Available, Booked, or Blocked. Venues see green dates when choosing a booking date.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;gap:6px;align-items:center;font-size:0.78rem;color:var(--text-muted);">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(42,107,58,0.4);border:1px solid rgba(42,107,58,0.6);"></span>Available
+            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(201,168,76,0.3);border:1px solid rgba(201,168,76,0.5);margin-left:6px;"></span>Booked
+            <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(139,58,42,0.3);border:1px solid rgba(139,58,42,0.5);margin-left:6px;"></span>Blocked
+          </div>
+          <button class="btn btn-sm" onclick="saveAvailability()">Save Calendar</button>
+        </div>
+      </div>
+
+      <!-- Month nav -->
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+        <button class="btn btn-sm btn-ghost" onclick="adminCalNav(-1)">‹ Prev</button>
+        <span id="admin-cal-label" style="font-family:Cinzel,serif;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text);min-width:140px;text-align:center;"></span>
+        <button class="btn btn-sm btn-ghost" onclick="adminCalNav(1)">Next ›</button>
+      </div>
+
+      <!-- Click mode -->
+      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;">
+        <span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);align-self:center;">Click to mark as:</span>
+        <button class="btn btn-sm" id="cal-mode-available" onclick="setCalMode('available')">Available</button>
+        <button class="btn btn-sm btn-ghost" id="cal-mode-booked"    onclick="setCalMode('booked')">Booked</button>
+        <button class="btn btn-sm btn-ghost" id="cal-mode-blocked"   onclick="setCalMode('blocked')">Blocked</button>
+        <button class="btn btn-sm btn-ghost" id="cal-mode-clear"     onclick="setCalMode('clear')">Clear</button>
+      </div>
+
+      <div id="admin-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:560px;"></div>
+    </div>
+
+    <!-- ── REQUESTS INBOX ── -->
+    <div id="bk-view-requests" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div class="section-title" style="margin-bottom:0.25rem;">Booking Requests</div>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Incoming requests from venues. Mark as Confirmed or Declined.</p>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-ghost" id="bk-filter-all"       onclick="setRequestFilter('all')">All</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-new"       onclick="setRequestFilter('new')">New</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-confirmed" onclick="setRequestFilter('confirmed')">Confirmed</button>
+          <button class="btn btn-sm btn-ghost" id="bk-filter-declined"  onclick="setRequestFilter('declined')">Declined</button>
+        </div>
+      </div>
+      <div id="requests-list"></div>
+      <div id="requests-empty" style="display:none;text-align:center;padding:3rem;color:var(--text-dim);font-family:Cinzel,serif;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;">No requests yet</div>
+    </div>
+
+  </div>
 
   <!-- ═══ SEASONAL EVENTS VIEW ═══ -->
   <div class="view" id="view-seasonal">
@@ -1603,7 +1673,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc,
-  getDocs, getDoc, setDoc, updateDoc, deleteDoc, writeBatch
+  getDocs, getDoc, setDoc, updateDoc, deleteDoc, writeBatch,
+  query, orderBy, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ═══════════════════════════════════════════════
@@ -1801,6 +1872,7 @@ async function batchSaveCats(cats) {
 function switchView(name) {
   if (name === 'mainmenu' && !mmData) loadMainMenu();
   if (name === 'seasonal') renderSeasonalAdmin();
+  if (name === 'bookings') initBookingsTab();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
@@ -4427,11 +4499,183 @@ async function deleteSeasonalEvent() {
   } catch(e) { showToast('Delete failed', true); }
 }
 
+
+// ═══════════════════════════════════════════════════════
+// BOOKINGS ADMIN — Availability Calendar + Requests Inbox
+// ═══════════════════════════════════════════════════════
+
+let adminAvailDates = {};   // { 'YYYY-MM-DD': 'available'|'booked'|'blocked' }
+let adminCalYear  = new Date().getFullYear();
+let adminCalMonth = new Date().getMonth();
+let calClickMode  = 'available';
+let bookingRequests = [];
+let requestFilter   = 'all';
+let requestsUnsubscribe = null;
+
+// ── TAB SWITCHING ──
+function switchBookingsTab(tab) {
+  ['calendar','requests'].forEach(t => {
+    document.getElementById('bk-view-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('bk-tab-' + (t==='calendar'?'cal':'req'))
+      .classList.toggle('active', t === tab);
+  });
+  if (tab === 'calendar') renderAdminCal();
+  if (tab === 'requests') renderRequests();
+}
+
+// ── INIT ──
+async function initBookingsTab() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'availability'));
+    adminAvailDates = snap.exists() ? (snap.data().dates || {}) : {};
+  } catch(e) { adminAvailDates = {}; }
+  renderAdminCal();
+  listenRequests();
+}
+
+// ── AVAILABILITY CALENDAR ──
+function setCalMode(mode) {
+  calClickMode = mode;
+  ['available','booked','blocked','clear'].forEach(m => {
+    const btn = document.getElementById('cal-mode-' + m);
+    if (btn) btn.className = 'btn btn-sm' + (m === mode ? '' : ' btn-ghost');
+  });
+}
+
+function adminCalNav(dir) {
+  adminCalMonth += dir;
+  if (adminCalMonth > 11) { adminCalMonth = 0; adminCalYear++; }
+  if (adminCalMonth < 0)  { adminCalMonth = 11; adminCalYear--; }
+  renderAdminCal();
+}
+
+function adminCalToggle(dateStr) {
+  if (calClickMode === 'clear') { delete adminAvailDates[dateStr]; }
+  else { adminAvailDates[dateStr] = calClickMode; }
+  renderAdminCal();
+}
+
+function renderAdminCal() {
+  const grid = document.getElementById('admin-cal-grid');
+  const label = document.getElementById('admin-cal-label');
+  if (!grid) return;
+
+  const y = adminCalYear, m = adminCalMonth;
+  label.textContent = new Date(y, m, 1).toLocaleString('default', { month: 'long' }) + ' ' + y;
+
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = DAY_LABELS.map(d =>
+    '<div style="text-align:center;font-family:Cinzel,serif;font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-dim);padding:4px 0;">' + d + '</div>'
+  ).join('');
+
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const status  = adminAvailDates[dateStr];
+    const isPast  = new Date(y, m, d) < today;
+    let bg = 'var(--surface2)'; let border = 'var(--border)'; let color = 'var(--text-muted)';
+    if (status === 'available') { bg = 'rgba(42,107,58,0.25)'; border = 'rgba(42,107,58,0.55)'; color = '#5AC47A'; }
+    if (status === 'booked')    { bg = 'rgba(201,168,76,0.2)'; border = 'rgba(201,168,76,0.5)'; color = 'var(--gold)'; }
+    if (status === 'blocked')   { bg = 'rgba(139,58,42,0.2)'; border = 'rgba(139,58,42,0.45)'; color = '#C0654F'; }
+    const opacity = isPast ? 'opacity:0.4;' : '';
+    const cursor  = isPast ? 'cursor:default;' : 'cursor:pointer;';
+    const onclick = isPast ? '' : ' onclick="adminCalToggle(\'' + dateStr + '\')"';
+    html += '<div' + onclick + ' style="text-align:center;padding:8px 4px;border-radius:4px;font-size:0.82rem;border:1px solid ' + border + ';background:' + bg + ';color:' + color + ';' + opacity + cursor + 'transition:all 0.15s;" onmouseover="if(!this.onclick)return;this.style.opacity=0.8;" onmouseout="this.style.opacity=\'\'">' + d + (status ? '<div style="font-size:0.45rem;text-transform:uppercase;letter-spacing:0.05em;margin-top:1px;opacity:0.8;">' + status + '</div>' : '') + '</div>';
+  }
+
+  grid.innerHTML = html;
+}
+
+async function saveAvailability() {
+  try {
+    await setDoc(doc(db, 'config', 'availability'), { dates: adminAvailDates });
+    showToast('Availability saved');
+  } catch(e) { showToast('Save failed: ' + e.message, true); }
+}
+
+// ── REQUESTS INBOX ──
+function listenRequests() {
+  if (requestsUnsubscribe) requestsUnsubscribe();
+  try {
+    const q = query(collection(db, 'bookingRequests'), orderBy('submittedAt', 'desc'));
+    requestsUnsubscribe = onSnapshot(q, snap => {
+      bookingRequests = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      const newCount = bookingRequests.filter(r => r.status === 'new').length;
+      const badge = document.getElementById('bk-new-badge');
+      if (badge) { badge.textContent = newCount; badge.style.display = newCount ? '' : 'none'; }
+      renderRequests();
+    });
+  } catch(e) { console.error('Requests listener error:', e); }
+}
+
+function setRequestFilter(f) {
+  requestFilter = f;
+  ['all','new','confirmed','declined'].forEach(x => {
+    const btn = document.getElementById('bk-filter-' + x);
+    if (btn) btn.className = 'btn btn-sm' + (x === f ? '' : ' btn-ghost');
+  });
+  renderRequests();
+}
+
+function renderRequests() {
+  const list  = document.getElementById('requests-list');
+  const empty = document.getElementById('requests-empty');
+  if (!list) return;
+
+  let filtered = bookingRequests;
+  if (requestFilter !== 'all') filtered = filtered.filter(r => r.status === requestFilter);
+
+  if (!filtered.length) { empty.style.display = 'block'; list.innerHTML = ''; return; }
+  empty.style.display = 'none';
+
+  list.innerHTML = filtered.map(req => {
+    const statusColor = { new: '#C9A84C', confirmed: '#5AC47A', declined: '#C0654F' }[req.status] || 'var(--text-dim)';
+    const items = (req.items || []).map(i =>
+      '<div style="font-size:0.88rem;color:var(--text-muted);padding:0.25rem 0;border-bottom:1px solid var(--border);">'
+      + '<span style="font-family:Cinzel,serif;font-size:0.72rem;text-transform:uppercase;color:var(--text);">' + esc(i.name) + '</span>'
+      + ' <span style="color:var(--text-dim);">—</span> ' + esc(i.scheduling)
+      + '</div>'
+    ).join('');
+
+    const ts = req.submittedAt && req.submittedAt.toDate ? req.submittedAt.toDate().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : 'Pending';
+
+    return '<div class="card" style="margin-bottom:1rem;">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem;">'
+      + '<div>'
+      + '<div style="font-family:Cinzel,serif;font-size:0.88rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text);margin-bottom:0.2rem;">' + esc(req.venue || '—') + '</div>'
+      + '<div style="font-size:0.85rem;color:var(--text-muted);">' + esc(req.contactName || '') + (req.email ? ' · ' + esc(req.email) : '') + (req.phone ? ' · ' + esc(req.phone) : '') + '</div>'
+      + '<div style="font-size:0.75rem;color:var(--text-dim);margin-top:3px;">' + ts + '</div>'
+      + '</div>'
+      + '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:' + statusColor + ';border:1px solid currentColor;padding:2px 10px;border-radius:3px;white-space:nowrap;">' + (req.status||'new') + '</span>'
+      + '</div>'
+      + '<div style="margin-bottom:0.75rem;">' + items + '</div>'
+      + (req.notes ? '<div style="font-size:0.88rem;color:var(--text-muted);font-style:italic;margin-bottom:0.75rem;padding:0.5rem;background:var(--surface2);border-radius:4px;">' + esc(req.notes) + '</div>' : '')
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+      + (req.status !== 'confirmed' ? '<button class="btn btn-sm" onclick="updateRequestStatus(\'' + req._id + '\',\'confirmed\')">✓ Confirm</button>' : '')
+      + (req.status !== 'declined'  ? '<button class="btn btn-sm btn-danger" onclick="updateRequestStatus(\'' + req._id + '\',\'declined\')">✕ Decline</button>' : '')
+      + '<button class="btn btn-sm btn-ghost" onclick="window.location.href=\'mailto:' + (req.email||'') + '\'">Reply by Email</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function updateRequestStatus(id, status) {
+  try {
+    await updateDoc(doc(db, 'bookingRequests', id), { status });
+  } catch(e) { showToast('Update failed', true); }
+}
+
 Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   toggleLibTypeFilter, clearLibTypeFilters,
   openSeasonalModal, closeSeasonalModal, saveSeasonalEvent, deleteSeasonalEvent, setSeasonalDateType, renderSeasonalAdmin, seToggleAlwaysOn,
+  switchBookingsTab, adminCalNav, adminCalToggle, setCalMode, saveAvailability, setRequestFilter, updateRequestStatus, initBookingsTab,
   closeCatModal, saveCategoryFromModal,
   handleCatBannerUpload, clearCatBanner, handleCatBannerUrl, handleCatMiniUrl,
   openNightDetail, closeNightDetail, openNewNightModal,
