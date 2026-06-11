@@ -326,14 +326,11 @@
   .carousel-track {
     display: flex;
     gap: 1rem;
-    animation: carouselScroll 40s linear infinite;
     width: max-content;
+    will-change: transform;
+    cursor: grab;
   }
-  .carousel-track:hover { animation-play-state: paused; }
-  @keyframes carouselScroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
+  .carousel-track.dragging { cursor: grabbing; }
   /* Event card — 4:5 */
   .event-card {
     flex-shrink: 0;
@@ -935,13 +932,77 @@ function seDisplayDate(ev) {
   return m ? (ev.day ? MONTH_NAMES_V[m] + ' ' + ev.day : MONTH_NAMES_V[m]) : '';
 }
 
+// ── CAROUSEL ENGINE ──
+let carouselRAF = null;
+let carouselPos = 0;       // current translateX in px (negative = scrolled right)
+let carouselHalfW = 0;     // width of one copy of the cards
+let carouselSpeed = 0.5;   // px per frame (~30px/s at 60fps)
+let carouselPaused = false;
+let carouselResumeTimer = null;
+
+function carouselTick() {
+  const track = document.getElementById('carousel-track');
+  if (!track || carouselHalfW === 0) { carouselRAF = requestAnimationFrame(carouselTick); return; }
+
+  if (!carouselPaused) {
+    carouselPos -= carouselSpeed;
+    // Seamless loop: once we've scrolled one full copy width, snap back
+    if (Math.abs(carouselPos) >= carouselHalfW) {
+      carouselPos += carouselHalfW;
+    }
+    track.style.transform = 'translateX(' + carouselPos + 'px)';
+  }
+  carouselRAF = requestAnimationFrame(carouselTick);
+}
+
+function carouselPause() {
+  carouselPaused = true;
+  if (carouselResumeTimer) clearTimeout(carouselResumeTimer);
+}
+
+function carouselResume(delay) {
+  if (carouselResumeTimer) clearTimeout(carouselResumeTimer);
+  carouselResumeTimer = setTimeout(() => { carouselPaused = false; }, delay || 0);
+}
+
+function initCarouselTouch(track) {
+  let touchStartX = 0;
+  let posAtTouchStart = 0;
+
+  track.addEventListener('touchstart', e => {
+    carouselPause();
+    touchStartX = e.touches[0].clientX;
+    posAtTouchStart = carouselPos;
+    track.classList.add('dragging');
+  }, { passive: true });
+
+  track.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - touchStartX;
+    carouselPos = posAtTouchStart + dx;
+    // Keep within bounds (allow natural overscroll feel, clamp to 2 copies)
+    if (carouselPos > 0) carouselPos = 0;
+    if (carouselPos < -(carouselHalfW * 2 - 10)) carouselPos = -(carouselHalfW * 2 - 10);
+    track.style.transform = 'translateX(' + carouselPos + 'px)';
+  }, { passive: true });
+
+  track.addEventListener('touchend', () => {
+    track.classList.remove('dragging');
+    // Snap carouselPos into the valid loop range
+    carouselPos = ((carouselPos % carouselHalfW) - carouselHalfW) % carouselHalfW;
+    // Resume auto-scroll after 10 seconds
+    carouselResume(10000);
+  }, { passive: true });
+}
+
 function renderComingUp() {
   const section = document.getElementById('coming-up-section');
   const track   = document.getElementById('carousel-track');
   if (!section || !track) return;
+
   const active = seasonalEvents.filter(seIsActive);
   if (!active.length) { section.style.display = 'none'; return; }
   section.style.display = '';
+
   const cardHTML = ev => {
     const dateStr = seDisplayDate(ev);
     const img = ev.image
@@ -952,9 +1013,29 @@ function renderComingUp() {
       + (dateStr ? '<div class="event-card-date">' + esc(dateStr) + '</div>' : '')
       + '</div></div>';
   };
+
+  // Double the cards for seamless loop
   const cards = active.map(cardHTML).join('');
   track.innerHTML = cards + cards;
-  track.style.animationDuration = Math.max(20, active.length * 7) + 's';
+  track.style.transform = 'translateX(0)';
+
+  // Measure half-width after paint so layout is complete
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      carouselHalfW = track.scrollWidth / 2;
+      carouselPos = 0;
+      carouselPaused = false;
+      // Scale speed: faster with more cards (more content = same time to traverse)
+      carouselSpeed = Math.max(0.4, Math.min(0.9, active.length * 0.12));
+    });
+  });
+
+  // Start the RAF loop (cancel any existing one first)
+  if (carouselRAF) cancelAnimationFrame(carouselRAF);
+  carouselRAF = requestAnimationFrame(carouselTick);
+
+  // Wire up touch
+  initCarouselTouch(track);
 }
 
 // ── LOAD DATA ──
