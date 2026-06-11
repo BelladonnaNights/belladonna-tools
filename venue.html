@@ -1193,11 +1193,7 @@ async function loadSeasonalEvents() {
   try {
     const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
     seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
-    console.log('[seasonal] loaded', seasonalEvents.length, 'events from Firestore, exists:', snap.exists());
-  } catch(e) {
-    console.error('[seasonal] LOAD ERROR:', e);
-    seasonalEvents = [];
-  }
+  } catch(e) { seasonalEvents = []; }
   renderComingUp();
 }
 
@@ -1310,13 +1306,8 @@ function renderComingUp() {
   const track   = document.getElementById('carousel-track');
   if (!section || !track) { console.log('[carousel] elements not found'); return; }
 
-  console.log('[carousel] seasonalEvents count:', seasonalEvents.length);
-  // FORCE SHOW with test card if empty, so we can confirm rendering works
-  const testEvents = seasonalEvents.length > 0 ? seasonalEvents : [{
-    id: 'test-1', name: 'Test Event', desc: 'Carousel render test', image: '',
-    alwaysOn: true, alwaysOff: false, dateType: 'month', month: 6
-  }];
-  const active = testEvents;
+  const active = seasonalEvents.filter(seIsActive);
+  if (!active.length) { section.style.display = 'none'; return; }
   section.style.display = '';
 
   const cardHTML = ev => {
@@ -1948,7 +1939,7 @@ function renderWeekdayPicker(item, idx) {
     const active = days.includes(i);
     return '<button class="weekday-btn' + (active ? ' active' : '') + '" onclick="toggleWeekday(' + idx + ',' + i + ')">' + d + '</button>';
   }).join('');
-  return '<div style="margin-bottom:0.5rem;font-size:0.78rem;color:var(--text-dim);font-style:italic;">Pick which day(s) you'd like a weekly recurring gig:</div>'
+  return '<div style="margin-bottom:0.5rem;font-size:0.78rem;color:var(--text-dim);font-style:italic;">Pick which day(s) you would like a weekly recurring gig:</div>'
     + '<div class="weekday-picker">' + btns + '</div>'
     + (days.length ? '<div style="font-size:0.8rem;color:var(--gold);font-family:Cinzel,serif;letter-spacing:0.04em;margin-top:0.25rem;">Every ' + days.map(i=>WEEKDAYS[i]).join(' & ') + '</div>' : '');
 }
