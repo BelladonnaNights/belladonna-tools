@@ -946,9 +946,10 @@ function carouselTick() {
 
   if (!carouselPaused) {
     carouselPos -= carouselSpeed;
-    // Seamless loop: once we've scrolled one full copy width, snap back
-    if (Math.abs(carouselPos) >= carouselHalfW) {
-      carouselPos += carouselHalfW;
+    // Seamless loop in both directions
+    if (carouselHalfW > 0) {
+      carouselPos = carouselPos % carouselHalfW;
+      if (carouselPos > 0) carouselPos -= carouselHalfW;
     }
     track.style.transform = 'translateX(' + carouselPos + 'px)';
   }
@@ -979,16 +980,21 @@ function initCarouselTouch(track) {
   track.addEventListener('touchmove', e => {
     const dx = e.touches[0].clientX - touchStartX;
     carouselPos = posAtTouchStart + dx;
-    // Keep within bounds (allow natural overscroll feel, clamp to 2 copies)
-    if (carouselPos > 0) carouselPos = 0;
-    if (carouselPos < -(carouselHalfW * 2 - 10)) carouselPos = -(carouselHalfW * 2 - 10);
+    // Normalize into [-halfW, 0) so both directions loop seamlessly
+    if (carouselHalfW > 0) {
+      carouselPos = carouselPos % carouselHalfW;
+      if (carouselPos > 0) carouselPos -= carouselHalfW;  // wrap positive into negative range
+    }
     track.style.transform = 'translateX(' + carouselPos + 'px)';
   }, { passive: true });
 
   track.addEventListener('touchend', () => {
     track.classList.remove('dragging');
-    // Snap carouselPos into the valid loop range
-    carouselPos = ((carouselPos % carouselHalfW) - carouselHalfW) % carouselHalfW;
+    // Ensure pos is cleanly in range after lift
+    if (carouselHalfW > 0) {
+      carouselPos = carouselPos % carouselHalfW;
+      if (carouselPos > 0) carouselPos -= carouselHalfW;
+    }
     // Resume auto-scroll after 10 seconds
     carouselResume(10000);
   }, { passive: true });
