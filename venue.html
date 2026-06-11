@@ -298,6 +298,82 @@
   ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
+
+  /* ── COMING UP CAROUSEL ── */
+  .coming-up-section {
+    margin-bottom: 2.5rem;
+  }
+  .coming-up-header {
+    display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1rem;
+  }
+  .coming-up-title {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold); white-space: nowrap;
+  }
+  .coming-up-line { flex: 1; height: 1px; background: var(--border); }
+  /* Track + mask */
+  .carousel-mask {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+  }
+  /* fade edges */
+  .carousel-mask::before, .carousel-mask::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2; pointer-events: none;
+  }
+  .carousel-mask::before { left: 0; background: linear-gradient(to right, var(--ink), transparent); }
+  .carousel-mask::after  { right: 0; background: linear-gradient(to left,  var(--ink), transparent); }
+  .carousel-track {
+    display: flex;
+    gap: 1rem;
+    animation: carouselScroll 40s linear infinite;
+    width: max-content;
+  }
+  .carousel-track:hover { animation-play-state: paused; }
+  @keyframes carouselScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  /* Event card — 4:5 */
+  .event-card {
+    flex-shrink: 0;
+    width: 160px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .event-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+  .event-card-img {
+    width: 100%; aspect-ratio: 4/5; object-fit: cover;
+    display: block; background: var(--surface2);
+  }
+  .event-card-placeholder {
+    width: 100%; aspect-ratio: 4/5;
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+  }
+  .event-card-placeholder-icon { font-size: 2rem; opacity: 0.6; }
+  .event-card-placeholder-month {
+    font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold-dim);
+  }
+  .event-card-body {
+    padding: 0.6rem 0.7rem 0.75rem;
+  }
+  .event-card-name {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text); line-height: 1.3;
+  }
+  .event-card-date {
+    font-size: 0.75rem; color: var(--text-dim); margin-top: 3px;
+  }
+  @media (max-width: 768px) {
+    .event-card { width: 130px; }
+  }
+
   /* ── FOOTER ── */
   .site-footer {
     text-align: center; padding: 2rem; font-family: 'Cinzel', serif;
@@ -383,6 +459,17 @@
         <div class="menu-intro-eyebrow">Belladonna Audio Alchemies</div>
         <div class="menu-intro-title">The Menu</div>
         <div class="menu-intro-sub">Live entertainment crafted for your venue. Select a category to explore.</div>
+      </div>
+
+      <!-- COMING UP CAROUSEL — rendered by renderComingUp() -->
+      <div id="coming-up-section" class="coming-up-section" style="display:none;">
+        <div class="coming-up-header">
+          <span class="coming-up-title">✦ Coming Up</span>
+          <div class="coming-up-line"></div>
+        </div>
+        <div class="carousel-mask">
+          <div class="carousel-track" id="carousel-track"></div>
+        </div>
       </div>
 
       <div class="menu-divider">
@@ -796,6 +883,80 @@ function nightMatchesFilters(night) {
   return true;
 }
 
+
+// ═══════════════════════════════════════
+// SEASONAL / COMING UP CAROUSEL
+// ═══════════════════════════════════════
+let seasonalEvents = [];
+const MONTH_NAMES_V = ['','January','February','March','April','May','June',
+                       'July','August','September','October','November','December'];
+
+async function loadSeasonalEvents() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
+    seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
+  } catch(e) { seasonalEvents = []; }
+  renderComingUp();
+}
+
+function seIsActive(ev) {
+  if (ev.alwaysOn) return !ev.alwaysOff;
+  const now = new Date();
+  if (ev.dateType === 'exact') {
+    if (!ev.exactDate) return false;
+    const [ey, em, ed] = ev.exactDate.split('-').map(Number);
+    const target = new Date(ey, em-1, ed);
+    const diff = (target - now) / 86400000;
+    return diff >= 0 && diff <= 30;
+  }
+  const m = Number(ev.month);
+  if (!m) return false;
+  const yr = now.getFullYear();
+  if (ev.day) {
+    const occ = ev.recurring
+      ? [new Date(yr, m-1, ev.day), new Date(yr+1, m-1, ev.day)]
+      : [new Date(yr, m-1, ev.day)];
+    return occ.some(t => { const d=(t-now)/86400000; return d>=0&&d<=30; });
+  }
+  const years = ev.recurring ? [yr, yr+1] : [yr];
+  return years.some(y => {
+    const s = new Date(y, m-1, 1); s.setDate(s.getDate()-14);
+    const e = new Date(y, m, 0);   e.setDate(e.getDate()-7);
+    return now >= s && now <= e;
+  });
+}
+
+function seDisplayDate(ev) {
+  if (ev.dateType === 'exact' && ev.exactDate) {
+    const [,em,ed] = ev.exactDate.split('-').map(Number);
+    return MONTH_NAMES_V[em] + ' ' + ed;
+  }
+  const m = Number(ev.month);
+  return m ? (ev.day ? MONTH_NAMES_V[m] + ' ' + ev.day : MONTH_NAMES_V[m]) : '';
+}
+
+function renderComingUp() {
+  const section = document.getElementById('coming-up-section');
+  const track   = document.getElementById('carousel-track');
+  if (!section || !track) return;
+  const active = seasonalEvents.filter(seIsActive);
+  if (!active.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  const cardHTML = ev => {
+    const dateStr = seDisplayDate(ev);
+    const img = ev.image
+      ? '<img class="event-card-img" src="' + esc(ev.image) + '" alt="' + esc(ev.name) + '" loading="lazy">'
+      : '<div class="event-card-placeholder"><div class="event-card-placeholder-icon">\u2726</div><div class="event-card-placeholder-month">' + esc(dateStr) + '</div></div>';
+    return '<div class="event-card">' + img
+      + '<div class="event-card-body"><div class="event-card-name">' + esc(ev.name) + '</div>'
+      + (dateStr ? '<div class="event-card-date">' + esc(dateStr) + '</div>' : '')
+      + '</div></div>';
+  };
+  const cards = active.map(cardHTML).join('');
+  track.innerHTML = cards + cards;
+  track.style.animationDuration = Math.max(20, active.length * 7) + 's';
+}
+
 // ── LOAD DATA ──
 async function loadFilterDims() {
   try {
@@ -823,6 +984,8 @@ async function load() {
   }
   document.getElementById('loading').style.display = 'none';
   document.getElementById('view-menu').classList.add('active');
+  // Load seasonal events non-blocking after main data
+  loadSeasonalEvents().catch(()=>{});
 }
 
 // ── MENU CONFIG FROM FIREBASE ──
@@ -1173,7 +1336,7 @@ load().then(() => {
 
 // ── EXPOSE TO WINDOW ──
 Object.assign(window, {
-  navigateTo, toggleFilterSidebar, closeFilterSidebar,
+  navigateTo, renderComingUp, toggleFilterSidebar, closeFilterSidebar,
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
   renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames
