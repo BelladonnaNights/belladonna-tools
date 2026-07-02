@@ -199,9 +199,18 @@
 
   <div class="panel">
     <label>Paste your questions</label>
-    <textarea id="input" placeholder="* What outlaw was famously shot and killed by Pat Garrett? Answer: Billy the Kid
-* What is the name of Indiana Jones's signature weapon? Answer: A whip"></textarea>
-    <div class="hint">One question per line, starting with * (or -), formatted as: Question? Answer: The Answer</div>
+    <textarea id="input" placeholder="Question: What outlaw was famously shot and killed by Pat Garrett?
+Answer: Billy the Kid
+Difficulty: 1
+Option A: Jesse James
+Option B: Butch Cassidy
+Option C: Doc Holliday
+Option D: Wyatt Earp
+
+Question: What is the name of Indiana Jones's signature weapon?
+Answer: A whip
+Difficulty: 1"></textarea>
+    <div class="hint">Two formats supported. <strong>Labeled:</strong> separate lines starting with <em>Question:</em>, <em>Answer:</em>, <em>Difficulty:</em>, <em>Option A/B/C/D:</em>, <em>Img URL:</em>, <em>Sound URL:</em>, <em>Bonus Question:</em>, <em>Bonus Answer:</em> — any of these can be skipped per question. <strong>Or simple:</strong> "Question? Answer: X" per line, with inline options like A) B) C) D) before "Answer:".</div>
     <div class="row">
       <button onclick="parseInput()">Parse Questions</button>
       <button class="secondary" onclick="downloadCSV()" id="downloadBtn" disabled>Download CSV</button>
@@ -237,12 +246,49 @@
 <script>
 let parsedRows = [];
 
-function parseInput(){
-  const raw = document.getElementById('input').value;
-  const rawLines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+// Detects inline multiple-choice options like "A) ... B) ... C) ... D) ..."
+// "A. ..." "(A) ..." or "Option A: ..." — in order, and strips them out of
+// the question text. Returns { question, options: {A,B,C,D} }
+function extractOptions(text){
+  const markerRegex = /(?:^|\s)(?:Option\s+)?\(?([A-D])\)?\s*[\.\):]\s*/gi;
+  const letters = ['A','B','C','D'];
+  let matches = [];
+  let m;
+  while ((m = markerRegex.exec(text)) !== null) {
+    matches.push({ letter: m[1].toUpperCase(), start: m.index, end: markerRegex.lastIndex });
+  }
 
-  parsedRows = [];
-  const errors = [];
+  // keep only matches that form a valid in-order sequence starting at A
+  let filtered = [];
+  let expected = 0;
+  for (const mt of matches) {
+    if (letters[expected] === mt.letter) {
+      filtered.push(mt);
+      expected++;
+      if (expected >= letters.length) break;
+    }
+  }
+
+  // need at least A and B to call it multiple choice
+  if (filtered.length < 2) {
+    return { question: text.trim(), options: {} };
+  }
+
+  const question = text.slice(0, filtered[0].start).trim();
+  const options = {};
+
+  for (let i = 0; i < filtered.length; i++) {
+    const start = filtered[i].end;
+    const end = (i + 1 < filtered.length) ? filtered[i + 1].start : text.length;
+    options[filtered[i].letter] = text.slice(start, end).trim();
+  }
+
+  return { question, options };
+}
+
+function parseLegacyFormat(raw, errors){
+  const rawLines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const rows = [];
   let buffer = [];
   let questionStartLine = null;
 
@@ -260,15 +306,16 @@ function parseInput(){
       const beforeAnswer = match[1].trim();
       const answer = match[2].trim();
       if (beforeAnswer) buffer.push(beforeAnswer);
-      const question = buffer.join(' ').trim();
+      const rawQuestion = buffer.join(' ').trim();
+      const { question, options } = extractOptions(rawQuestion);
 
       if (!question || !answer) {
         errors.push(`Line ${questionStartLine}-${idx + 1}: missing question or answer — "${line.slice(0,60)}${line.length>60?'…':''}"`);
       } else {
-        parsedRows.push({
+        rows.push({
           question, answer,
           difficulty: '', img: '', sound: '',
-          optA: '', optB: '', optC: '', optD: '',
+          optA: options.A || '', optB: options.B || '', optC: options.C || '', optD: options.D || '',
           bonusQ: '', bonusA: ''
         });
       }
@@ -285,6 +332,93 @@ function parseInput(){
     const leftover = buffer.join(' ');
     errors.push(`Line ${questionStartLine}: question with no matching "Answer:" — "${leftover.slice(0,60)}${leftover.length>60?'…':''}"`);
   }
+
+  return rows;
+}
+
+// Recognized labels for the "Question: / Answer: / Difficulty: / Option A:" format.
+// Each block is separated by a blank line, or by the next "Question:" line.
+const LABELED_FIELD_MAP = {
+  'question': 'question',
+  'answer': 'answer',
+  'difficulty': 'difficulty',
+  'optiona': 'optA',
+  'optionb': 'optB',
+  'optionc': 'optC',
+  'optiond': 'optD',
+  'img': 'img',
+  'image': 'img',
+  'imgurl': 'img',
+  'imageurl': 'img',
+  'sound': 'sound',
+  'soundurl': 'sound',
+  'bonusquestion': 'bonusQ',
+  'bonusanswer': 'bonusA'
+};
+
+function isLabeledFormat(raw){
+  return /^\s*question\s*:/im.test(raw);
+}
+
+function parseLabeledBlocks(raw, errors){
+  const lines = raw.split('\n');
+  const blocks = [];
+  let current = [];
+
+  lines.forEach(rawLine => {
+    const line = rawLine.trim();
+    if (/^question\s*:/i.test(line)) {
+      if (current.length > 0) blocks.push(current);
+      current = [line];
+    } else if (line.length > 0) {
+      current.push(line);
+    }
+    // blank lines are ignored as separators; new block only starts on "Question:"
+  });
+  if (current.length > 0) blocks.push(current);
+
+  const rows = [];
+
+  blocks.forEach((blockLines, blockIdx) => {
+    const fields = { question: '', answer: '', difficulty: '', img: '', sound: '', optA: '', optB: '', optC: '', optD: '', bonusQ: '', bonusA: '' };
+    let lastKey = null;
+
+    blockLines.forEach(line => {
+      const labelMatch = line.match(/^([A-Za-z][A-Za-z\s]*?)\s*:\s*(.*)$/);
+      if (labelMatch) {
+        const normalizedLabel = labelMatch[1].toLowerCase().replace(/\s+/g, '');
+        if (LABELED_FIELD_MAP[normalizedLabel]) {
+          const key = LABELED_FIELD_MAP[normalizedLabel];
+          fields[key] = labelMatch[2].trim();
+          lastKey = key;
+          return;
+        }
+      }
+      // unrecognized line (no matching label) — treat as continuation of the last field
+      if (lastKey) {
+        fields[lastKey] = (fields[lastKey] ? fields[lastKey] + ' ' : '') + line;
+      }
+    });
+
+    if (!fields.question || !fields.answer) {
+      const preview = (fields.question || blockLines[0] || '').slice(0, 60);
+      errors.push(`Question ${blockIdx + 1}: missing question or answer — "${preview}${preview.length>=60?'…':''}"`);
+      return;
+    }
+
+    rows.push(fields);
+  });
+
+  return rows;
+}
+
+function parseInput(){
+  const raw = document.getElementById('input').value;
+  const errors = [];
+
+  parsedRows = isLabeledFormat(raw)
+    ? parseLabeledBlocks(raw, errors)
+    : parseLegacyFormat(raw, errors);
 
   renderPreview();
 
@@ -314,7 +448,15 @@ function renderPreview(){
     tr.innerHTML = `
       <td>${escapeHtml(row.question)}</td>
       <td>${escapeHtml(row.answer)}</td>
-      <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      <td>${escapeHtml(row.difficulty)}</td>
+      <td>${escapeHtml(row.img)}</td>
+      <td>${escapeHtml(row.sound)}</td>
+      <td>${escapeHtml(row.optA)}</td>
+      <td>${escapeHtml(row.optB)}</td>
+      <td>${escapeHtml(row.optC)}</td>
+      <td>${escapeHtml(row.optD)}</td>
+      <td>${escapeHtml(row.bonusQ)}</td>
+      <td>${escapeHtml(row.bonusA)}</td>
     `;
     body.appendChild(tr);
   });
