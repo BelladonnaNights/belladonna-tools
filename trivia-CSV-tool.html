@@ -239,38 +239,52 @@ let parsedRows = [];
 
 function parseInput(){
   const raw = document.getElementById('input').value;
-  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const rawLines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
   parsedRows = [];
   const errors = [];
+  let buffer = [];
+  let questionStartLine = null;
 
-  lines.forEach((line, idx) => {
+  rawLines.forEach((line, idx) => {
     // strip leading bullet markers: *, -, •, or numbered "1."
     let cleaned = line.replace(/^[\*\-•]\s*/, '').replace(/^\d+[\.\)]\s*/, '').trim();
 
-    // find "Answer:" case-insensitively, split on first occurrence
+    if (questionStartLine === null) questionStartLine = idx + 1;
+
+    // look for "Answer:" anywhere in the line (case-insensitive), handles both
+    // "Question? Answer: X" on one line, and "Answer: X" on its own line
     const match = cleaned.match(/^(.*?)\s*Answer:\s*(.*)$/i);
 
-    if (!match) {
-      errors.push(`Line ${idx + 1}: could not find "Answer:" — "${line.slice(0,60)}${line.length>60?'…':''}"`);
-      return;
+    if (match) {
+      const beforeAnswer = match[1].trim();
+      const answer = match[2].trim();
+      if (beforeAnswer) buffer.push(beforeAnswer);
+      const question = buffer.join(' ').trim();
+
+      if (!question || !answer) {
+        errors.push(`Line ${questionStartLine}-${idx + 1}: missing question or answer — "${line.slice(0,60)}${line.length>60?'…':''}"`);
+      } else {
+        parsedRows.push({
+          question, answer,
+          difficulty: '', img: '', sound: '',
+          optA: '', optB: '', optC: '', optD: '',
+          bonusQ: '', bonusA: ''
+        });
+      }
+
+      buffer = [];
+      questionStartLine = null;
+    } else {
+      // no "Answer:" on this line yet — keep accumulating as part of the question
+      buffer.push(cleaned);
     }
-
-    const question = match[1].trim();
-    const answer = match[2].trim();
-
-    if (!question || !answer) {
-      errors.push(`Line ${idx + 1}: missing question or answer — "${line.slice(0,60)}${line.length>60?'…':''}"`);
-      return;
-    }
-
-    parsedRows.push({
-      question, answer,
-      difficulty: '', img: '', sound: '',
-      optA: '', optB: '', optC: '', optD: '',
-      bonusQ: '', bonusA: ''
-    });
   });
+
+  if (buffer.length > 0) {
+    const leftover = buffer.join(' ');
+    errors.push(`Line ${questionStartLine}: question with no matching "Answer:" — "${leftover.slice(0,60)}${leftover.length>60?'…':''}"`);
+  }
 
   renderPreview();
 
