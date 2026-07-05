@@ -1031,7 +1031,30 @@
           </div>
         </div>
         <div id="active-filters-bar-mini" class="active-filters-bar"></div>
-        <div id="minigames-grid" class="minigames-grid"></div>
+
+        <!-- Knowledge Games section -->
+        <div id="mini-section-knowledge" style="display:none;margin-bottom:2rem;">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);white-space:nowrap;">Knowledge Games</span>
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+          </div>
+          <div id="minigames-grid-knowledge" class="minigames-grid"></div>
+        </div>
+
+        <!-- Interactive Games section -->
+        <div id="mini-section-interactive" style="display:none;margin-bottom:2rem;">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <span style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);white-space:nowrap;">Interactive Games</span>
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+          </div>
+          <div id="minigames-grid-interactive" class="minigames-grid"></div>
+        </div>
+
+        <!-- Unassigned (no section set) -->
+        <div id="mini-section-unassigned">
+          <div id="minigames-grid" class="minigames-grid"></div>
+        </div>
+
         <div id="mini-empty" class="empty-state" style="display:none;"><h2>No Mini Games Published Yet</h2></div>
       </div>
     </div>
@@ -1042,7 +1065,7 @@
     <div class="app-layout">
       <div class="browse-main">
         <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-        <div style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;">Way to Play</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;">Ways to Play</div>
         <div id="waytoplay-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;"></div>
         <div id="waytoplay-empty" class="empty-state" style="display:none;"><h2>No Way to Play Published Yet</h2></div>
       </div>
@@ -1391,9 +1414,11 @@ function renderQuickies() {
   grid.innerHTML = items.map(c => {
     const src = c.miniGameImage || c.bannerData || null;
     const imgHtml = src
-      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:4px 4px 0 0;"><img src="' + esc(src) + '" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.opacity=0"></div>'
-      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2rem;opacity:0.3;">&#9889;</span></div>';
-    return '<div class="night-card">' + imgHtml + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div></div></div>';
+      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:6px 6px 0 0;position:relative;background:var(--surface2);"><img src="' + esc(src) + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="" onerror="this.style.opacity=0"></div>'
+      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;opacity:0.3;">&#9889;</span></div>';
+    return '<div class="night-card" style="padding:0;overflow:hidden;">'
+      + imgHtml
+      + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div></div></div>';
   }).join('');
 }
 
@@ -1637,7 +1662,7 @@ async function loadMenuConfig() {
         const inner   = label + imgTag + caption;
         const link    = sec.imageLink || '';
         const wrapped = link
-          ? '<a href="' + escHtml(link) + '" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;cursor:pointer;">' + inner + '</a>'
+          ? '<div style="display:block;cursor:pointer;" onclick="navigateTo(\'' + escHtml(link) + '\')">' + inner + '</div>'
           : inner;
         return '<div class="menu-image-section">' + wrapped + '</div>';
       }
@@ -1714,17 +1739,15 @@ function navigateTo(view, typeFilter) {
   const activeNav = navMap[view];
   if (activeNav) document.getElementById(activeNav)?.classList.add('active');
   // Render the appropriate browse view
-  if (view === 'themed') renderThemedNights();
-  if (view === 'karaoke') renderAlsoSee('karaoke');
-  if (view === 'bingo') renderAlsoSee('bingo');
-  if (view === 'trivia') renderAlsoSee('trivia');
-  else if (view === 'trivia') renderTrivia();
-  else if (view === 'bingo') renderBingo();
-  else if (view === 'singalongs') renderSingAlongs();
-  else if (view === 'minigames') renderMiniGames();
-  else if (view === 'battles') renderBattles();
-  else if (view === 'waytoplay') renderWayToPlay();
-  else if (view === 'quickies') renderQuickies();
+  if (view === 'themed')     renderThemedNights();
+  if (view === 'trivia')     { renderTrivia();     renderAlsoSee('trivia'); }
+  if (view === 'bingo')      { renderBingo();      renderAlsoSee('bingo'); }
+  if (view === 'singalongs') renderSingAlongs();
+  if (view === 'minigames')  renderMiniGames();
+  if (view === 'battles')    renderBattles();
+  if (view === 'waytoplay')  renderWayToPlay();
+  if (view === 'quickies')   renderQuickies();
+  if (view === 'karaoke')    renderAlsoSee('karaoke');
 }
 
 // ── FILTER SIDEBAR ──
@@ -1947,7 +1970,34 @@ function renderSingAlongs() {
   renderCategoryGrid('singa-grid','singa-empty', c => isSingAlong(c) && ((c.publishedTabs||[]).includes('singa') || c.published));
 }
 function renderMiniGames() {
-  renderCategoryGrid('minigames-grid','mini-empty', c => isMiniGame(c) && ((c.publishedTabs||[]).includes('mini') || c.published));
+  const q = (document.getElementById('mini-search')?.value || '').toLowerCase().trim();
+  let items = publishedCategories.filter(c => isMiniGame(c) && ((c.publishedTabs||[]).includes('mini') || c.published));
+  if (q) items = items.filter(c => c.name.toLowerCase().includes(q) || (c.theme||'').toLowerCase().includes(q));
+
+  const knowledge   = items.filter(c => c.miniSection === 'knowledge');
+  const interactive = items.filter(c => c.miniSection === 'interactive');
+  const unassigned  = items.filter(c => !c.miniSection);
+
+  function cardHtml(c) {
+    const src = c.miniGameImage || c.bannerData || null;
+    const imgHtml = src
+      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:6px 6px 0 0;position:relative;background:var(--surface2);"><img src="' + esc(src) + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="" onerror="this.style.opacity=0"></div>'
+      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;opacity:0.3;">&#127922;</span></div>';
+    return '<div class="night-card" style="padding:0;overflow:hidden;">'
+      + imgHtml
+      + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div></div></div>';
+  }
+
+  const kSec = document.getElementById('mini-section-knowledge');
+  const iSec = document.getElementById('mini-section-interactive');
+  const uSec = document.getElementById('mini-section-unassigned');
+
+  if (kSec) { kSec.style.display = knowledge.length ? '' : 'none'; document.getElementById('minigames-grid-knowledge').innerHTML = knowledge.map(cardHtml).join(''); }
+  if (iSec) { iSec.style.display = interactive.length ? '' : 'none'; document.getElementById('minigames-grid-interactive').innerHTML = interactive.map(cardHtml).join(''); }
+  if (uSec) document.getElementById('minigames-grid').innerHTML = unassigned.map(cardHtml).join('');
+
+  const empty = document.getElementById('mini-empty');
+  if (empty) empty.style.display = items.length === 0 ? 'block' : 'none';
 }
 function renderBattles() {
   renderCategoryGrid('battles-grid','battles-empty', c => isBattles(c));
