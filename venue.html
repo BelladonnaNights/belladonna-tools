@@ -991,6 +991,25 @@
     </div>
   </div>
 
+  <!-- BELLADONNA BATTLES browse -->
+  <div class="view" id="view-battles">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="browse-toolbar">
+          <button class="sidebar-toggle-btn" id="battles-filter-btn" onclick="toggleFilterSidebar('battles')">⧉ Filters</button>
+          <div class="search-wrap">
+            <span>🔍</span>
+            <input type="search" class="search-input" id="battles-search" placeholder="Search Belladonna Battles…" oninput="renderBattles()">
+          </div>
+        </div>
+        <div id="active-filters-bar-battles" class="active-filters-bar"></div>
+        <div id="battles-grid" class="minigames-grid"></div>
+        <div id="battles-empty" class="empty-state" style="display:none;"><h2>No Battles Published Yet</h2></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════════════════════════════
        DESCRIPTION VIEWS (info pages)
   ══════════════════════════════════════ -->
@@ -1461,12 +1480,17 @@ async function loadMenuConfig() {
 
     dynamicEl.innerHTML = data.sections.map(sec => {
       if (sec.type === 'image') {
-        const label  = sec.label ? '<div class="menu-image-section-label">' + escHtml(sec.label) + '</div>' : '';
-        const imgTag = sec.imageUrl
-          ? '<img src="' + escHtml(sec.imageUrl) + '" alt="' + escHtml(sec.imageAlt || '') + '" loading="lazy" onerror="this.style.display=\'none\'">'
+        const label   = sec.label ? '<div class="menu-image-section-label">' + escHtml(sec.label) + '</div>' : '';
+        const imgTag  = sec.imageUrl
+          ? '<img src="' + escHtml(sec.imageUrl) + '" alt="' + escHtml(sec.imageAlt || '') + '" loading="lazy" onerror="this.style.opacity=0">'
           : '<div style="width:100%;height:120px;background:var(--surface2);border:1px dashed var(--border);border-radius:6px;"></div>';
         const caption = sec.imageAlt ? '<div class="menu-image-section-caption">' + escHtml(sec.imageAlt) + '</div>' : '';
-        return '<div class="menu-image-section">' + label + imgTag + caption + '</div>';
+        const inner   = label + imgTag + caption;
+        const link    = sec.imageLink || '';
+        const wrapped = link
+          ? '<a href="' + escHtml(link) + '" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;cursor:pointer;">' + inner + '</a>'
+          : inner;
+        return '<div class="menu-image-section">' + wrapped + '</div>';
       }
 
       const cards = (sec.cards || []).map(card => {
@@ -1546,6 +1570,7 @@ function navigateTo(view, typeFilter) {
   else if (view === 'bingo') renderBingo();
   else if (view === 'singalongs') renderSingAlongs();
   else if (view === 'minigames') renderMiniGames();
+  else if (view === 'battles') renderBattles();
 }
 
 // ── FILTER SIDEBAR ──
@@ -1693,10 +1718,11 @@ function renderThemedNights() {
   }).join('');
 }
 
-function isTrivia(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('trivia')); }
-function isBingo(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('bingo')); }
-function isMiniGame(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t)); }
+function isTrivia(c)    { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('trivia')); }
+function isBingo(c)     { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('bingo')); }
+function isMiniGame(c)  { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>['mini game','mini-game','minigame','mini games'].includes(t)); }
 function isSingAlong(c) { return (c.type||'').toLowerCase().split(',').map(t=>t.trim()).some(t=>t.includes('sing')); }
+function isBattles(c)   { return (c.publishedTabs||[]).includes('battles'); }
 
 function renderCategoryGrid(gridId, emptyId, filterFn) {
   const grid = document.getElementById(gridId);
@@ -1768,6 +1794,9 @@ function renderSingAlongs() {
 }
 function renderMiniGames() {
   renderCategoryGrid('minigames-grid','mini-empty', c => isMiniGame(c) && ((c.publishedTabs||[]).includes('mini') || c.published));
+}
+function renderBattles() {
+  renderCategoryGrid('battles-grid','battles-empty', c => isBattles(c));
 }
 
 // ── NIGHT DETAIL ──
@@ -2139,7 +2168,7 @@ Object.assign(window, {
   openSeasonalPopup, closeSeasonalPopup, closeSeasonalPopupDirect, addSeasonalToCart,
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
-  renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames
+  renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames, renderBattles
 });
 </script>
 
