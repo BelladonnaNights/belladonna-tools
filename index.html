@@ -1297,10 +1297,16 @@
           <div class="form-label" style="margin-bottom:0.5rem;">Publish to Venue <span style="color:var(--text-dim);font-size:0.7rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— check any tab this should appear on</span></div>
           <div id="cat-publish-checkboxes" style="display:flex; gap:1.2rem; flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-karaoke" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Karaoke
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
               <input type="checkbox" id="cat-pub-trivia" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Trivia
             </label>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
               <input type="checkbox" id="cat-pub-mini" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Mini Games
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-battles" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Belladonna Battles
             </label>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
               <input type="checkbox" id="cat-pub-singa" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Sing-Alongs
@@ -2043,7 +2049,10 @@ function categoryCardHTML(cat, idx, highlight) {
     ondrop="onCatDrop(event,${idx})"
     style="${cat.bannerData ? 'padding-top:0;' : ''}">
     ${bannerHtml}
-    <div class="category-card-header"><div class="category-card-name">${esc(cat.name)}</div></div>
+    <div class="category-card-header">
+      <div class="category-card-name">${esc(cat.name)}</div>
+      ${(cat.publishedTabs||[]).length > 0 ? `<span style="font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;background:rgba(42,107,58,0.2);border:1px solid rgba(42,107,58,0.5);color:#5AC47A;padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;">Published</span>` : ''}
+    </div>
     <div style="margin-bottom:0.5rem; display:flex; align-items:center; gap:8px; flex-wrap:nowrap;">
       ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
       ${cat.theme ? `<span style="font-size:0.78rem; font-weight:700; color:var(--text); letter-spacing:0.02em;">${esc(cat.theme)}</span>` : ''}
@@ -2129,9 +2138,11 @@ function editCategory(idx) {
   document.getElementById('cat-tags').value = c.tags || '';
   loadCatDimFields(c);
   const pts = c.publishedTabs || (c.published ? ['trivia','mini','singa'] : []);
-  document.getElementById('cat-pub-trivia').checked = pts.includes('trivia');
-  document.getElementById('cat-pub-mini').checked = pts.includes('mini');
-  document.getElementById('cat-pub-singa').checked = pts.includes('singa');
+  document.getElementById('cat-pub-karaoke').checked = pts.includes('karaoke');
+  document.getElementById('cat-pub-trivia').checked   = pts.includes('trivia');
+  document.getElementById('cat-pub-mini').checked     = pts.includes('mini');
+  document.getElementById('cat-pub-battles').checked  = pts.includes('battles');
+  document.getElementById('cat-pub-singa').checked    = pts.includes('singa');
   document.getElementById('cat-minigame-url').value = c.miniGameImage || '';
   setCatMiniPreview(c.miniGameImage || null);
   setCatBannerPreview(c.bannerData || null);
@@ -2224,8 +2235,8 @@ async function saveCategoryFromModal() {
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
     ...getCatDimValues(),
-    publishedTabs: ['trivia','mini','singa'].filter(k => document.getElementById(`cat-pub-${k}`).checked),
-    published: ['trivia','mini','singa'].some(k => document.getElementById(`cat-pub-${k}`).checked),
+    publishedTabs: ['karaoke','trivia','mini','battles','singa'].filter(k => document.getElementById('cat-pub-' + k).checked),
+    published: ['karaoke','trivia','mini','battles','singa'].some(k => document.getElementById('cat-pub-' + k).checked),
     miniGameImage: document.getElementById('cat-minigame-url').value.trim() || null,
     bannerData: catBannerData || null
   };
@@ -4063,6 +4074,10 @@ function mmRenderEditor() {
         + '<label class="form-label">Alt Text / Caption <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(optional)</span></label>'
         + '<input type="text" class="form-input" id="mm-sec-imgalt-' + sid + '" value="' + esc(sec.imageAlt || '') + '" placeholder="Describe the image\u2026" oninput="mmRenderPreview()">'
         + '</div>'
+        + '<div class="form-group" style="margin-top:0.75rem;">'
+        + '<label class="form-label">Click-Through Link <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(optional — opens in new tab when clicked)</span></label>'
+        + '<input type="text" class="form-input" id="mm-sec-imglink-' + sid + '" value="' + esc(sec.imageLink || '') + '" placeholder="https://…">'
+        + '</div>'
         + '</div>';
     }
 
@@ -4280,8 +4295,10 @@ function mmReadFieldsIntoData() {
     const secImgAlt= document.getElementById('mm-sec-imgalt-' + sec.id);
     if (secLabel) sec.label = secLabel.value;
     if (secDesc)  sec.desc  = secDesc.value;
-    if (secImgUrl) sec.imageUrl = secImgUrl.value.trim();
-    if (secImgAlt) sec.imageAlt = secImgAlt.value.trim();
+    const secImgLink= document.getElementById('mm-sec-imglink-' + sec.id);
+    if (secImgUrl)  sec.imageUrl  = secImgUrl.value.trim();
+    if (secImgAlt)  sec.imageAlt  = secImgAlt.value.trim();
+    if (secImgLink) sec.imageLink = secImgLink.value.trim();
     (sec.cards || []).forEach(card => {
       const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
       const t   = document.getElementById(prefix + 'title');
@@ -4758,7 +4775,7 @@ function mmAddSection(type) {
   mmReadFieldsIntoData();
   const id = 'sec' + Date.now();
   const newSec = type === 'image'
-    ? { id, type: 'image', label: 'Image Banner', imageUrl: '', imageAlt: '' }
+    ? { id, type: 'image', label: 'Image Banner', imageUrl: '', imageAlt: '', imageLink: '' }
     : { id, type: 'cards', label: 'New Section', desc: '', cards: [] };
   mmData.sections.push(newSec);
   mmRenderEditor();
