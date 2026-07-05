@@ -617,6 +617,25 @@
     .cart-drawer { width: 100vw; }
   }
 
+  /* ── IMAGE SECTION ── */
+  .menu-image-section {
+    margin-bottom: 2.5rem;
+  }
+  .menu-image-section-label {
+    font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .menu-image-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .menu-image-section img {
+    width: 100%; border-radius: 6px; display: block;
+    object-fit: cover; border: 1px solid var(--border);
+  }
+  .menu-image-section-caption {
+    text-align: center; font-size: 0.82rem; color: var(--text-dim);
+    font-style: italic; margin-top: 0.5rem;
+  }
+
   /* ── FOOTER ── */
   .site-footer {
     text-align: center; padding: 2rem; font-family: 'Cinzel', serif;
@@ -728,6 +747,11 @@
         <div class="menu-divider-line"></div>
       </div>
 
+      <!-- DYNAMIC SECTIONS — populated by loadMenuConfig() -->
+      <div id="menu-sections-dynamic"></div>
+
+      <!-- STATIC FALLBACK (hidden when Firebase data loads) -->
+      <div id="menu-sections-static">
       <!-- MAIN COURSES -->
       <div class="menu-section" id="section-mains">
         <div class="menu-section-header">
@@ -875,6 +899,7 @@
         </div>
       </div>
 
+    </div><!-- end static fallback -->
     </div><!-- end menu-page -->
   </div><!-- end view-menu -->
 
@@ -1283,9 +1308,6 @@ function renderComingUp() {
     const hasImage = !!item.imageUrl;
     const faceContent = hasImage
       ? '<img src="' + esc(item.imageUrl) + '" alt="' + esc(item.name) + '" loading="lazy">'
-        + '<div class="face-img-overlay"></div>'
-        + '<div class="face-season-label"></div>'
-        + '<div class="face-title">' + esc(item.name) + '</div>'
       : '<div class="face-season-label"></div>'
         + '<div class="face-title">' + esc(item.name) + '</div>'
         + '<div class="face-ornament">— — —</div>';
@@ -1420,7 +1442,8 @@ async function load() {
 async function loadMenuConfig() {
   try {
     const snap = await getDoc(doc(db, 'config', 'mainMenu'));
-    if (!snap.exists()) return; // use static HTML defaults
+    if (!snap.exists()) return;
+
     const data = snap.data();
 
     // Update intro text
@@ -1428,57 +1451,66 @@ async function loadMenuConfig() {
     if (data.title)    document.querySelectorAll('.menu-intro-title').forEach(el => el.textContent = data.title);
     if (data.subtitle) document.querySelectorAll('.menu-intro-sub').forEach(el => el.textContent = data.subtitle);
 
-    // Update section labels and descriptions
-    if (data.sections) {
-      data.sections.forEach(sec => {
-        const grid = document.getElementById(sec.id + '-grid');
-        if (!grid) return;
+    if (!data.sections || !data.sections.length) return;
 
-        // Update section label
-        const secEl = grid.closest('.menu-section');
-        if (secEl) {
-          const labelEl = secEl.querySelector('.menu-section-title');
-          const descEl  = secEl.querySelector('.menu-section-desc');
-          if (labelEl && sec.label) labelEl.textContent = sec.label;
-          if (descEl  && sec.desc)  descEl.textContent  = sec.desc;
-        }
+    // Hide static fallback, show dynamic container
+    const staticEl  = document.getElementById('menu-sections-static');
+    const dynamicEl = document.getElementById('menu-sections-dynamic');
+    if (staticEl)  staticEl.style.display = 'none';
+    if (!dynamicEl) return;
 
-        // Update desc-hero images for description pages
-        sec.cards.forEach(card => {
-          if (!card.image) return;
-          const hero = document.getElementById('desc-hero-' + card.id);
-          if (!hero) return;
-          // Insert image behind emoji
-          const existing = hero.querySelector('img');
-          if (existing) { existing.src = card.image; return; }
-          const img = document.createElement('img');
-          img.src = card.image;
-          img.alt = card.title || '';
-          img.onerror = function() { this.style.display = 'none'; };
-          hero.insertBefore(img, hero.firstChild);
-        });
+    dynamicEl.innerHTML = data.sections.map(sec => {
+      if (sec.type === 'image') {
+        const label  = sec.label ? '<div class="menu-image-section-label">' + escHtml(sec.label) + '</div>' : '';
+        const imgTag = sec.imageUrl
+          ? '<img src="' + escHtml(sec.imageUrl) + '" alt="' + escHtml(sec.imageAlt || '') + '" loading="lazy" onerror="this.style.display=\'none\'">'
+          : '<div style="width:100%;height:120px;background:var(--surface2);border:1px dashed var(--border);border-radius:6px;"></div>';
+        const caption = sec.imageAlt ? '<div class="menu-image-section-caption">' + escHtml(sec.imageAlt) + '</div>' : '';
+        return '<div class="menu-image-section">' + label + imgTag + caption + '</div>';
+      }
 
-        // Re-render cards
-        grid.innerHTML = sec.cards.map(card => {
-          const imgEl = card.image
-            ? `<img class="menu-card-img" src="${card.image}" alt="${escHtml(card.title)}" loading="lazy" onerror="this.style.display='none'; this.nextSibling.style.display='flex';">`
-            : '';
-          const placeholderStyle = card.image ? 'display:none;' : '';
-          const destView = card.venueView || card.id;
-          const safeFilter = (card.venueFilterType || '').replace(/'/g, "\\'");
-          const filterArg = safeFilter ? `, '${safeFilter}'` : '';
-          return `<div class="menu-card" onclick="navigateTo('${destView}'${filterArg})">
-            ${imgEl}
-            <div class="menu-card-img-placeholder" style="${placeholderStyle}">${card.emoji || '✦'}</div>
-            <div class="menu-card-body">
-              <div class="menu-card-title">${escHtml(card.title)}</div>
-              <div class="menu-card-desc">${escHtml(card.desc)}</div>
-              <div class="menu-card-arrow">→</div>
-            </div>
-          </div>`;
-        }).join('');
+      const cards = (sec.cards || []).map(card => {
+        const imgEl = card.image
+          ? '<img class="menu-card-img" src="' + escHtml(card.image) + '" alt="' + escHtml(card.title) + '" loading="lazy" onerror="this.style.display=\'none\'; this.nextSibling.style.display=\'flex\';">'
+          : '';
+        const phStyle    = card.image ? 'display:none;' : '';
+        const destView   = card.venueView || card.id;
+        const safeFilter = (card.venueFilterType || '').replace(/'/g, "\\'");
+        const filterArg  = safeFilter ? (", '" + safeFilter + "'") : '';
+        return '<div class="menu-card" onclick="navigateTo(\'' + destView + '\'' + filterArg + ')">'
+          + imgEl
+          + '<div class="menu-card-img-placeholder" style="' + phStyle + '">' + escHtml(card.emoji || '\u2726') + '</div>'
+          + '<div class="menu-card-body">'
+          + '<div class="menu-card-title">' + escHtml(card.title) + '</div>'
+          + '<div class="menu-card-desc">'  + escHtml(card.desc)  + '</div>'
+          + '<div class="menu-card-arrow">\u2192</div>'
+          + '</div></div>';
+      }).join('');
+
+      return '<div class="menu-section">'
+        + '<div class="menu-section-header">'
+        + '<span class="menu-section-title">' + escHtml(sec.label || '') + '</span>'
+        + '<div class="menu-section-line"></div></div>'
+        + '<div class="menu-section-desc">' + escHtml(sec.desc || '') + '</div>'
+        + '<div class="menu-card-grid centered-row">' + cards + '</div>'
+        + '</div>';
+    }).join('');
+
+    // Update desc-hero images
+    data.sections.forEach(sec => {
+      (sec.cards || []).forEach(card => {
+        if (!card.image) return;
+        const hero = document.getElementById('desc-hero-' + card.id);
+        if (!hero) return;
+        const existing = hero.querySelector('img');
+        if (existing) { existing.src = card.image; return; }
+        const img = document.createElement('img');
+        img.src = card.image; img.alt = card.title || '';
+        img.onerror = function() { this.style.display = 'none'; };
+        hero.insertBefore(img, hero.firstChild);
       });
-    }
+    });
+
   } catch(e) {
     console.warn('Could not load menu config:', e);
   }
