@@ -636,6 +636,42 @@
     font-style: italic; margin-top: 0.5rem;
   }
 
+
+  /* ── ALSO SEE ── */
+  .also-see-rail {
+    position: absolute; top: 0; right: -180px; width: 160px;
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .also-see-title {
+    font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--gold-dim); margin-bottom: 0.25rem;
+  }
+  .also-see-card {
+    border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+    cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    background: var(--surface2);
+  }
+  .also-see-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .also-see-card img {
+    width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block;
+  }
+  .also-see-card-placeholder {
+    width: 100%; aspect-ratio: 4/5; background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim); font-size: 1.2rem;
+  }
+  .also-see-card-label {
+    padding: 0.4rem 0.5rem; font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted); line-height: 1.3;
+  }
+  .desc-view-wrap {
+    position: relative; max-width: 800px; margin: 0 auto;
+  }
+  @media (max-width: 1100px) {
+    .also-see-rail { display: none; }
+  }
+
   /* ── FOOTER ── */
   .site-footer {
     text-align: center; padding: 2rem; font-family: 'Cinzel', serif;
@@ -933,6 +969,11 @@
       <div class="browse-main">
         <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
         <div id="trivia-view-title" style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;"></div>
+        <!-- Also See strip for trivia -->
+        <div id="also-see-trivia-wrap" style="display:none;margin-bottom:1.25rem;">
+          <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.5rem;">Also See</div>
+          <div id="also-see-trivia" style="display:flex;gap:0.75rem;overflow-x:auto;padding-bottom:0.5rem;"></div>
+        </div>
         <div id="trivia-grid" class="minigames-grid"></div>
         <div id="trivia-empty" class="empty-state" style="display:none;"><h2>No Trivia Published Yet</h2></div>
       </div>
@@ -941,16 +982,21 @@
 
   <!-- MUSIC BINGO description page -->
   <div class="view" id="view-bingo">
-    <div class="desc-view">
-      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-bingo"></div>
-      <div class="desc-title">Music Bingo</div>
-      <div class="desc-subtitle">Main Course</div>
-      <div class="desc-body">
-        Music Bingo is Belladonna's signature twist on a classic — instead of numbers, guests race to mark off songs as we play them. It's fast, it's loud, and it keeps the whole room engaged from the first track to the last. We bring themed bingo cards, a full-service host, and a custom playlist built around whatever energy your venue wants to bring. From 90s throwbacks to country nights to holiday specials, every Music Bingo night is built to fill seats and drive sales at the bar.
+    <div class="desc-view-wrap">
+      <div class="desc-view">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="desc-hero" id="desc-hero-bingo"></div>
+        <div class="desc-title">Music Bingo</div>
+        <div class="desc-subtitle">Main Course</div>
+        <div class="desc-body">
+          Music Bingo is Belladonna's signature twist on a classic — instead of numbers, guests race to mark off songs as we play them. It's fast, it's loud, and it keeps the whole room engaged from the first track to the last. We bring themed bingo cards, a full-service host, and a custom playlist built around whatever energy your venue wants to bring. From 90s throwbacks to country nights to holiday specials, every Music Bingo night is built to fill seats and drive sales at the bar.
+        </div>
+        <button class="atc-btn" id="atc-bingo" onclick="addToCart('bingo', 'Music Bingo')" style="margin-top:0.75rem;">＋ Add to Cart</button>
       </div>
-    
-      <button class="atc-btn" id="atc-bingo" onclick="addToCart('bingo', 'Music Bingo')" style="margin-top:0.75rem;">＋ Add to Cart</button></div>
+      <div class="also-see-rail" id="also-see-bingo">
+        <div class="also-see-title">Also See</div>
+      </div>
+    </div>
   </div>
 
   <!-- SING-ALONGS browse -->
@@ -991,6 +1037,30 @@
     </div>
   </div>
 
+  <!-- WAY TO PLAY browse -->
+  <div class="view" id="view-waytoplay">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;">Way to Play</div>
+        <div id="waytoplay-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;"></div>
+        <div id="waytoplay-empty" class="empty-state" style="display:none;"><h2>No Way to Play Published Yet</h2></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICKIES browse -->
+  <div class="view" id="view-quickies">
+    <div class="app-layout">
+      <div class="browse-main">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;">Quickies</div>
+        <div id="quickies-grid" class="minigames-grid"></div>
+        <div id="quickies-empty" class="empty-state" style="display:none;"><h2>No Quickies Published Yet</h2></div>
+      </div>
+    </div>
+  </div>
+
   <!-- BELLADONNA BATTLES browse -->
   <div class="view" id="view-battles">
     <div class="app-layout">
@@ -1016,16 +1086,21 @@
 
   <!-- KARAOKE -->
   <div class="view" id="view-karaoke">
-    <div class="desc-view">
-      <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
-      <div class="desc-hero" id="desc-hero-karaoke"></div>
-      <div class="desc-title">Karaoke</div>
-      <div class="desc-subtitle">Main Course</div>
-      <div class="desc-body">
-        Belladonna's hosted karaoke nights bring high energy, tight production, and a host who knows how to work a room. We handle the equipment, the song library, the hype, and the flow — all you have to do is keep the drinks coming. Whether it's a casual weeknight or a packed Saturday, our karaoke nights are built to drive traffic, extend dwell time, and keep guests coming back.
+    <div class="desc-view-wrap">
+      <div class="desc-view">
+        <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+        <div class="desc-hero" id="desc-hero-karaoke"></div>
+        <div class="desc-title">Karaoke</div>
+        <div class="desc-subtitle">Main Course</div>
+        <div class="desc-body">
+          Belladonna's hosted karaoke nights bring high energy, tight production, and a host who knows how to work a room. We handle the equipment, the song library, the hype, and the flow — all you have to do is keep the drinks coming. Whether it's a casual weeknight or a packed Saturday, our karaoke nights are built to drive traffic, extend dwell time, and keep guests coming back.
+        </div>
+        <button class="atc-btn" id="atc-karaoke" onclick="addToCart('karaoke', 'Karaoke')" style="margin-top:0.75rem;">＋ Add to Cart</button>
       </div>
-    
-      <button class="atc-btn" id="atc-karaoke" onclick="addToCart('karaoke', 'Karaoke')" style="margin-top:0.75rem;">＋ Add to Cart</button></div>
+      <div class="also-see-rail" id="also-see-karaoke">
+        <div class="also-see-title">Also See</div>
+      </div>
+    </div>
   </div>
 
   <!-- COMEDY NIGHTS -->
@@ -1287,6 +1362,80 @@ function seDisplayDate(ev) {
   }
   const m = Number(ev.month);
   return m ? (ev.day ? MONTH_NAMES_V[m] + ' ' + ev.day : MONTH_NAMES_V[m]) : '';
+}
+
+
+// ── WAY TO PLAY + QUICKIES + ALSO SEE ──
+
+function renderWayToPlay() {
+  const grid  = document.getElementById('waytoplay-grid');
+  const empty = document.getElementById('waytoplay-empty');
+  if (!grid) return;
+  const items = publishedCategories.filter(c => (c.publishedTabs||[]).includes('waytoplay'));
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  grid.innerHTML = items.map(c => {
+    const src = c.miniGameImage || c.bannerData || null;
+    const imgHtml = src
+      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:4px 4px 0 0;"><img src="' + esc(src) + '" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.opacity=0"></div>'
+      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2rem;opacity:0.3;">&#127919;</span></div>';
+    return '<div class="night-card">' + imgHtml + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div></div></div>';
+  }).join('');
+}
+
+function renderQuickies() {
+  const grid  = document.getElementById('quickies-grid');
+  const empty = document.getElementById('quickies-empty');
+  if (!grid) return;
+  const items = publishedCategories.filter(c => (c.publishedTabs||[]).includes('quickies'));
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  grid.innerHTML = items.map(c => {
+    const src = c.miniGameImage || c.bannerData || null;
+    const imgHtml = src
+      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:4px 4px 0 0;"><img src="' + esc(src) + '" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.opacity=0"></div>'
+      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2rem;opacity:0.3;">&#9889;</span></div>';
+    return '<div class="night-card">' + imgHtml + '<div class="night-card-body"><div class="night-name">' + esc(c.name) + '</div></div></div>';
+  }).join('');
+}
+
+// Render the Also See rail/strip for a given page key
+// pageKey: 'karaoke' | 'bingo' | 'trivia' | 'booktrivia'
+function renderAlsoSee(pageKey) {
+  const items = publishedCategories.filter(c => (c.alsoSee || []).includes(pageKey));
+
+  // Sidebar rail (karaoke + bingo)
+  const rail = document.getElementById('also-see-' + pageKey);
+  if (rail) {
+    if (!items.length) { rail.innerHTML = ''; return; }
+    rail.innerHTML = '<div class="also-see-title">Also See</div>'
+      + items.map(c => {
+          const src = c.miniGameImage || c.bannerData || null;
+          const imgPart = src
+            ? '<img src="' + esc(src) + '" alt="' + esc(c.name) + '" onerror="this.style.opacity=0">'
+            : '<div class="also-see-card-placeholder">&#9830;</div>';
+          return '<div class="also-see-card">' + imgPart + '<div class="also-see-card-label">' + esc(c.name) + '</div></div>';
+        }).join('');
+  }
+
+  // Horizontal strip (trivia + booktrivia)
+  const strip = document.getElementById('also-see-' + pageKey);
+  const wrap  = document.getElementById('also-see-' + pageKey + '-wrap');
+  if (wrap) {
+    if (!items.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    const stripEl = document.getElementById('also-see-' + pageKey);
+    if (stripEl) {
+      stripEl.innerHTML = items.map(c => {
+        const src = c.miniGameImage || c.bannerData || null;
+        const imgPart = src
+          ? '<img src="' + esc(src) + '" alt="' + esc(c.name) + '" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block;border-radius:4px 4px 0 0;" onerror="this.style.opacity=0">'
+          : '<div style="width:100%;aspect-ratio:4/5;background:var(--surface);border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;color:var(--text-dim);">&#9830;</div>';
+        return '<div style="flex-shrink:0;width:110px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:default;">'
+          + imgPart
+          + '<div style="padding:0.35rem 0.5rem;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-muted);line-height:1.3;">' + esc(c.name) + '</div>'
+          + '</div>';
+      }).join('');
+    }
+  }
 }
 
 // ── COMING UP CAROUSEL ENGINE ──
@@ -1566,11 +1715,16 @@ function navigateTo(view, typeFilter) {
   if (activeNav) document.getElementById(activeNav)?.classList.add('active');
   // Render the appropriate browse view
   if (view === 'themed') renderThemedNights();
+  if (view === 'karaoke') renderAlsoSee('karaoke');
+  if (view === 'bingo') renderAlsoSee('bingo');
+  if (view === 'trivia') renderAlsoSee('trivia');
   else if (view === 'trivia') renderTrivia();
   else if (view === 'bingo') renderBingo();
   else if (view === 'singalongs') renderSingAlongs();
   else if (view === 'minigames') renderMiniGames();
   else if (view === 'battles') renderBattles();
+  else if (view === 'waytoplay') renderWayToPlay();
+  else if (view === 'quickies') renderQuickies();
 }
 
 // ── FILTER SIDEBAR ──
@@ -2168,7 +2322,8 @@ Object.assign(window, {
   openSeasonalPopup, closeSeasonalPopup, closeSeasonalPopupDirect, addSeasonalToCart,
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
-  renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames, renderBattles
+  renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames, renderBattles,
+  renderWayToPlay, renderQuickies, renderAlsoSee
 });
 </script>
 
