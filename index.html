@@ -910,6 +910,8 @@
     <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
     <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
+    <button class="nav-tab" onclick="switchView('waytoplay')">Way to Play</button>
+    <button class="nav-tab" onclick="switchView('quickies')">Quickies</button>
     <button class="nav-tab" onclick="switchView('seasonal')">Seasonal</button>
     <button class="nav-tab" onclick="switchView('bookings')">Bookings</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
@@ -1031,6 +1033,41 @@
       <div class="empty-state-icon">🎤</div>
       <h3>No Sing-Alongs Yet</h3>
       <p>Add categories with Type "Sing-Along" to see them here.</p>
+    </div>
+  </div>
+
+
+  <!-- ═══ WAY TO PLAY VIEW ═══ -->
+  <div class="view" id="view-waytoplay">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="waytoplay-search-input" placeholder="Search way to play…" oninput="renderWayToPlay()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+      </div>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Way to Play</button>
+    </div>
+    <div id="waytoplay-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:1.25rem;"></div>
+    <div id="waytoplay-empty" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">🎯</div>
+      <h3>No Way to Play Yet</h3>
+      <p>Add categories with Type "Way to Play" to see them here.</p>
+    </div>
+  </div>
+
+  <!-- ═══ QUICKIES VIEW ═══ -->
+  <div class="view" id="view-quickies">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
+      <div style="flex:1; position:relative;">
+        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
+        <input type="search" id="quickies-search-input" placeholder="Search quickies…" oninput="renderQuickies()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+      </div>
+      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Quickie</button>
+    </div>
+    <div id="quickies-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
+    <div id="quickies-empty" class="empty-state" style="display:none;">
+      <div class="empty-state-icon">⚡</div>
+      <h3>No Quickies Yet</h3>
+      <p>Add categories with Type "Quickie" to see them here.</p>
     </div>
   </div>
 
@@ -1310,6 +1347,31 @@
             </label>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
               <input type="checkbox" id="cat-pub-singa" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Sing-Alongs
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-waytoplay" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Way to Play
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-pub-quickies" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Quickies
+            </label>
+          </div>
+        </div>
+
+        <!-- ALSO SEE ON PAGE -->
+        <div class="form-group">
+          <div class="form-label" style="margin-bottom:0.5rem;">Also See — Publish to Page <span style="color:var(--text-dim);font-size:0.7rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— shows this category in the "Also See" sidebar on that page</span></div>
+          <div style="display:flex; gap:1.2rem; flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-alsosee-karaoke" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Karaoke Page
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-alsosee-trivia" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Trivia Page
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-alsosee-booktrivia" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Book Trivia Page
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
+              <input type="checkbox" id="cat-alsosee-bingo" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Music Bingo Page
             </label>
           </div>
         </div>
@@ -1883,6 +1945,8 @@ async function batchSaveCats(cats) {
 function switchView(name) {
   if (name === 'mainmenu' && !mmData) loadMainMenu();
   if (name === 'seasonal') renderSeasonalAdmin();
+  if (name === 'waytoplay') renderWayToPlay();
+  if (name === 'quickies') renderQuickies();
   if (name === 'bookings') initBookingsTab();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1933,6 +1997,12 @@ function isMiniGame(cat) {
   );
 }
 
+function isWayToPlay(cat) {
+  return getTypes(cat).some(t => t.includes('way to play') || t === 'waytoplay');
+}
+function isQuickie(cat) {
+  return getTypes(cat).some(t => t.includes('quickie') || t === 'quickies');
+}
 function isTrivia(cat) {
   // Matches all trivia types: Trivia, Full Trivia, Book Trivia, Mini Trivia, etc.
   return getTypes(cat).some(t => t.includes('trivia'));
@@ -2121,6 +2191,15 @@ function openAddCategoryModal() {
   setCatMiniPreview(null);
   setCatBannerPreview(null);
   document.getElementById('cat-modal-delete-btn').style.display = 'none';
+  // Reset all publish + alsoSee checkboxes
+  ['karaoke','trivia','mini','battles','singa','waytoplay','quickies'].forEach(k => {
+    const el = document.getElementById('cat-pub-' + k);
+    if (el) el.checked = false;
+  });
+  ['karaoke','trivia','booktrivia','bingo'].forEach(k => {
+    const el = document.getElementById('cat-alsosee-' + k);
+    if (el) el.checked = false;
+  });
   document.getElementById('cat-modal').classList.add('open');
 }
 
@@ -2138,11 +2217,18 @@ function editCategory(idx) {
   document.getElementById('cat-tags').value = c.tags || '';
   loadCatDimFields(c);
   const pts = c.publishedTabs || (c.published ? ['trivia','mini','singa'] : []);
-  document.getElementById('cat-pub-karaoke').checked = pts.includes('karaoke');
-  document.getElementById('cat-pub-trivia').checked   = pts.includes('trivia');
-  document.getElementById('cat-pub-mini').checked     = pts.includes('mini');
-  document.getElementById('cat-pub-battles').checked  = pts.includes('battles');
-  document.getElementById('cat-pub-singa').checked    = pts.includes('singa');
+  document.getElementById('cat-pub-karaoke').checked   = pts.includes('karaoke');
+  document.getElementById('cat-pub-trivia').checked    = pts.includes('trivia');
+  document.getElementById('cat-pub-mini').checked      = pts.includes('mini');
+  document.getElementById('cat-pub-battles').checked   = pts.includes('battles');
+  document.getElementById('cat-pub-singa').checked     = pts.includes('singa');
+  document.getElementById('cat-pub-waytoplay').checked = pts.includes('waytoplay');
+  document.getElementById('cat-pub-quickies').checked  = pts.includes('quickies');
+  const ase = c.alsoSee || [];
+  document.getElementById('cat-alsosee-karaoke').checked    = ase.includes('karaoke');
+  document.getElementById('cat-alsosee-trivia').checked     = ase.includes('trivia');
+  document.getElementById('cat-alsosee-booktrivia').checked = ase.includes('booktrivia');
+  document.getElementById('cat-alsosee-bingo').checked      = ase.includes('bingo');
   document.getElementById('cat-minigame-url').value = c.miniGameImage || '';
   setCatMiniPreview(c.miniGameImage || null);
   setCatBannerPreview(c.bannerData || null);
@@ -2235,8 +2321,9 @@ async function saveCategoryFromModal() {
     notes: document.getElementById('cat-notes').value.trim(),
     tags: document.getElementById('cat-tags').value.trim(),
     ...getCatDimValues(),
-    publishedTabs: ['karaoke','trivia','mini','battles','singa'].filter(k => document.getElementById('cat-pub-' + k).checked),
-    published: ['karaoke','trivia','mini','battles','singa'].some(k => document.getElementById('cat-pub-' + k).checked),
+    publishedTabs: ['karaoke','trivia','mini','battles','singa','waytoplay','quickies'].filter(k => document.getElementById('cat-pub-' + k).checked),
+    published: ['karaoke','trivia','mini','battles','singa','waytoplay','quickies'].some(k => document.getElementById('cat-pub-' + k).checked),
+    alsoSee: ['karaoke','trivia','booktrivia','bingo'].filter(k => document.getElementById('cat-alsosee-' + k).checked),
     miniGameImage: document.getElementById('cat-minigame-url').value.trim() || null,
     bannerData: catBannerData || null
   };
@@ -4853,8 +4940,64 @@ function mmSecDrop(event, targetSecId) {
   mmRenderEditor();
 }
 
+
+// ── WAY TO PLAY ──
+function renderWayToPlay() {
+  const grid  = document.getElementById('waytoplay-grid');
+  const empty = document.getElementById('waytoplay-empty');
+  if (!grid) return;
+  const q = (document.getElementById('waytoplay-search-input')?.value || '').toLowerCase().trim();
+  let items = categories.filter(c => isWayToPlay(c) || (c.publishedTabs||[]).includes('waytoplay'));
+  if (q) items = items.filter(c => c.name.toLowerCase().includes(q) || (c.theme||'').toLowerCase().includes(q));
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  grid.innerHTML = items.map(c => {
+    const src = c.miniGameImage || c.bannerData || null;
+    const imgHtml = src
+      ? '<div style="aspect-ratio:4/5;width:100%;overflow:hidden;border-radius:6px 6px 0 0;background:var(--surface2);"><img src="' + esc(src) + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="" onerror="this.style.opacity=0"></div>'
+      : '<div style="aspect-ratio:4/5;width:100%;background:var(--surface2);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;"><span style="font-size:2.5rem;opacity:0.3;">🎯</span></div>';
+    const idx = categories.indexOf(c);
+    const pubBadge = (c.publishedTabs||[]).length > 0
+      ? '<span style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.08em;text-transform:uppercase;background:rgba(42,107,58,0.2);border:1px solid rgba(42,107,58,0.5);color:#5AC47A;padding:2px 6px;border-radius:3px;">Published</span>'
+      : '';
+    return '<div class="category-card" style="padding:0;overflow:hidden;cursor:pointer;" onclick="editCategory(' + idx + ')">'
+      + imgHtml
+      + '<div style="padding:0.85rem 1rem 1rem;">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:0.3rem;">'
+      + '<div class="category-card-name" style="margin:0;">' + esc(c.name) + '</div>'
+      + pubBadge
+      + '</div>'
+      + (c.theme ? '<div style="font-size:0.78rem;color:var(--text-muted);">' + esc(c.theme) + '</div>' : '')
+      + '</div></div>';
+  }).join('');
+}
+
+// ── QUICKIES ──
+function renderQuickies() {
+  const grid  = document.getElementById('quickies-grid');
+  const empty = document.getElementById('quickies-empty');
+  if (!grid) return;
+  const q = (document.getElementById('quickies-search-input')?.value || '').toLowerCase().trim();
+  let items = categories.filter(c => isQuickie(c) || (c.publishedTabs||[]).includes('quickies'));
+  if (q) items = items.filter(c => c.name.toLowerCase().includes(q) || (c.theme||'').toLowerCase().includes(q));
+  empty.style.display = items.length === 0 ? 'block' : 'none';
+  grid.innerHTML = items.map(c => {
+    const idx = categories.indexOf(c);
+    const pubBadge = (c.publishedTabs||[]).length > 0
+      ? '<span style="font-family:Cinzel,serif;font-size:0.5rem;letter-spacing:0.08em;text-transform:uppercase;background:rgba(42,107,58,0.2);border:1px solid rgba(42,107,58,0.5);color:#5AC47A;padding:2px 6px;border-radius:3px;">Published</span>'
+      : '';
+    return '<div class="category-card" style="cursor:pointer;" onclick="editCategory(' + idx + ')">'
+      + '<div class="category-card-header">'
+      + '<div class="category-card-name">' + esc(c.name) + '</div>'
+      + pubBadge
+      + '</div>'
+      + (c.type ? '<div style="margin-bottom:0.4rem;"><span class="badge badge-type">' + esc(c.type) + '</span></div>' : '')
+      + (c.theme ? '<div style="font-size:0.78rem;color:var(--text-muted);">' + esc(c.theme) + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
 Object.assign(window, {
-  switchView, renderLibrary, runSearch, renderMiniGames,
+  switchView, renderLibrary, runSearch, renderMiniGames, renderWayToPlay, renderQuickies,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   toggleLibTypeFilter, clearLibTypeFilters,
   openSeasonalModal, closeSeasonalModal, saveSeasonalEvent, deleteSeasonalEvent, setSeasonalDateType, renderSeasonalAdmin, seToggleAlwaysOn,
