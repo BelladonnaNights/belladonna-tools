@@ -1129,7 +1129,10 @@
     <!-- EDIT SECTIONS + CARDS -->
     <div id="mm-sections-editor"></div>
 
-    <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+    <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center;">
+      <button class="btn" onclick="mmAddSection('cards')">+ Add Section</button>
+      <button class="btn btn-ghost" onclick="mmAddSection('image')">+ Add Image Section</button>
+      <div style="flex:1;"></div>
       <button class="btn" onclick="saveMainMenu()">Save Changes</button>
       <button class="btn btn-ghost" onclick="loadMainMenu()">Discard & Reload</button>
     </div>
@@ -4000,32 +4003,80 @@ function mmUpdatePreviewText() {
 }
 
 function mmRenderEditor() {
-  // Set intro fields
-  const eyeEl  = document.getElementById('mm-eyebrow');
-  const titEl  = document.getElementById('mm-title');
-  const subEl  = document.getElementById('mm-subtitle');
-  if (eyeEl)  eyeEl.value  = mmData.eyebrow  || '';
-  if (titEl)  titEl.value  = mmData.title    || '';
-  if (subEl)  subEl.value  = mmData.subtitle || '';
+  const eyeEl = document.getElementById('mm-eyebrow');
+  const titEl = document.getElementById('mm-title');
+  const subEl = document.getElementById('mm-subtitle');
+  if (eyeEl) eyeEl.value = mmData.eyebrow  || '';
+  if (titEl) titEl.value = mmData.title    || '';
+  if (subEl) subEl.value = mmData.subtitle || '';
 
-  // Render section editors
   const secEditor = document.getElementById('mm-sections-editor');
   if (!secEditor) return;
-  secEditor.innerHTML = (mmData.sections || []).map(sec => `
-    <div class="card" style="margin-bottom:1.5rem;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-        <div style="font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold);">Section: <input type="text" id="mm-sec-label-${sec.id}" value="${esc(sec.label)}" oninput="mmRenderPreview()" style="background:var(--surface2); border:1px solid var(--border); color:var(--gold); font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.2rem 0.5rem; border-radius:3px; width:180px;"></div>
-        <button class="btn btn-sm" onclick="mmAddCard('${sec.id}')">+ Add Card</button>
-      </div>
-      <div class="form-group" style="margin-bottom:1rem;">
-        <label class="form-label">Section Description</label>
-        <input type="text" class="form-input" id="mm-sec-desc-${sec.id}" value="${esc(sec.desc)}" oninput="mmRenderPreview()">
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem;">
-        ${sec.cards.map(card => mmCardEditorHTML(sec.id, card)).join('')}
-      </div>
-    </div>
-  `).join('');
+
+  secEditor.innerHTML = (mmData.sections || []).map(sec => {
+    const isImage = sec.type === 'image';
+    const sid = sec.id;
+
+    const dragHandle = '<span class="mm-sec-drag-handle" draggable="true" data-secid="' + sid + '"'
+      + ' ondragstart="mmSecDragStart(event,\'' + sid + '\')"'
+      + ' ondragend="mmSecDragEnd(event)"'
+      + ' style="color:var(--text-dim);font-size:1.1rem;cursor:grab;user-select:none;flex-shrink:0;"'
+      + ' title="Drag to reorder section">\u28FF</span>';
+
+    const labelInput = '<input type="text" id="mm-sec-label-' + sid + '" value="' + esc(sec.label || '') + '"'
+      + ' oninput="mmRenderPreview()"'
+      + ' style="background:var(--surface2);border:1px solid var(--border);color:var(--gold);font-family:\'Cinzel\',serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:3px;width:180px;">';
+
+    const addCardBtn = isImage ? '' : '<button class="btn btn-sm" onclick="mmAddCard(\'' + sid + '\')">+ Add Card</button>';
+
+    const removeBtn = '<button class="btn btn-sm btn-ghost" style="color:#C0654F;border-color:rgba(192,101,79,0.35);"'
+      + ' onclick="mmRemoveSection(\'' + sid + '\')">&#x2715; Remove Section</button>';
+
+    const headerRow = '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">'
+      + dragHandle
+      + '<div style="font-family:\'Cinzel\',serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);flex:1;">'
+      + (isImage ? 'Image Section: ' : 'Section: ')
+      + labelInput
+      + '</div>'
+      + addCardBtn
+      + removeBtn
+      + '</div>';
+
+    const wrapOpen = '<div class="card" style="margin-bottom:1.5rem;" data-secid="' + sid + '"'
+      + ' ondragover="mmSecDragOver(event,\'' + sid + '\')"'
+      + ' ondragleave="mmSecDragLeave(event)"'
+      + ' ondrop="mmSecDrop(event,\'' + sid + '\')">';
+
+    if (isImage) {
+      const imgUrl = sec.imageUrl || '';
+      const imgPreviewHtml = imgUrl
+        ? '<img src="' + esc(imgUrl) + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:4px;margin-bottom:0.5rem;display:block;" onerror="this.style.display=\'none\'">'
+        : '';
+      return wrapOpen
+        + headerRow
+        + '<div class="form-group">'
+        + '<label class="form-label">Image URL <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(full-width banner image)</span></label>'
+        + '<div id="mm-sec-imgpreview-' + sid + '">' + imgPreviewHtml + '</div>'
+        + '<input type="text" class="form-input" id="mm-sec-imgurl-' + sid + '" value="' + esc(imgUrl) + '" placeholder="https://\u2026" oninput="mmSecImagePreview(\'' + sid + '\')">'
+        + '</div>'
+        + '<div class="form-group" style="margin-top:0.75rem;">'
+        + '<label class="form-label">Alt Text / Caption <span style="color:var(--text-dim);font-size:0.72rem;font-style:italic;text-transform:none;letter-spacing:0;">(optional)</span></label>'
+        + '<input type="text" class="form-input" id="mm-sec-imgalt-' + sid + '" value="' + esc(sec.imageAlt || '') + '" placeholder="Describe the image\u2026" oninput="mmRenderPreview()">'
+        + '</div>'
+        + '</div>';
+    }
+
+    const cardsHtml = (sec.cards || []).map(card => mmCardEditorHTML(sid, card)).join('');
+    return wrapOpen
+      + headerRow
+      + '<div class="form-group" style="margin-bottom:1rem;">'
+      + '<label class="form-label">Section Description</label>'
+      + '<input type="text" class="form-input" id="mm-sec-desc-' + sid + '" value="' + esc(sec.desc || '') + '" oninput="mmRenderPreview()">'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">'
+      + cardsHtml
+      + '</div></div>';
+  }).join('');
 
   mmRenderPreview();
 }
@@ -4116,30 +4167,41 @@ function mmRenderPreview() {
     };
   });
 
-  preview.innerHTML = sections.map(sec => `
-    <div style="margin-bottom:2.5rem;">
-      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.3rem;">
-        <span style="font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold);">${esc(sec.label)}</span>
-        <div style="flex:1; height:1px; background:var(--border);"></div>
-      </div>
-      <div style="font-size:0.88rem; color:var(--text-dim); font-style:italic; text-align:center; margin-bottom:1rem;">${esc(sec.desc)}</div>
-      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:1.25rem;">
-        ${sec.cards.map(card => `
-          <div style="width:220px; background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; cursor:pointer; transition:border-color 0.2s;">
-            ${card.image
-              ? `<img src="${card.image}" style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-              : ''
-            }
-            <div style="width:100%; aspect-ratio:16/9; background:var(--surface2); display:${card.image ? 'none' : 'block'};"></div>
-            <div style="padding:0.85rem 1rem 1rem;">
-              <div style="font-family:'Cinzel',serif; font-size:0.85rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text); margin-bottom:0.3rem;">${esc(card.title)}</div>
-              <div style="font-size:0.82rem; color:var(--text-muted); line-height:1.4;">${esc(card.desc)}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
+  preview.innerHTML = sections.map(sec => {
+    if (sec.type === 'image') {
+      const imgUrlEl = document.getElementById('mm-sec-imgurl-' + sec.id);
+      const imgAltEl = document.getElementById('mm-sec-imgalt-' + sec.id);
+      const labelEl  = document.getElementById('mm-sec-label-'  + sec.id);
+      const url = imgUrlEl ? imgUrlEl.value : (sec.imageUrl || '');
+      const alt = imgAltEl ? imgAltEl.value : (sec.imageAlt || '');
+      const lbl = labelEl  ? labelEl.value  : (sec.label || '');
+      return '<div style="margin-bottom:2.5rem;">'
+        + (lbl ? '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">'
+          + '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);">' + esc(lbl) + '</span>'
+          + '<div style="flex:1;height:1px;background:var(--border);"></div></div>' : '')
+        + (url
+          ? '<img src="' + esc(url) + '" alt="' + esc(alt) + '" style="width:100%;border-radius:6px;display:block;object-fit:cover;" onerror="this.style.opacity=0">'
+          : '<div style="width:100%;height:120px;background:var(--surface2);border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:0.82rem;font-style:italic;">Image URL not set</div>')
+        + (alt ? '<div style="text-align:center;font-size:0.82rem;color:var(--text-dim);font-style:italic;margin-top:0.5rem;">' + esc(alt) + '</div>' : '')
+        + '</div>';
+    }
+    return '<div style="margin-bottom:2.5rem;">'
+      + '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.3rem;">'
+      + '<span style="font-family:Cinzel,serif;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);">' + esc(sec.label) + '</span>'
+      + '<div style="flex:1;height:1px;background:var(--border);"></div></div>'
+      + '<div style="font-size:0.88rem;color:var(--text-dim);font-style:italic;text-align:center;margin-bottom:1rem;">' + esc(sec.desc) + '</div>'
+      + '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1.25rem;">'
+      + (sec.cards || []).map(card => {
+        return '<div style="width:220px;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;">'
+          + (card.image ? '<img src="' + card.image + '" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;" onerror="this.style.opacity=0">' : '')
+          + '<div style="width:100%;aspect-ratio:16/9;background:var(--surface2);display:' + (card.image ? 'none' : 'block') + ';"></div>'
+          + '<div style="padding:0.85rem 1rem 1rem;">'
+          + '<div style="font-family:Cinzel,serif;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text);margin-bottom:0.3rem;">' + esc(card.title) + '</div>'
+          + '<div style="font-size:0.82rem;color:var(--text-muted);line-height:1.4;">' + esc(card.desc) + '</div>'
+          + '</div></div>';
+      }).join('')
+      + '</div></div>';
+  }).join('');
 }
 
 function mmAddCard(secId) {
@@ -4214,9 +4276,13 @@ function mmReadFieldsIntoData() {
   mmData.sections.forEach(sec => {
     const secLabel = document.getElementById('mm-sec-label-' + sec.id);
     const secDesc  = document.getElementById('mm-sec-desc-'  + sec.id);
+    const secImgUrl= document.getElementById('mm-sec-imgurl-' + sec.id);
+    const secImgAlt= document.getElementById('mm-sec-imgalt-' + sec.id);
     if (secLabel) sec.label = secLabel.value;
     if (secDesc)  sec.desc  = secDesc.value;
-    sec.cards.forEach(card => {
+    if (secImgUrl) sec.imageUrl = secImgUrl.value.trim();
+    if (secImgAlt) sec.imageAlt = secImgAlt.value.trim();
+    (sec.cards || []).forEach(card => {
       const prefix = 'mm-card-' + sec.id + '-' + card.id + '-';
       const t   = document.getElementById(prefix + 'title');
       const d   = document.getElementById(prefix + 'desc');
@@ -4685,6 +4751,91 @@ async function deleteRequest(id) {
   } catch(e) { showToast('Delete failed', true); }
 }
 
+
+// ── SECTION MANAGEMENT ──
+
+function mmAddSection(type) {
+  mmReadFieldsIntoData();
+  const id = 'sec' + Date.now();
+  const newSec = type === 'image'
+    ? { id, type: 'image', label: 'Image Banner', imageUrl: '', imageAlt: '' }
+    : { id, type: 'cards', label: 'New Section', desc: '', cards: [] };
+  mmData.sections.push(newSec);
+  mmRenderEditor();
+  // Scroll to bottom so new section is visible
+  setTimeout(() => {
+    const el = document.querySelector('[data-secid="' + id + '"]');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function mmRemoveSection(secId) {
+  if (!confirm('Remove this section? Cards inside will also be deleted.')) return;
+  mmReadFieldsIntoData();
+  mmData.sections = mmData.sections.filter(s => s.id !== secId);
+  mmRenderEditor();
+}
+
+function mmSecImagePreview(secId) {
+  const input   = document.getElementById('mm-sec-imgurl-' + secId);
+  const preview = document.getElementById('mm-sec-imgpreview-' + secId);
+  if (!input || !preview) return;
+  const url = input.value.trim();
+  preview.innerHTML = url
+    ? '<img src="' + esc(url) + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:4px;margin-bottom:0.5rem;display:block;" onerror="this.style.opacity=0">'
+    : '';
+  mmRenderPreview();
+}
+
+// ── SECTION DRAG AND DROP ──
+let mmSecDraggingId = null;
+
+function mmSecDragStart(event, secId) {
+  mmReadFieldsIntoData();
+  mmSecDraggingId = secId;
+  event.dataTransfer.effectAllowed = 'move';
+  // Dim the whole section card
+  const card = document.querySelector('[data-secid="' + secId + '"]');
+  if (card) card.style.opacity = '0.4';
+}
+
+function mmSecDragEnd(event) {
+  mmSecDraggingId = null;
+  document.querySelectorAll('[data-secid]').forEach(el => {
+    el.style.opacity = '';
+    el.style.borderTopColor = '';
+    el.style.outline = '';
+  });
+}
+
+function mmSecDragOver(event, secId) {
+  event.preventDefault();
+  if (mmSecDraggingId === null || mmSecDraggingId === secId) return;
+  event.dataTransfer.dropEffect = 'move';
+  const card = document.querySelector('[data-secid="' + secId + '"]');
+  if (card) card.style.outline = '2px solid var(--gold)';
+}
+
+function mmSecDragLeave(event) {
+  const card = event.currentTarget;
+  if (card) card.style.outline = '';
+}
+
+function mmSecDrop(event, targetSecId) {
+  event.preventDefault();
+  const card = document.querySelector('[data-secid="' + targetSecId + '"]');
+  if (card) card.style.outline = '';
+  if (!mmSecDraggingId || mmSecDraggingId === targetSecId) return;
+
+  const fromIdx = mmData.sections.findIndex(s => s.id === mmSecDraggingId);
+  const toIdx   = mmData.sections.findIndex(s => s.id === targetSecId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [moved] = mmData.sections.splice(fromIdx, 1);
+  mmData.sections.splice(toIdx, 0, moved);
+  mmSecDraggingId = null;
+  mmRenderEditor();
+}
+
 Object.assign(window, {
   switchView, renderLibrary, runSearch, renderMiniGames,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
@@ -4714,6 +4865,8 @@ Object.assign(window, {
   openThemeEditorModal, closeThemeEditorModal, startThemeEdit, saveThemeEdit,
   toggleSidebar, closeSidebar, clearAllSidebarFilters, toggleAccordion, toggleSidebarFilter, removeSidebarFilter, toggleTypeFilter, toggleSubFilter,
   loadMainMenu, saveMainMenu, mmUpdatePreviewText, mmRenderPreview, mmAddCard, mmRemoveCard,
+  mmAddSection, mmRemoveSection, mmSecImagePreview,
+  mmSecDragStart, mmSecDragEnd, mmSecDragOver, mmSecDragLeave, mmSecDrop,
   mmDragStart, mmDragEnd, mmDragOver, mmDragLeave, mmDrop, mmUpdateImagePreview,
   openManageSidebarFilters, closeManageSidebarFilters, switchFilterDimTab,
   addFilterDimOption, deleteFilterDimOption, startFilterDimEdit, saveFilterDimEdit,
