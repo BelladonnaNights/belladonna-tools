@@ -905,14 +905,14 @@
   </div>
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="switchView('library')">Library</button>
-    <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
     <button class="nav-tab" onclick="switchView('trivia')">Trivia</button>
-    <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('singalongs')">Sing-Alongs</button>
-    <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
+    <button class="nav-tab" onclick="switchView('minigames')">Mini Games</button>
     <button class="nav-tab" onclick="switchView('waytoplay')">Ways to Play</button>
-    <button class="nav-tab" onclick="switchView('quickies')">Quickies</button>
-    <button class="nav-tab" onclick="switchView('seasonal')">Seasonal</button>
+    <button class="nav-tab" onclick="switchView('battles')">Belladonna Battles</button>
+    <button class="nav-tab" onclick="switchView('nights')">Themed Nights</button>
+    <button class="nav-tab" onclick="switchView('mainmenu')">Main Menu</button>
+    <button class="nav-tab" onclick="switchView('seasonal')">Carousel Calendar</button>
     <button class="nav-tab" onclick="switchView('bookings')">Bookings</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
@@ -1054,20 +1054,57 @@
     </div>
   </div>
 
-  <!-- ═══ QUICKIES VIEW ═══ -->
-  <div class="view" id="view-quickies">
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; flex-wrap:wrap;">
-      <div style="flex:1; position:relative;">
-        <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none;">🔍</span>
-        <input type="search" id="quickies-search-input" placeholder="Search quickies…" oninput="renderQuickies()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.6rem 0.9rem 0.6rem 2.4rem;font-family:'Crimson Text',serif;font-size:16px;width:100%;outline:none;">
+  <!-- ═══ BELLADONNA BATTLES PAGE EDITOR ═══ -->
+  <div class="view" id="view-battles">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div class="section-title" style="margin-bottom:0.25rem;">Belladonna Battles</div>
+        <p style="color:var(--text-muted);font-size:0.9rem;">Edit the Belladonna Battles page that venues see. Changes save to Firestore.</p>
       </div>
-      <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add Quickie</button>
+      <button class="btn" onclick="saveBattlesPage()">Save Page</button>
     </div>
-    <div id="quickies-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1.25rem;"></div>
-    <div id="quickies-empty" class="empty-state" style="display:none;">
-      <div class="empty-state-icon">⚡</div>
-      <h3>No Quickies Yet</h3>
-      <p>Add categories with Type "Quickie" to see them here.</p>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="section-title" style="font-size:0.7rem;margin-bottom:1rem;">Page Header</div>
+      <div class="form-group">
+        <label class="form-label">Hero Image URL</label>
+        <div id="battles-hero-preview" style="margin-bottom:0.5rem;"></div>
+        <input type="text" class="form-input" id="battles-hero-img" placeholder="https://…" oninput="battlesHeroPreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Page Title</label>
+        <input type="text" class="form-input" id="battles-title" placeholder="Belladonna Battles">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subtitle / Tagline</label>
+        <input type="text" class="form-input" id="battles-subtitle" placeholder="A tagline for the page…">
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="section-title" style="font-size:0.7rem;margin:0;">Description Paragraphs</div>
+        <button class="btn btn-sm" onclick="battlesAddParagraph()">+ Add Paragraph</button>
+      </div>
+      <div id="battles-paragraphs-editor"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="font-size:0.7rem;margin-bottom:1rem;">Call to Action Button</div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label">Button Label</label>
+          <input type="text" class="form-input" id="battles-cta-label" placeholder="Book Belladonna Battles">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Button Action</label>
+          <select class="form-input" id="battles-cta-action">
+            <option value="cart">Add to Cart</option>
+            <option value="email">Email Us</option>
+            <option value="contact">Contact Form</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1251,7 +1288,7 @@
   <div class="view" id="view-seasonal">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
       <div>
-        <div class="section-title" style="margin-bottom:0.25rem;">Seasonal Events</div>
+        <div class="section-title" style="margin-bottom:0.25rem;">Carousel Calendar</div>
         <p style="color:var(--text-muted);font-size:0.9rem;">Rolling calendar of upcoming events. Active events show in the <em>Coming Up</em> carousel on the venue menu.</p>
       </div>
       <button class="btn" onclick="openSeasonalModal()">+ Add Event</button>
@@ -1261,7 +1298,7 @@
     <div id="seasonal-by-month"></div>
     <div id="seasonal-empty" style="display:none;text-align:center;padding:4rem 2rem;color:var(--text-dim);">
       <div style="font-family:Cinzel,serif;font-size:0.85rem;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.5rem;">No Events Yet</div>
-      <p style="font-size:0.9rem;">Add your first seasonal event to start building the rolling calendar.</p>
+      <p style="font-size:0.9rem;">Add your first event to start building the rolling calendar.</p>
     </div>
   </div>
 
@@ -1334,8 +1371,8 @@
           <label class="form-label">Mini Games Section <span style="color:var(--text-dim);font-size:0.7rem;font-style:italic;font-family:'Crimson Text',serif;text-transform:none;letter-spacing:0;">— only applies when published to Mini Games tab</span></label>
           <select id="cat-mini-section" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.55rem 0.8rem;font-family:'Crimson Text',serif;font-size:15px;width:100%;outline:none;">
             <option value="">— Unassigned —</option>
-            <option value="knowledge">Knowledge Games</option>
-            <option value="interactive">Interactive Games</option>
+            <option value="knowledge">Mini Game - Brain</option>
+            <option value="interactive">Mini Game - Interactive</option>
           </select>
         </div>
         <div class="form-group">
@@ -1360,7 +1397,7 @@
               <input type="checkbox" id="cat-pub-waytoplay" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Way to Play
             </label>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">
-              <input type="checkbox" id="cat-pub-quickies" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Quickies
+              <input type="checkbox" id="cat-pub-quickies" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;"> Mini Games (Brain/Interactive)
             </label>
           </div>
         </div>
@@ -1954,7 +1991,7 @@ function switchView(name) {
   if (name === 'mainmenu' && !mmData) loadMainMenu();
   if (name === 'seasonal') renderSeasonalAdmin();
   if (name === 'waytoplay') renderWayToPlay();
-  if (name === 'quickies') renderQuickies();
+  if (name === 'battles') initBattlesPage();
   if (name === 'bookings') initBookingsTab();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -5021,8 +5058,115 @@ function renderQuickies() {
   }).join('');
 }
 
+
+// ═══════════════════════════════════════════════════════
+// BELLADONNA BATTLES PAGE EDITOR
+// Stored in Firestore: config/battlesPage
+// ═══════════════════════════════════════════════════════
+
+let battlesPageData = { title: '', subtitle: '', heroImg: '', paragraphs: [], ctaLabel: '', ctaAction: 'cart' };
+
+async function initBattlesPage() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'battlesPage'));
+    if (snap.exists()) battlesPageData = { ...battlesPageData, ...snap.data() };
+  } catch(e) { console.warn('Could not load battles page:', e); }
+  renderBattlesEditor();
+}
+
+function renderBattlesEditor() {
+  const d = battlesPageData;
+  document.getElementById('battles-title').value    = d.title    || '';
+  document.getElementById('battles-subtitle').value = d.subtitle || '';
+  document.getElementById('battles-hero-img').value = d.heroImg  || '';
+  document.getElementById('battles-cta-label').value  = d.ctaLabel  || '';
+  document.getElementById('battles-cta-action').value = d.ctaAction || 'cart';
+  battlesHeroPreview();
+  renderBattlesParagraphs();
+}
+
+function battlesHeroPreview() {
+  const url = document.getElementById('battles-hero-img').value.trim();
+  const prev = document.getElementById('battles-hero-preview');
+  prev.innerHTML = url
+    ? '<img src="' + url + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:4px;margin-bottom:0.5rem;display:block;" onerror="this.style.opacity=0">'
+    : '';
+}
+
+function renderBattlesParagraphs() {
+  const container = document.getElementById('battles-paragraphs-editor');
+  const paras = battlesPageData.paragraphs || [];
+  if (!paras.length) {
+    container.innerHTML = '<p style="color:var(--text-dim);font-size:0.88rem;font-style:italic;">No paragraphs yet. Click "+ Add Paragraph" to add content.</p>';
+    return;
+  }
+  container.innerHTML = paras.map((p, i) =>
+    '<div style="display:flex;gap:0.75rem;align-items:flex-start;margin-bottom:0.75rem;">'
+    + '<div style="flex:1;">'
+    + '<textarea class="form-input" rows="3" style="resize:vertical;min-height:80px;" oninput="battlesUpdateParagraph(' + i + ',this.value)">'
+    + esc(p)
+    + '</textarea></div>'
+    + '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">'
+    + (i > 0 ? '<button class="btn btn-sm btn-ghost" onclick="battlesMoveParaUp(' + i + ')">↑</button>' : '<div style="height:30px;"></div>')
+    + (i < paras.length-1 ? '<button class="btn btn-sm btn-ghost" onclick="battlesMoveParaDown(' + i + ')">↓</button>' : '')
+    + '<button class="btn btn-sm btn-ghost" style="color:#C0654F;" onclick="battlesRemoveParagraph(' + i + ')">✕</button>'
+    + '</div></div>'
+  ).join('');
+}
+
+function battlesAddParagraph() {
+  battlesReadFields();
+  battlesPageData.paragraphs.push('');
+  renderBattlesParagraphs();
+  // Focus the last textarea
+  const textareas = document.getElementById('battles-paragraphs-editor').querySelectorAll('textarea');
+  if (textareas.length) textareas[textareas.length-1].focus();
+}
+
+function battlesUpdateParagraph(i, val) {
+  battlesPageData.paragraphs[i] = val;
+}
+
+function battlesRemoveParagraph(i) {
+  battlesReadFields();
+  battlesPageData.paragraphs.splice(i, 1);
+  renderBattlesParagraphs();
+}
+
+function battlesMoveParaUp(i) {
+  battlesReadFields();
+  const p = battlesPageData.paragraphs;
+  [p[i-1], p[i]] = [p[i], p[i-1]];
+  renderBattlesParagraphs();
+}
+
+function battlesMoveParaDown(i) {
+  battlesReadFields();
+  const p = battlesPageData.paragraphs;
+  [p[i], p[i+1]] = [p[i+1], p[i]];
+  renderBattlesParagraphs();
+}
+
+function battlesReadFields() {
+  battlesPageData.title     = document.getElementById('battles-title').value.trim();
+  battlesPageData.subtitle  = document.getElementById('battles-subtitle').value.trim();
+  battlesPageData.heroImg   = document.getElementById('battles-hero-img').value.trim();
+  battlesPageData.ctaLabel  = document.getElementById('battles-cta-label').value.trim();
+  battlesPageData.ctaAction = document.getElementById('battles-cta-action').value;
+  // paragraphs already updated live via battlesUpdateParagraph
+}
+
+async function saveBattlesPage() {
+  battlesReadFields();
+  try {
+    await setDoc(doc(db, 'config', 'battlesPage'), battlesPageData);
+    showToast('Battles page saved');
+  } catch(e) { showToast('Save failed: ' + e.message, true); }
+}
+
 Object.assign(window, {
-  switchView, renderLibrary, runSearch, renderMiniGames, renderWayToPlay, renderQuickies,
+  switchView, renderLibrary, runSearch, renderMiniGames, renderWayToPlay,
+  initBattlesPage, saveBattlesPage, battlesHeroPreview, battlesAddParagraph, battlesUpdateParagraph, battlesRemoveParagraph, battlesMoveParaUp, battlesMoveParaDown,
   openAddCategoryModal, editCategory, deleteCategory, deleteCategoryFromModal,
   toggleLibTypeFilter, clearLibTypeFilters,
   openSeasonalModal, closeSeasonalModal, saveSeasonalEvent, deleteSeasonalEvent, setSeasonalDateType, renderSeasonalAdmin, seToggleAlwaysOn,
