@@ -2187,16 +2187,19 @@ function runSearch() {
   const q = document.getElementById('search-input').value.trim();
   const searchResults = document.getElementById('search-results');
   const searchMeta = document.getElementById('search-results-meta');
-  const filterGrid = document.getElementById('filter-and-grid');
+  const categoryGrid = document.getElementById('category-grid');
+  const libMeta = document.getElementById('lib-results-meta');
 
   if (!q) {
     searchResults.style.display = 'none';
     searchMeta.style.display = 'none';
-    filterGrid.style.display = 'block';
+    if (categoryGrid) categoryGrid.style.display = '';
+    if (libMeta) libMeta.style.display = '';
     return;
   }
 
-  filterGrid.style.display = 'none';
+  if (categoryGrid) categoryGrid.style.display = 'none';
+  if (libMeta) libMeta.style.display = 'none';
 
   const ql = q.toLowerCase();
   // Search always includes bingo categories
