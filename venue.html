@@ -202,7 +202,8 @@
   .app-layout { display: flex; align-items: flex-start; }
   .filter-sidebar {
     flex-shrink: 0; width: 0; overflow: hidden;
-    transition: width 0.25s ease; position: sticky; top: 72px;
+    transition: width 0.25s ease;
+    position: sticky; top: 72px; align-self: flex-start;
     max-height: calc(100vh - 72px); overflow-y: auto;
     background: var(--surface); border-right: 1px solid var(--border);
   }
@@ -697,6 +698,7 @@
     .menu-card-body { padding: 0.65rem 0.75rem 0.85rem; }
     .menu-card-title { font-size: 0.78rem; }
     .menu-card-desc { font-size: 0.78rem; }
+    #page-body { display: block; }
     .app-layout { display: block; }
     .browse-main { padding: 1rem; }
     .filter-sidebar { position: fixed; top: 0; left: 0; width: 0; height: 100vh; max-height: 100vh; z-index: 500; overflow-y: auto; border-right: none; border-radius: 0 12px 12px 0; box-shadow: 4px 0 24px rgba(0,0,0,0.6); transition: width 0.25s ease; }
@@ -737,6 +739,9 @@
 <!-- ═══ MOBILE SIDEBAR BACKDROP ═══ -->
 <div id="mobile-sidebar-backdrop" onclick="closeFilterSidebar()" style="display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.45);"></div>
 
+<!-- ═══ PAGE BODY: sidebar + main flex together ═══ -->
+<div id="page-body" style="display:flex;align-items:flex-start;min-height:calc(100vh - 72px);">
+
 <!-- ═══ FILTER SIDEBAR (shared across browse views) ═══ -->
 <aside id="filter-sidebar" class="filter-sidebar">
   <div class="sidebar-inner">
@@ -752,7 +757,7 @@
 </aside>
 
 <!-- ═══ MAIN CONTENT ═══ -->
-<main id="main-content">
+<main id="main-content" style="flex:1;min-width:0;">
 
   <!-- ══════════════════════════════════════
        LANDING VIEW — The Menu
@@ -1089,6 +1094,17 @@
     <div class="app-layout">
       <div class="browse-main">
         <button class="back-btn" onclick="navigateTo('menu')">← Back to Menu</button>
+
+        <!-- Battles page content from admin -->
+        <div id="battles-page-content" style="margin-bottom:2rem;display:none;">
+          <div id="battles-page-hero" style="margin-bottom:1.5rem;"></div>
+          <div id="battles-page-title" style="font-family:'Cinzel',serif;font-size:1.6rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold-light);margin-bottom:0.4rem;"></div>
+          <div id="battles-page-subtitle" style="font-size:1.05rem;color:var(--text-dim);font-style:italic;margin-bottom:1.25rem;"></div>
+          <div id="battles-page-paragraphs" style="font-size:1rem;color:var(--text-muted);line-height:1.75;margin-bottom:1.5rem;"></div>
+          <div id="battles-page-cta"></div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:2rem 0;">
+        </div>
+
         <div class="browse-toolbar">
           <button class="sidebar-toggle-btn" id="battles-filter-btn" onclick="toggleFilterSidebar('battles')">⧉ Filters</button>
           <div class="search-wrap">
@@ -1203,6 +1219,7 @@
   </div>
 
 </main><!-- end main-content -->
+</div><!-- end page-body -->
 
 
 <!-- ═══ CART DRAWER BACKDROP ═══ -->
@@ -1744,7 +1761,7 @@ function navigateTo(view, typeFilter) {
   if (view === 'bingo')      { renderBingo();      renderAlsoSee('bingo'); }
   if (view === 'singalongs') renderSingAlongs();
   if (view === 'minigames')  renderMiniGames();
-  if (view === 'battles')    renderBattles();
+  if (view === 'battles')    { renderBattles(); loadBattlesPageContent(); }
   if (view === 'waytoplay')  renderWayToPlay();
   if (view === 'quickies')   renderQuickies();
   if (view === 'karaoke')    renderAlsoSee('karaoke');
@@ -2365,6 +2382,53 @@ function addSeasonalToCart() {
   atcBtn.textContent = '✓ In Cart'; atcBtn.classList.add('in-cart');
 }
 
+
+// ── BATTLES PAGE CONTENT ──
+async function loadBattlesPageContent() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'battlesPage'));
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const wrap = document.getElementById('battles-page-content');
+    if (!wrap) return;
+
+    // Hero image
+    const heroEl = document.getElementById('battles-page-hero');
+    if (d.heroImg) {
+      heroEl.innerHTML = '<img src="' + escHtml(d.heroImg) + '" alt="" style="width:100%;border-radius:8px;display:block;max-height:320px;object-fit:cover;" onerror="this.style.opacity=0">';
+    }
+
+    // Title + subtitle
+    const titleEl = document.getElementById('battles-page-title');
+    if (d.title) titleEl.textContent = d.title;
+
+    const subEl = document.getElementById('battles-page-subtitle');
+    if (d.subtitle) subEl.textContent = d.subtitle;
+
+    // Paragraphs
+    const parasEl = document.getElementById('battles-page-paragraphs');
+    if (d.paragraphs && d.paragraphs.length) {
+      parasEl.innerHTML = d.paragraphs.map(p =>
+        '<p style="margin:0 0 1rem;">' + escHtml(p) + '</p>'
+      ).join('');
+    }
+
+    // CTA button
+    const ctaEl = document.getElementById('battles-page-cta');
+    if (d.ctaLabel) {
+      let onclick = '';
+      if (d.ctaAction === 'cart') onclick = "addToCart('battles','Belladonna Battles')";
+      else if (d.ctaAction === 'email') onclick = "window.location.href='mailto:contact@belladonnanights.com'";
+      ctaEl.innerHTML = '<button class="atc-btn" onclick="' + onclick + '" style="font-size:0.8rem;padding:0.7rem 1.5rem;">' + escHtml(d.ctaLabel) + '</button>';
+    }
+
+    // Show the content block if anything is set
+    const hasContent = d.heroImg || d.title || d.subtitle || (d.paragraphs && d.paragraphs.length) || d.ctaLabel;
+    if (hasContent) wrap.style.display = '';
+
+  } catch(e) { console.warn('Could not load battles page content:', e); }
+}
+
 Object.assign(window, {
   navigateTo, renderComingUp, toggleFilterSidebar, closeFilterSidebar,
   openCart, closeCart, addToCart, removeFromCart, setBookingType, selectDate, calNav, toggleWeekday,
@@ -2373,7 +2437,7 @@ Object.assign(window, {
   toggleSidebarFilter, toggleAccordion, clearAllFilters, removeFilter,
   openNightDetail, closeDetail, handleOverlayClick,
   renderThemedNights, renderTrivia, renderBingo, renderSingAlongs, renderMiniGames, renderBattles,
-  renderWayToPlay, renderQuickies, renderAlsoSee
+  renderWayToPlay, renderQuickies, renderAlsoSee, loadBattlesPageContent
 });
 </script>
 
