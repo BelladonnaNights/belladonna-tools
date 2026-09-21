@@ -1799,22 +1799,22 @@ import {
 // FIREBASE INIT
 // ═══════════════════════════════════════════════
 const firebaseConfig = {
-  apiKey: "AIzaSyAQUq6wKgBHIfaVCjxOXa7fpsJ0qmTocqI",
-  authDomain: "belladonnabrainstormtool.firebaseapp.com",
-  projectId: "belladonnabrainstormtool",
-  storageBucket: "belladonnabrainstormtool.firebasestorage.app",
-  messagingSenderId: "981934324501",
-  appId: "1:981934324501:web:9ba85ffde67d2d2b95c71c"
+  apiKey: "AIzaSyCIfAE1JGHsUGzzVH2pz1Vyj5b5OhA0tDQ",
+  authDomain: "belladonna-hq.firebaseapp.com",
+  projectId: "belladonna-hq",
+  storageBucket: "belladonna-hq.firebasestorage.app",
+  messagingSenderId: "1021873183587",
+  appId: "1:1021873183587:web:def283bb7b5ca48e4f9156"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const catsCol = collection(db, 'categories');
-const nightsCol = collection(db, 'nights');
-const nightTagsDoc = doc(db, 'config', 'nightTags');
-const miniTagsDoc = doc(db, 'config', 'miniTags');
-const singaTagsDoc = doc(db, 'config', 'singaTags');
-const triviaTagsDoc = doc(db, 'config', 'triviaTags');
+const catsCol = collection(db, 'venueMenuCategories');
+const nightsCol = collection(db, 'venueMenuNights');
+const nightTagsDoc = doc(db, 'venueMenuConfig', 'nightTags');
+const miniTagsDoc = doc(db, 'venueMenuConfig', 'miniTags');
+const singaTagsDoc = doc(db, 'venueMenuConfig', 'singaTags');
+const triviaTagsDoc = doc(db, 'venueMenuConfig', 'triviaTags');
 
 // ═══════════════════════════════════════════════
 // DATA STORE
@@ -1921,7 +1921,7 @@ async function saveCat(cat) {
     data.bannerData = await compressBanner(data.bannerData);
   }
   try {
-    await setDoc(doc(db, 'categories', cat._id), data);
+    await setDoc(doc(db, 'venueMenuCategories', cat._id), data);
     cat._id = cat._id;
   } catch(e) {
     console.error('saveCat error:', e);
@@ -1932,7 +1932,7 @@ async function saveCat(cat) {
 }
 
 async function deleteCat(cat) {
-  if (cat._id) await deleteDoc(doc(db, 'categories', cat._id));
+  if (cat._id) await deleteDoc(doc(db, 'venueMenuCategories', cat._id));
 }
 
 async function saveNightDoc(night) {
@@ -1943,7 +1943,7 @@ async function saveNightDoc(night) {
     data.bannerData = await compressBanner(data.bannerData, 1000, 0.75);
   }
   try {
-    await setDoc(doc(db, 'nights', night._id), data);
+    await setDoc(doc(db, 'venueMenuNights', night._id), data);
   } catch(e) {
     console.error('saveNightDoc error:', e);
     throw new Error(e.code === 'permission-denied'
@@ -1953,7 +1953,7 @@ async function saveNightDoc(night) {
 }
 
 async function deleteNightDoc(night) {
-  if (night._id) await deleteDoc(doc(db, 'nights', night._id));
+  if (night._id) await deleteDoc(doc(db, 'venueMenuNights', night._id));
 }
 
 async function saveNightTags() {
@@ -1978,7 +1978,7 @@ async function batchSaveCats(cats) {
     cats.slice(i, i + CHUNK).forEach(cat => {
       if (!cat._id) cat._id = toId(cat.name);
       const { _id, ...data } = cat;
-      batch.set(doc(db, 'categories', _id), data);
+      batch.set(doc(db, 'venueMenuCategories', _id), data);
     });
     await batch.commit();
   }
@@ -2906,7 +2906,7 @@ async function doImport(mode) {
     if (mode === 'replace') {
       // Delete existing first
       const batch = writeBatch(db);
-      categories.forEach(c => { if (c._id) batch.delete(doc(db, 'categories', c._id)); });
+      categories.forEach(c => { if (c._id) batch.delete(doc(db, 'venueMenuCategories', c._id)); });
       await batch.commit();
       categories = [...pendingImport];
     } else {
@@ -3139,7 +3139,7 @@ const FILTER_DIM_DOC = 'filterDimensions';
 
 async function loadFilterDims() {
   try {
-    const snap = await getDoc(doc(db, 'config', FILTER_DIM_DOC));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', FILTER_DIM_DOC));
     if (snap.exists()) {
       const d = snap.data();
       filterDimOptions.genre    = d.genre    || DEFAULT_FILTER_DIMS.genre;
@@ -3153,7 +3153,7 @@ async function loadFilterDims() {
 }
 
 async function saveFilterDims() {
-  await setDoc(doc(db, 'config', FILTER_DIM_DOC), filterDimOptions);
+  await setDoc(doc(db, 'venueMenuConfig', FILTER_DIM_DOC), filterDimOptions);
 }
 
 // ── SIDEBAR TOGGLE ──
@@ -3507,7 +3507,7 @@ async function saveThemeEdit(i, oldTheme) {
   try {
     const batch = writeBatch(db);
     toUpdate.forEach(c => {
-      if (c._id) batch.set(doc(db, 'categories', c._id), {...c}, {merge:true});
+      if (c._id) batch.set(doc(db, 'venueMenuCategories', c._id), {...c}, {merge:true});
     });
     await batch.commit();
     toast(`Renamed "${oldTheme}" → "${newTheme}" on ${toUpdate.length} categories`, 'success');
@@ -3996,7 +3996,7 @@ async function onCatDrop(e, idx) {
   renderLibrary();
   try {
     const batch = writeBatch(db);
-    categories.forEach((cat, i) => { if (cat._id) batch.set(doc(db,'categories',cat._id), {...cat, position:i}, {merge:true}); });
+    categories.forEach((cat, i) => { if (cat._id) batch.set(doc(db, 'venueMenuCategories',cat._id), {...cat, position:i}, {merge:true}); });
     await batch.commit();
   } catch(e) { console.warn('Order save failed:', e); }
 }
@@ -4032,7 +4032,7 @@ async function onNightDrop(e, i) {
   renderNights();
   try {
     const batch = writeBatch(db);
-    nights.forEach((n, idx) => { if (n._id) batch.set(doc(db,'nights',n._id), {...n, position:idx}, {merge:true}); });
+    nights.forEach((n, idx) => { if (n._id) batch.set(doc(db, 'venueMenuNights',n._id), {...n, position:idx}, {merge:true}); });
     await batch.commit();
   } catch(e) { console.warn('Night order save failed:', e); }
 }
@@ -4118,7 +4118,7 @@ let mmData = null; // loaded from Firebase or defaults
 
 async function loadMainMenu() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'mainMenu'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'mainMenu'));
     mmData = snap.exists() ? snap.data() : JSON.parse(JSON.stringify(MM_DEFAULTS));
   } catch(e) {
     mmData = JSON.parse(JSON.stringify(MM_DEFAULTS));
@@ -4131,7 +4131,7 @@ async function saveMainMenu() {
   mmReadFieldsIntoData();
 
   try {
-    await setDoc(doc(db, 'config', 'mainMenu'), mmData);
+    await setDoc(doc(db, 'venueMenuConfig', 'mainMenu'), mmData);
     toast('Menu saved!', 'success');
     mmRenderPreview();
   } catch(e) {
@@ -4505,14 +4505,14 @@ const MONTH_NAMES = ['','January','February','March','April','May','June',
 // ── LOAD ──
 async function loadSeasonalEvents() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'seasonalEvents'));
     seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
   } catch(e) { seasonalEvents = []; }
 }
 
 // ── SAVE TO FIREBASE ──
 async function persistSeasonalEvents() {
-  await setDoc(doc(db, 'config', 'seasonalEvents'), { events: seasonalEvents });
+  await setDoc(doc(db, 'venueMenuConfig', 'seasonalEvents'), { events: seasonalEvents });
 }
 
 // ── VISIBILITY LOGIC ──
@@ -4763,7 +4763,7 @@ function switchBookingsTab(tab) {
 // ── INIT ──
 async function initBookingsTab() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'availability'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'availability'));
     adminAvailDates = snap.exists() ? (snap.data().dates || {}) : {};
   } catch(e) { adminAvailDates = {}; }
   renderAdminCal();
@@ -4830,7 +4830,7 @@ function renderAdminCal() {
 
 async function saveAvailability() {
   try {
-    await setDoc(doc(db, 'config', 'availability'), { dates: adminAvailDates });
+    await setDoc(doc(db, 'venueMenuConfig', 'availability'), { dates: adminAvailDates });
     showToast('Availability saved');
   } catch(e) { showToast('Save failed: ' + e.message, true); }
 }
@@ -4839,7 +4839,7 @@ async function saveAvailability() {
 function listenRequests() {
   if (requestsUnsubscribe) requestsUnsubscribe();
   try {
-    const q = query(collection(db, 'bookingRequests'), orderBy('submittedAt', 'desc'));
+    const q = query(collection(db, 'venueMenuBookingRequests'), orderBy('submittedAt', 'desc'));
     requestsUnsubscribe = onSnapshot(q, snap => {
       bookingRequests = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
       const newCount = bookingRequests.filter(r => r.status === 'new').length;
@@ -4907,7 +4907,7 @@ function renderRequests() {
 
 async function updateRequestStatus(id, status) {
   try {
-    await updateDoc(doc(db, 'bookingRequests', id), { status });
+    await updateDoc(doc(db, 'venueMenuBookingRequests', id), { status });
     showToast('Updated to ' + status);
   } catch(e) { showToast('Update failed', true); }
 }
@@ -4915,7 +4915,7 @@ async function updateRequestStatus(id, status) {
 async function deleteRequest(id) {
   if (!confirm('Permanently delete this request?')) return;
   try {
-    await deleteDoc(doc(db, 'bookingRequests', id));
+    await deleteDoc(doc(db, 'venueMenuBookingRequests', id));
     showToast('Request deleted');
   } catch(e) { showToast('Delete failed', true); }
 }
@@ -5071,7 +5071,7 @@ let battlesPageData = { title: '', subtitle: '', heroImg: '', paragraphs: [], ct
 
 async function initBattlesPage() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'battlesPage'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'battlesPage'));
     if (snap.exists()) battlesPageData = { ...battlesPageData, ...snap.data() };
   } catch(e) { console.warn('Could not load battles page:', e); }
   renderBattlesEditor();
@@ -5162,7 +5162,7 @@ function battlesReadFields() {
 async function saveBattlesPage() {
   battlesReadFields();
   try {
-    await setDoc(doc(db, 'config', 'battlesPage'), battlesPageData);
+    await setDoc(doc(db, 'venueMenuConfig', 'battlesPage'), battlesPageData);
     showToast('Battles page saved');
   } catch(e) { showToast('Save failed: ' + e.message, true); }
 }
