@@ -916,6 +916,10 @@
     <button class="nav-tab" onclick="switchView('bookings')">Bookings</button>
     <button class="nav-tab" onclick="switchView('import')">Import</button>
   </nav>
+  <div class="header-account" style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+    <span id="gateway-user-label" style="font-size:0.72rem;color:var(--text-dim);"></span>
+    <button class="btn btn-sm btn-ghost" onclick="gatewaySignOut()">Sign Out</button>
+  </div>
 </header>
 
 <div class="app-layout">
@@ -1794,6 +1798,7 @@ import {
   getDocs, getDoc, setDoc, updateDoc, deleteDoc, writeBatch,
   query, orderBy, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ═══════════════════════════════════════════════
 // FIREBASE INIT
@@ -1809,12 +1814,42 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const catsCol = collection(db, 'venueMenuCategories');
 const nightsCol = collection(db, 'venueMenuNights');
 const nightTagsDoc = doc(db, 'venueMenuConfig', 'nightTags');
 const miniTagsDoc = doc(db, 'venueMenuConfig', 'miniTags');
 const singaTagsDoc = doc(db, 'venueMenuConfig', 'singaTags');
 const triviaTagsDoc = doc(db, 'venueMenuConfig', 'triviaTags');
+
+// ── GATEWAY LOGIN GATE ──
+// Same pattern as the Planner and Trivia Admin — its own independent 6-hour
+// "stay signed in" window, tracked locally just for this app.
+const GATEWAY_APP_KEY = 'venuemenu';
+const GATEWAY_SESSION_MS = 6*60*60*1000;
+function hasValidGatewaySession(){
+  try{
+    const raw = localStorage.getItem('gatewaySession_'+GATEWAY_APP_KEY);
+    if(!raw) return false;
+    const s = JSON.parse(raw);
+    return (Date.now()-s.ts) < GATEWAY_SESSION_MS;
+  }catch(e){ return false; }
+}
+if(!hasValidGatewaySession()){
+  window.location.href = 'https://belladonnanights.github.io/belladonna-gateway/accounts.html?return='+encodeURIComponent(window.location.href)+'&app='+GATEWAY_APP_KEY;
+}
+window.gatewaySignOut = function(){
+  try{ Object.keys(localStorage).filter(k=>k.startsWith('gatewaySession_')).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  signOut(auth).then(()=>{ window.location.href = 'https://belladonnanights.github.io/belladonna-gateway/accounts.html?return='+encodeURIComponent(window.location.href)+'&app='+GATEWAY_APP_KEY; });
+};
+onAuthStateChanged(auth, user=>{
+  if(!user){
+    window.location.href = 'https://belladonnanights.github.io/belladonna-gateway/accounts.html?return='+encodeURIComponent(window.location.href)+'&app='+GATEWAY_APP_KEY;
+    return;
+  }
+  const label = document.getElementById('gateway-user-label');
+  if(label) label.textContent = user.email || 'account';
+});
 
 // ═══════════════════════════════════════════════
 // DATA STORE
@@ -2398,7 +2433,7 @@ async function deleteCategory(idx) {
     categories.splice(idx, 1);
     toast('Category deleted');
   } catch(e) {
-    toast('Delete failed — check connection', 'error'); return;
+    toast('Delete failed: ' + (e.code || e.message || 'unknown error'), 'error'); return;
   }
   renderLibrary();
 }
@@ -2412,7 +2447,7 @@ async function deleteCategoryFromModal() {
     categories.splice(editingCatIndex, 1);
     toast('Category deleted');
   } catch(e) {
-    toast('Delete failed — check connection', 'error'); return;
+    toast('Delete failed: ' + (e.code || e.message || 'unknown error'), 'error'); return;
   }
   closeCatModal();
   renderLibrary();
@@ -2746,7 +2781,7 @@ async function deleteNight(idx) {
     nights.splice(idx, 1);
     toast('Night deleted');
   } catch(e) {
-    toast('Delete failed — check connection', 'error'); return;
+    toast('Delete failed: ' + (e.code || e.message || 'unknown error'), 'error'); return;
   }
   renderNights();
 }
@@ -2760,7 +2795,7 @@ async function deleteNightFromModal() {
     nights.splice(editingNightIndex, 1);
     toast('Night deleted');
   } catch(e) {
-    toast('Delete failed — check connection', 'error'); return;
+    toast('Delete failed: ' + (e.code || e.message || 'unknown error'), 'error'); return;
   }
   closeNightModal();
   renderNights();
@@ -2915,7 +2950,7 @@ async function doImport(mode) {
     await batchSaveCats(categories);
     toast(`Imported ${pendingImport.length} categories`, 'success');
   } catch(e) {
-    toast('Import failed — check connection', 'error');
+    toast('Import failed: ' + (e.code || e.message || 'unknown error'), 'error');
   }
   renderLibrary();
   document.getElementById('import-preview').style.display = 'none';
@@ -4742,7 +4777,7 @@ async function deleteSeasonalEvent() {
   try {
     await persistSeasonalEvents();
     showToast('Event deleted');
-  } catch(e) { showToast('Delete failed', true); }
+  } catch(e) { showToast('Delete failed: ' + (e.code || e.message || 'unknown error'), true); }
 }
 
 
@@ -4926,7 +4961,7 @@ async function deleteRequest(id) {
   try {
     await deleteDoc(doc(db, 'venueMenuBookingRequests', id));
     showToast('Request deleted');
-  } catch(e) { showToast('Delete failed', true); }
+  } catch(e) { showToast('Delete failed: ' + (e.code || e.message || 'unknown error'), true); }
 }
 
 
