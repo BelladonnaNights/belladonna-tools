@@ -2014,7 +2014,7 @@ function switchView(name) {
 function populateFilters() {
   const types = [...new Set(categories.map(c => c.type).filter(Boolean))].sort();
   const themes = [...new Set(categories.map(c => c.theme).filter(Boolean))].sort();
-  const tags = [...new Set(categories.flatMap(c => (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean)))].sort();
+  const tags = [...new Set(categories.flatMap(c => tagsArray(c.tags).map(t=>t.trim()).filter(Boolean)))].sort();
   const tSel = document.getElementById('lib-filter-type');
   const thSel = document.getElementById('lib-filter-theme');
   const tagSel = document.getElementById('lib-filter-tag');
@@ -2060,7 +2060,7 @@ function renderMiniGames() {
   const miniSearchQ = (document.getElementById('mini-search-input')?.value || '').toLowerCase().trim();
   let games = categories.filter(c => isMiniGame(c)).filter(c => {
     if (activeMiniFilters.size === 0) return true;
-    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const catTags = tagsArray(c.tags).map(t=>t.trim()).filter(Boolean);
     return [...activeMiniFilters].every(f => catTags.includes(f));
   });
   if (miniSearchQ) games = games.filter(c => c.name.toLowerCase().includes(miniSearchQ) || (c.theme||'').toLowerCase().includes(miniSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(miniSearchQ)));
@@ -2083,7 +2083,7 @@ function renderMiniGames() {
       <div style="padding:1rem 1.1rem 1.1rem;">
         <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
         ${c.theme ? `<div style="font-size:0.78rem; font-weight:700; color:var(--text); margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
-        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+        ${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2172,7 +2172,7 @@ function categoryCardHTML(cat, idx, highlight) {
       ${cat.type ? `<span class="badge badge-type">${esc(cat.type)}</span>` : ''}
       ${cat.theme ? `<span style="font-size:0.78rem; font-weight:700; color:var(--text); letter-spacing:0.02em;">${esc(cat.theme)}</span>` : ''}
     </div>
-    ${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:0.6rem;">${(cat.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.68rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+    ${tagsArray(cat.tags).map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:0.6rem;">${tagsArray(cat.tags).map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.68rem;">${esc(t)}</span>`).join('')}</div>` : ''}
     <div class="category-card-actions">
       <span title="Drag to reorder" style="cursor:grab; color:var(--text-dim); font-size:1.1rem; user-select:none; padding:0.1rem 0.3rem; border-radius:3px;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'">⠿</span>
       <button class="btn btn-sm btn-ghost" onclick="editCategory(${idx})">Edit</button>
@@ -2952,6 +2952,15 @@ function download(filename, content, mime) {
 function esc(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// Tags are normally a comma-separated string, but some categories got saved
+// with it as an array instead (edited/linked from the Planner before that
+// was caught and fixed there) — handle either shape so this can't crash
+// rendering again regardless of what's actually in a given document.
+function tagsArray(t) {
+  if (Array.isArray(t)) return t;
+  if (typeof t === 'string') return t.split(',');
+  return [];
+}
 
 function toast(msg, type = 'success') {
   const el = document.createElement('div');
@@ -3526,7 +3535,7 @@ function renderTrivia() {
   const triviaSearchQ = (document.getElementById('trivia-search-input')?.value || '').toLowerCase().trim();
   let items = categories.filter(c => isTrivia(c)).filter(c => {
     if (activeTriviaFilters.size === 0) return true;
-    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const catTags = tagsArray(c.tags).map(t=>t.trim()).filter(Boolean);
     return [...activeTriviaFilters].every(f => catTags.includes(f));
   });
   if (triviaSearchQ) items = items.filter(c => c.name.toLowerCase().includes(triviaSearchQ) || (c.theme||'').toLowerCase().includes(triviaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(triviaSearchQ)));
@@ -3547,7 +3556,7 @@ function renderTrivia() {
       <div style="padding:1rem 1.1rem 1.1rem;">
         <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
         ${c.theme ? `<div style="font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
-        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+        ${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -3681,7 +3690,7 @@ function renderSingAlongs() {
   const singaSearchQ = (document.getElementById('singa-search-input')?.value || '').toLowerCase().trim();
   let games = categories.filter(c => isSingAlong(c)).filter(c => {
     if (activeSingaFilters.size === 0) return true;
-    const catTags = (c.tags||'').split(',').map(t=>t.trim()).filter(Boolean);
+    const catTags = tagsArray(c.tags).map(t=>t.trim()).filter(Boolean);
     return [...activeSingaFilters].every(f => catTags.includes(f));
   });
   if (singaSearchQ) games = games.filter(c => c.name.toLowerCase().includes(singaSearchQ) || (c.theme||'').toLowerCase().includes(singaSearchQ) || (c.shows||[]).some(s=>s.toLowerCase().includes(singaSearchQ)));
@@ -3703,7 +3712,7 @@ function renderSingAlongs() {
         <div class="category-card-name" style="margin-bottom:0.4rem;">${esc(c.name)}</div>
         ${c.theme ? `<div style="font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:0.4rem;">${esc(c.theme)}</div>` : ''}
         ${(c.shows||[]).length ? `<div style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:0.5rem;">${(c.shows||[]).map(s=>esc(s)).join('<br>')}</div>` : ''}
-        ${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${(c.tags||'').split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
+        ${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;">${tagsArray(c.tags).map(t=>t.trim()).filter(Boolean).map(t=>`<span class="badge" style="background:rgba(60,80,100,0.2);color:#9BB8D4;border:1px solid rgba(100,140,180,0.2);font-size:0.65rem;">${esc(t)}</span>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
