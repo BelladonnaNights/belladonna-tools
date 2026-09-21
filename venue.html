@@ -1295,12 +1295,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAQUq6wKgBHIfaVCjxOXa7fpsJ0qmTocqI",
-  authDomain: "belladonnabrainstormtool.firebaseapp.com",
-  projectId: "belladonnabrainstormtool",
-  storageBucket: "belladonnabrainstormtool.firebasestorage.app",
-  messagingSenderId: "981934324501",
-  appId: "1:981934324501:web:9ba85ffde67d2d2b95c71c"
+  apiKey: "AIzaSyCIfAE1JGHsUGzzVH2pz1Vyj5b5OhA0tDQ",
+  authDomain: "belladonna-hq.firebaseapp.com",
+  projectId: "belladonna-hq",
+  storageBucket: "belladonna-hq.firebasestorage.app",
+  messagingSenderId: "1021873183587",
+  appId: "1:1021873183587:web:def283bb7b5ca48e4f9156"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -1362,7 +1362,7 @@ const MONTH_NAMES_V = ['','January','February','March','April','May','June',
 
 async function loadSeasonalEvents() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'seasonalEvents'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'seasonalEvents'));
     seasonalEvents = snap.exists() ? (snap.data().events || []) : [];
   } catch(e) { seasonalEvents = []; }
   renderComingUp();
@@ -1617,7 +1617,7 @@ function _carouselTouchEnd(e) {
 // ── LOAD DATA ──
 async function loadFilterDims() {
   try {
-    const d = (await getDoc(doc(db,'config','filterDimensions'))).data() || {};
+    const d = (await getDoc(doc(db, 'venueMenuConfig','filterDimensions'))).data() || {};
     filterDimOptions.genre    = (d.genre    && d.genre.length)    ? d.genre    : DEFAULTS.genre;
     filterDimOptions.tone     = (d.tone     && d.tone.length)     ? d.tone     : DEFAULTS.tone;
     filterDimOptions.era      = (d.era      && d.era.length)      ? d.era      : DEFAULTS.era;
@@ -1628,8 +1628,8 @@ async function loadFilterDims() {
 async function load() {
   try {
     const [nightsSnap, catsSnap] = await Promise.all([
-      getDocs(collection(db,'nights')),
-      getDocs(collection(db,'categories'))
+      getDocs(collection(db, 'venueMenuNights')),
+      getDocs(collection(db, 'venueMenuCategories'))
     ]);
     publishedNights = nightsSnap.docs.map(d => ({_id:d.id,...d.data()}))
       .filter(n => n.published).sort((a,b) => (a.position||999)-(b.position||999));
@@ -1651,7 +1651,7 @@ async function load() {
 // ── MENU CONFIG FROM FIREBASE ──
 async function loadMenuConfig() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'mainMenu'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'mainMenu'));
     if (!snap.exists()) return;
 
     const data = snap.data();
@@ -2116,7 +2116,7 @@ function updateAllATCButtons() {
 // ── AVAILABILITY ──
 async function loadAvailability() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'availability'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'availability'));
     availDates = snap.exists() ? (snap.data().dates || {}) : {};
   } catch(e) { availDates = {}; }
 }
@@ -2311,7 +2311,7 @@ async function submitCart() {
 
   try {
     // Save to Firestore
-    await addDoc(collection(db, 'bookingRequests'), payload);
+    await addDoc(collection(db, 'venueMenuBookingRequests'), payload);
 
     // Send email notification via EmailJS (fires silently, no action needed from venue)
     await emailjs.send('service_aapds0d', 'template_y9ijdjg', {
@@ -2386,7 +2386,7 @@ function addSeasonalToCart() {
 // ── BATTLES PAGE CONTENT ──
 async function loadBattlesPageContent() {
   try {
-    const snap = await getDoc(doc(db, 'config', 'battlesPage'));
+    const snap = await getDoc(doc(db, 'venueMenuConfig', 'battlesPage'));
     if (!snap.exists()) return;
     const d = snap.data();
     const wrap = document.getElementById('battles-page-content');
