@@ -2118,9 +2118,6 @@ function isTrivia(cat) {
   // Matches all trivia types: Trivia, Full Trivia, Book Trivia, Mini Trivia, etc.
   return getTypes(cat).some(t => t.includes('trivia'));
 }
-function isBingo(cat) {
-  return getTypes(cat).some(t => t.includes('bingo'));
-}
 // -- Shared A–Z sort toggle, usable on every tab's grid --
 let sortAZState = {};
 function toggleSortAZ(tabKey){
