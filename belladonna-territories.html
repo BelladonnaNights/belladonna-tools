@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Belladonna Territories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+  :root{
+    --void:#0d0b10;
+    --panel:#17141b;
+    --panel-raised:#201c25;
+    --hairline:#332e38;
+    --hairline-soft:#2a2530;
+    --ink:#ece6da;
+    --ink-dim:#a99cae;
+    --ink-faint:#766a80;
+    --gold:#c9a24b;
+    --gold-bright:#e6c878;
+    --wine:#8a2f42;
+    --wine-bright:#b34a5e;
+    --font-display:'Cinzel', 'Times New Roman', serif;
+    --font-body:'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--gold-bright);}
+
+  #app{
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 22px;
+    background:linear-gradient(180deg, #17131a 0%, #120f15 100%);
+    border-bottom:1px solid var(--hairline);
+    flex:0 0 auto;
+    z-index:20;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .mark{
+    font-family:var(--font-display);
+    font-size:12px;
+    letter-spacing:0.14em;
+    color:var(--gold);
+  }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:19px;
+    letter-spacing:0.03em;
+    margin:0;
+    color:var(--ink);
+  }
+  .brand .sub{
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-left:6px;
+    display:none;
+  }
+  @media(min-width:760px){ .brand .sub{ display:inline; } }
+
+  .header-actions{
+    display:flex;
+    gap:8px;
+  }
+
+  /* ---------- buttons ---------- */
+  button{
+    font-family:var(--font-body);
+    cursor:pointer;
+  }
+  .btn{
+    appearance:none;
+    border:1px solid var(--hairline);
+    background:var(--panel-raised);
+    color:var(--ink);
+    padding:8px 14px;
+    border-radius:3px;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.01em;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .btn:hover{ border-color:var(--gold); color:var(--gold-bright); }
+  .btn:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:2px; }
+  .btn.primary{
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#1c1408;
+    border-color:var(--gold);
+    font-weight:600;
+  }
+  .btn.primary:hover{ filter:brightness(1.07); color:#1c1408; }
+  .btn.ghost{ background:transparent; }
+  .btn.danger{ border-color:var(--wine); color:var(--wine-bright); background:transparent; }
+  .btn.danger:hover{ background:rgba(138,47,66,0.15); color:#e08497; border-color:var(--wine-bright); }
+  .btn.small{ padding:5px 9px; font-size:12px; }
+  .btn.block{ width:100%; }
+  .btn[disabled]{ opacity:0.4; cursor:not-allowed; }
+  .icon-btn{
+    appearance:none;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--ink-faint);
+    width:26px; height:26px;
+    border-radius:3px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    line-height:1;
+    transition:color .15s ease, background .15s ease;
+  }
+  .icon-btn:hover{ color:var(--gold-bright); background:var(--hairline-soft); }
+  .icon-btn.danger:hover{ color:var(--wine-bright); }
+  .icon-btn:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:1px; }
+
+  /* ---------- layout ---------- */
+  .layout{
+    flex:1 1 auto;
+    display:flex;
+    min-height:0;
+  }
+  #sidebar{
+    width:340px;
+    flex:0 0 340px;
+    background:var(--panel);
+    border-right:1px solid var(--hairline);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    overflow-y:auto;
+  }
+  #mapWrap{
+    flex:1 1 auto;
+    position:relative;
+    min-width:0;
+  }
+  #map{
+    position:absolute;
+    inset:0;
+    background:var(--void);
+  }
+  @media(max-width:760px){
+    .layout{ flex-direction:column; }
+    #sidebar{ width:auto; flex:0 0 auto; max-height:46vh; border-right:none; border-bottom:1px solid var(--hairline); }
+    #mapWrap{ flex:1 1 auto; }
+  }
+
+  .side-section{
+    padding:16px 18px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .side-section:last-child{ border-bottom:none; }
+  .side-section h2{
+    font-family:var(--font-display);
+    font-size:11.5px;
+    letter-spacing:0.12em;
+    color:var(--ink-faint);
+    margin:0 0 10px 0;
+    font-weight:600;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--ink-faint);
+    line-height:1.5;
+    margin:8px 0 0 0;
+  }
+
+  /* draw banner */
+  #drawBanner{
+    display:none;
+    align-items:center;
+    gap:10px;
+    background:var(--panel-raised);
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    font-size:12.5px;
+    padding:8px 12px;
+    border-radius:3px;
+    margin-top:10px;
+  }
+  #drawBanner.show{ display:flex; }
+  #drawBanner .pt-count{ font-family:var(--font-mono); color:var(--ink); }
+
+  /* search row */
+  .search-row{ display:flex; gap:6px; }
+  .search-row input[type=text]{ flex:1 1 auto; min-width:0; }
+  input[type=text], input[type=search]{
+    background:var(--void);
+    border:1px solid var(--hairline);
+    color:var(--ink);
+    padding:8px 10px;
+    border-radius:3px;
+    font-size:13px;
+    font-family:var(--font-body);
+    width:100%;
+  }
+  input[type=text]:focus, input[type=search]:focus{
+    outline:none; border-color:var(--gold);
+  }
+  #geoResults{
+    margin-top:6px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .geo-result{
+    text-align:left;
+    background:var(--panel-raised);
+    border:1px solid var(--hairline);
+    color:var(--ink-dim);
+    padding:7px 9px;
+    border-radius:3px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .geo-result:hover{ border-color:var(--gold); color:var(--ink); }
+
+  #lookupResult{
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.5;
+    padding:10px 11px;
+    border-radius:3px;
+    display:none;
+  }
+  #lookupResult.show{ display:block; }
+  #lookupResult.state-in{ background:rgba(74,120,90,0.14); border:1px solid #3f6e51; color:#bfe0c9; }
+  #lookupResult.state-out{ background:rgba(138,47,66,0.14); border:1px solid var(--wine); color:#e6b6c1; }
+  #lookupResult.state-multi{ background:rgba(201,162,75,0.14); border:1px solid var(--gold); color:var(--gold-bright); }
+  #lookupResult code{ font-family:var(--font-mono); }
+
+  /* territory list */
+  #territoryList{ display:flex; flex-direction:column; gap:6px; }
+  .empty-note{
+    font-size:12.5px; color:var(--ink-faint); font-style:italic; padding:4px 0;
+  }
+  .terr-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 9px;
+    border-radius:4px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .terr-item:hover{ background:var(--panel-raised); border-color:var(--hairline); }
+  .terr-item.active{ background:var(--panel-raised); border-color:var(--gold); }
+  .swatch{
+    width:13px; height:13px; border-radius:3px; flex:0 0 auto;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.4) inset;
+  }
+  .terr-meta{ min-width:0; flex:1 1 auto; }
+  .terr-label{
+    font-size:13.5px; color:var(--ink); font-weight:500;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .terr-code{
+    font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .terr-actions{ display:flex; gap:2px; flex:0 0 auto; }
+
+  footer.side-footer{
+    padding:12px 18px 16px 18px;
+    font-size:11px;
+    color:var(--ink-faint);
+    line-height:1.6;
+  }
+  footer.side-footer .clear-link{
+    background:none; border:none; color:var(--ink-faint);
+    text-decoration:underline; cursor:pointer; font-size:11px; padding:0;
+    font-family:var(--font-body);
+  }
+  footer.side-footer .clear-link:hover{ color:var(--wine-bright); }
+
+  /* ---------- modal ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(8,7,10,0.72);
+    display:none; align-items:center; justify-content:center;
+    z-index:100; padding:20px;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background:var(--panel-raised);
+    border:1px solid var(--hairline);
+    border-radius:6px;
+    width:100%;
+    max-width:380px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h3{
+    font-family:var(--font-display);
+    font-size:16px; font-weight:600; margin:0 0 16px 0; color:var(--ink);
+    letter-spacing:0.02em;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block; font-size:11.5px; letter-spacing:0.06em; color:var(--ink-faint);
+    margin-bottom:5px; text-transform:none;
+  }
+  .field .err{ color:var(--wine-bright); font-size:11.5px; margin-top:4px; display:none; }
+  .field .err.show{ display:block; }
+  .field input[type=text]{ }
+  .swatch-row{ display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .swatch-opt{
+    width:24px; height:24px; border-radius:5px; cursor:pointer;
+    border:2px solid transparent;
+  }
+  .swatch-opt.selected{ border-color:var(--ink); box-shadow:0 0 0 1px var(--gold); }
+  .swatch-custom{
+    width:24px; height:24px; padding:0; border-radius:5px; border:1px solid var(--hairline);
+    background:transparent; overflow:hidden;
+  }
+  .swatch-custom input[type=color]{
+    width:34px; height:34px; margin:-5px; border:none; cursor:pointer; background:none;
+  }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+
+  /* ---------- toast ---------- */
+  #toastWrap{
+    position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+    z-index:200; display:flex; flex-direction:column; gap:8px; align-items:center;
+  }
+  .toast{
+    background:var(--panel-raised); border:1px solid var(--gold);
+    color:var(--ink); font-size:13px; padding:9px 16px; border-radius:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    animation:toast-in .18s ease;
+  }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+
+  /* ---------- map custom bits ---------- */
+  .venue-pin{
+    width:16px; height:16px; border-radius:50% 50% 50% 0;
+    background:var(--gold-bright); border:2px solid #1c1408;
+    transform:rotate(-45deg);
+    box-shadow:0 0 0 2px rgba(0,0,0,0.35);
+  }
+  .vertex-dot{
+    width:10px; height:10px; border-radius:50%;
+    background:var(--gold-bright); border:2px solid #1c1408;
+  }
+  .leaflet-popup-content-wrapper{
+    background:var(--panel-raised); color:var(--ink);
+    border:1px solid var(--hairline); border-radius:4px;
+  }
+  .leaflet-popup-tip{ background:var(--panel-raised); }
+  .leaflet-popup-content{ font-family:var(--font-body); font-size:13px; margin:9px 12px; }
+  .leaflet-popup-content b{ color:var(--gold-bright); font-family:var(--font-display); font-weight:600; }
+  .leaflet-container{ font-family:var(--font-body); }
+  .leaflet-control-zoom a{
+    background:var(--panel-raised) !important; color:var(--ink) !important;
+    border-color:var(--hairline) !important;
+  }
+  .leaflet-control-zoom a:hover{ color:var(--gold-bright) !important; }
+  .leaflet-control-attribution{
+    background:rgba(13,11,16,0.75) !important; color:var(--ink-faint) !important;
+  }
+  .leaflet-control-attribution a{ color:var(--ink-dim) !important; }
+
+  #cursorHint{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    background:rgba(23,20,27,0.92); border:1px solid var(--gold);
+    color:var(--gold-bright); font-size:12.5px; padding:7px 14px; border-radius:20px;
+    display:none; z-index:15; pointer-events:none; white-space:nowrap;
+  }
+  #cursorHint.show{ display:block; }
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <span class="mark">&#10022;</span>
+      <h1>Belladonna Territories</h1>
+      <span class="sub">Draw boundary lines, then check any venue against them</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn ghost small" id="btnImport">Import</button>
+      <button class="btn ghost small" id="btnExport">Export GeoJSON</button>
+      <input type="file" id="fileImport" accept=".json,.geojson,application/geo+json,application/json" class="visually-hidden">
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar">
+
+      <div class="side-section">
+        <h2>Boundaries</h2>
+        <button class="btn primary block" id="btnNewTerritory">+ Draw a new territory</button>
+        <div id="drawBanner">
+          <span>Click the map to place points &middot; <span class="pt-count" id="ptCount">0</span> placed</span>
+        </div>
+        <p class="hint" id="drawHint">Double-click, or press Enter, to close the shape once you have at least 3 points. Press Esc to cancel.</p>
+      </div>
+
+      <div class="side-section">
+        <h2>Find a venue</h2>
+        <div class="search-row">
+          <input type="text" id="geoInput" placeholder="Address, city, or venue name">
+          <button class="btn small" id="btnGeoSearch">Find</button>
+        </div>
+        <div id="geoResults"></div>
+        <button class="btn ghost small block" id="btnPinMode" style="margin-top:8px;">Or drop a pin on the map</button>
+        <div id="lookupResult"></div>
+      </div>
+
+      <div class="side-section" style="flex:1 1 auto;">
+        <h2>Territories (<span id="terrCount">0</span>)</h2>
+        <div id="territoryList"></div>
+        <div class="empty-note" id="emptyNote">Nothing drawn yet &mdash; start with "Draw a new territory" above.</div>
+      </div>
+
+      <footer class="side-footer">
+        Location codes: state abbreviation + short region slug, e.g. <code style="font-family:var(--font-mono);">wa-southsound</code>, <code style="font-family:var(--font-mono);">or-portland</code>. This label is what your other apps store as <code style="font-family:var(--font-mono);">locationId</code>.
+        <br><br>
+        Everything here saves automatically to this browser. Use Export regularly to back it up.
+        <br><br>
+        <button class="clear-link" id="btnClearAll">Clear all territories</button>
+      </footer>
+
+    </aside>
+
+    <main id="mapWrap">
+      <div id="map"></div>
+      <div id="cursorHint"></div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalTitle">Name this territory</h3>
+    <div class="field">
+      <label for="modalLabel">Display name</label>
+      <input type="text" id="modalLabel" placeholder="South Sound, WA">
+      <div class="err" id="errLabel">Give this territory a name.</div>
+    </div>
+    <div class="field">
+      <label for="modalCode">Location code (locationId)</label>
+      <input type="text" id="modalCode" placeholder="wa-southsound" style="font-family:var(--font-mono);">
+      <div class="err" id="errCode">Enter a unique code.</div>
+    </div>
+    <div class="field">
+      <label>Color</label>
+      <div class="swatch-row" id="swatchRow"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modalCancel">Cancel</button>
+      <button class="btn primary" id="modalSave">Save territory</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     STATE
+  ============================================================ */
+  var STORAGE_KEY = 'belladonna-territories-v1';
+  var PALETTE = ['#c9a24b','#7a2334','#2e5c4e','#3b4c7a','#8a4b8a','#b4732b','#4b6e7a','#5c3b7a'];
+
+  var territories = [];      // {id, code, label, color, coords:[[lat,lng],...]}
+  var layers = {};           // territoryId -> {polygon:L.Polygon}
+  var mode = 'idle';         // idle | drawing | editing | venue
+  var drawPoints = [];
+  var drawLayerGroup = null; // temp polyline/polygon/markers while drawing
+  var editingId = null;
+  var editMarkers = [];
+  var selectedId = null;
+  var venueMarker = null;
+  var modalMode = null;      // 'create' | 'edit'
+  var modalTargetId = null;
+  var modalColor = PALETTE[0];
+  var map = null;
+
+  /* ============================================================
+     UTIL
+  ============================================================ */
+  function uid(){
+    return 't_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function slugify(str){
+    return String(str).toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g,'')
+      .replace(/\s+/g,'-')
+      .replace(/-+/g,'-')
+      .replace(/^-|-$/g,'');
+  }
+  function nextColor(){
+    return PALETTE[territories.length % PALETTE.length];
+  }
+  function toast(msg){
+    var wrap = document.getElementById('toastWrap');
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(function(){
+      el.style.transition = 'opacity .3s ease';
+      el.style.opacity = '0';
+      setTimeout(function(){ el.remove(); }, 320);
+    }, 2600);
+  }
+  function findTerritory(id){
+    for (var i=0;i<territories.length;i++){ if (territories[i].id === id) return territories[i]; }
+    return null;
+  }
+  function codeExists(code, exceptId){
+    var c = code.toLowerCase();
+    for (var i=0;i<territories.length;i++){
+      if (territories[i].code.toLowerCase() === c && territories[i].id !== exceptId) return true;
+    }
+    return false;
+  }
+
+  /* ============================================================
+     PERSISTENCE
+  ============================================================ */
+  function saveState(){
+    try{
+      var data = territories.map(function(t){
+        return { id:t.id, code:t.code, label:t.label, color:t.color, coords:t.coords };
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){
+      console.warn('Could not save to localStorage', e);
+      toast('Could not save — your browser storage may be full or disabled.');
+    }
+  }
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(function(t){
+        return t && typeof t.code === 'string' && Array.isArray(t.coords) && t.coords.length >= 3;
+      });
+    }catch(e){
+      console.warn('Could not read saved territories', e);
+      return [];
+    }
+  }
+
+  /* ============================================================
+     MAP INIT
+  ============================================================ */
+  function initMap(){
+    map = L.map('map', {
+      zoomControl:true,
+      attributionControl:true,
+      minZoom:3,
+      maxZoom:18
+    }).setView([47.22, -122.28], 10);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains:'abcd',
+      maxZoom:18
+    }).addTo(map);
+
+    map.on('click', onMapClick);
+    map.on('dblclick', onMapDblClick);
+
+    document.addEventListener('keydown', onKeyDown);
+  }
+
+  /* ============================================================
+     RENDER: polygons on map
+  ============================================================ */
+  function renderTerritoryLayer(t, interactive){
+    if (interactive === undefined) interactive = true;
+    if (layers[t.id] && layers[t.id].polygon){
+      map.removeLayer(layers[t.id].polygon);
+    }
+    var poly = L.polygon(t.coords, {
+      color: t.color,
+      weight: interactive ? 2 : 3,
+      fillColor: t.color,
+      fillOpacity: 0.16,
+      opacity: interactive ? 0.9 : 1,
+      interactive: interactive
+    }).addTo(map);
+    if (interactive){
+      poly.bindPopup('<b>' + escapeHtml(t.label) + '</b><br>' + escapeHtml(t.code));
+      poly.on('click', function(){
+        if (mode === 'idle') selectTerritory(t.id);
+      });
+    }
+    layers[t.id] = { polygon: poly };
+  }
+  function renderAllLayers(){
+    Object.keys(layers).forEach(function(id){
+      if (layers[id].polygon) map.removeLayer(layers[id].polygon);
+    });
+    layers = {};
+    territories.forEach(renderTerritoryLayer);
+  }
+
+  /* ============================================================
+     SIDEBAR: territory list
+  ============================================================ */
+  function renderList(){
+    var list = document.getElementById('territoryList');
+    var empty = document.getElementById('emptyNote');
+    document.getElementById('terrCount').textContent = territories.length;
+    list.innerHTML = '';
+    if (territories.length === 0){
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    territories.forEach(function(t){
+      var item = document.createElement('div');
+      item.className = 'terr-item' + (t.id === selectedId ? ' active' : '');
+      item.innerHTML =
+        '<span class="swatch" style="background:' + t.color + '"></span>' +
+        '<span class="terr-meta">' +
+          '<div class="terr-label">' + escapeHtml(t.label) + '</div>' +
+          '<div class="terr-code">' + escapeHtml(t.code) + '</div>' +
+        '</span>' +
+        '<span class="terr-actions">' +
+          '<button class="icon-btn" data-act="edit" title="Rename / recolor">&#9998;</button>' +
+          '<button class="icon-btn" data-act="shape" title="Edit boundary shape">&#9723;</button>' +
+          '<button class="icon-btn danger" data-act="delete" title="Delete">&#10005;</button>' +
+        '</span>';
+      item.addEventListener('click', function(e){
+        var actBtn = e.target.closest('[data-act]');
+        if (actBtn){
+          e.stopPropagation();
+          var act = actBtn.getAttribute('data-act');
+          if (act === 'edit') openModal('edit', t.id);
+          if (act === 'shape') startEditShape(t.id);
+          if (act === 'delete') deleteTerritory(t.id);
+          return;
+        }
+        selectTerritory(t.id);
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function selectTerritory(id){
+    selectedId = id;
+    renderList();
+    var t = findTerritory(id);
+    if (t && layers[id] && layers[id].polygon){
+      map.flyToBounds(layers[id].polygon.getBounds(), { padding:[40,40], maxZoom:14, duration:0.5 });
+      layers[id].polygon.openPopup(layers[id].polygon.getBounds().getCenter());
+    }
+  }
+
+  /* ============================================================
+     DRAWING A NEW TERRITORY
+  ============================================================ */
+  function startDraw(){
+    if (mode === 'drawing'){ cancelDraw(); return; }
+    exitEditShape();
+    exitVenueMode();
+    mode = 'drawing';
+    drawPoints = [];
+    drawLayerGroup = L.layerGroup().addTo(map);
+    document.getElementById('btnNewTerritory').textContent = 'Cancel drawing';
+    document.getElementById('drawBanner').classList.add('show');
+    document.getElementById('ptCount').textContent = '0';
+    setCursorHint('Click to place your first boundary point');
+    map.getContainer().style.cursor = 'crosshair';
+  }
+
+  function cancelDraw(){
+    mode = 'idle';
+    drawPoints = [];
+    if (drawLayerGroup){ map.removeLayer(drawLayerGroup); drawLayerGroup = null; }
+    document.getElementById('btnNewTerritory').textContent = '+ Draw a new territory';
+    document.getElementById('drawBanner').classList.remove('show');
+    hideCursorHint();
+    map.getContainer().style.cursor = '';
+  }
+
+  function addDrawPoint(latlng){
+    drawPoints.push([latlng.lat, latlng.lng]);
+    drawLayerGroup.clearLayers();
+    drawPoints.forEach(function(p){
+      L.circleMarker(p, { radius:4, color:'#e6c878', weight:2, fillColor:'#e6c878', fillOpacity:1 }).addTo(drawLayerGroup);
+    });
+    if (drawPoints.length === 1){
+      setCursorHint('Click to add the next point');
+    } else if (drawPoints.length === 2){
+      L.polyline(drawPoints, { color:'#e6c878', weight:2, dashArray:'4,5' }).addTo(drawLayerGroup);
+      setCursorHint('Double-click, or press Enter, to close the shape (3+ points needed)');
+    } else {
+      L.polygon(drawPoints, { color:'#e6c878', weight:2, dashArray:'4,5', fillColor:'#e6c878', fillOpacity:0.12 }).addTo(drawLayerGroup);
+    }
+    document.getElementById('ptCount').textContent = String(drawPoints.length);
+  }
+
+  function finishDraw(){
+    if (drawPoints.length < 3){
+      toast('Place at least 3 points to close a boundary.');
+      return;
+    }
+    mode = 'idle';
+    document.getElementById('btnNewTerritory').textContent = '+ Draw a new territory';
+    document.getElementById('drawBanner').classList.remove('show');
+    hideCursorHint();
+    map.getContainer().style.cursor = '';
+    if (drawLayerGroup){ map.removeLayer(drawLayerGroup); drawLayerGroup = null; }
+    openModal('create', null, drawPoints.slice());
+    drawPoints = [];
+  }
+
+  /* ============================================================
+     EDITING AN EXISTING SHAPE
+  ============================================================ */
+  function startEditShape(id){
+    cancelDraw();
+    exitVenueMode();
+    if (editingId) exitEditShape();
+    var t = findTerritory(id);
+    if (!t) return;
+    editingId = id;
+    mode = 'editing';
+    renderTerritoryLayer(t, false);
+    rebuildEditMarkers();
+    document.getElementById('btnNewTerritory').setAttribute('disabled','disabled');
+    setCursorHint('Drag points to reshape &middot; double-click a point to remove it &middot; click the outline to add one &middot; press Enter when done');
+    toast('Editing "' + t.label + '" — press Enter when done.');
+  }
+
+  function rebuildEditMarkers(){
+    editMarkers.forEach(function(m){ map.removeLayer(m); });
+    editMarkers = [];
+    var t = findTerritory(editingId);
+    if (!t) return;
+    t.coords.forEach(function(pt, idx){
+      var marker = L.marker(pt, {
+        draggable:true,
+        icon: L.divIcon({ className:'vertex-dot', iconSize:[10,10] })
+      }).addTo(map);
+      marker.on('drag', function(e){
+        t.coords[idx] = [e.target.getLatLng().lat, e.target.getLatLng().lng];
+        if (layers[t.id] && layers[t.id].polygon) layers[t.id].polygon.setLatLngs(t.coords);
+      });
+      marker.on('dragend', function(){ saveState(); });
+      marker.on('dblclick', function(e){
+        L.DomEvent.stop(e);
+        if (t.coords.length <= 3){
+          toast('A territory needs at least 3 points.');
+          return;
+        }
+        t.coords.splice(idx, 1);
+        if (layers[t.id] && layers[t.id].polygon) layers[t.id].polygon.setLatLngs(t.coords);
+        saveState();
+        rebuildEditMarkers();
+      });
+      marker.on('click', function(e){ L.DomEvent.stop(e); });
+      editMarkers.push(marker);
+    });
+  }
+
+  function insertVertexNear(latlng){
+    var t = findTerritory(editingId);
+    if (!t) return;
+    var clickPt = map.latLngToLayerPoint(latlng);
+    var best = { dist: Infinity, index: t.coords.length - 1 };
+    for (var i=0; i<t.coords.length; i++){
+      var a = map.latLngToLayerPoint(L.latLng(t.coords[i]));
+      var b = map.latLngToLayerPoint(L.latLng(t.coords[(i+1) % t.coords.length]));
+      var d = distToSegmentSq(clickPt, a, b);
+      if (d < best.dist){ best.dist = d; best.index = i; }
+    }
+    t.coords.splice(best.index + 1, 0, [latlng.lat, latlng.lng]);
+    if (layers[t.id] && layers[t.id].polygon) layers[t.id].polygon.setLatLngs(t.coords);
+    saveState();
+    rebuildEditMarkers();
+  }
+
+  function distToSegmentSq(p, a, b){
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var lenSq = dx*dx + dy*dy;
+    if (lenSq === 0) return (p.x-a.x)*(p.x-a.x) + (p.y-a.y)*(p.y-a.y);
+    var t = ((p.x-a.x)*dx + (p.y-a.y)*dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    var projX = a.x + t*dx, projY = a.y + t*dy;
+    return (p.x-projX)*(p.x-projX) + (p.y-projY)*(p.y-projY);
+  }
+
+  function exitEditShape(){
+    if (!editingId) return;
+    var t = findTerritory(editingId);
+    editMarkers.forEach(function(m){ map.removeLayer(m); });
+    editMarkers = [];
+    editingId = null;
+    if (mode === 'editing') mode = 'idle';
+    if (t) renderTerritoryLayer(t, true);
+    document.getElementById('btnNewTerritory').removeAttribute('disabled');
+    hideCursorHint();
+    saveState();
+  }
+
+  /* ============================================================
+     VENUE LOOKUP (point-in-polygon)
+  ============================================================ */
+  function toggleVenueMode(){
+    if (mode === 'venue'){ exitVenueMode(); return; }
+    cancelDraw();
+    exitEditShape();
+    mode = 'venue';
+    document.getElementById('btnPinMode').textContent = 'Click the map to place a pin';
+    document.getElementById('btnPinMode').classList.add('primary');
+    setCursorHint('Click anywhere on the map to check that spot');
+    map.getContainer().style.cursor = 'crosshair';
+  }
+  function exitVenueMode(){
+    if (mode === 'venue') mode = 'idle';
+    document.getElementById('btnPinMode').textContent = 'Or drop a pin on the map';
+    document.getElementById('btnPinMode').classList.remove('primary');
+    hideCursorHint();
+    map.getContainer().style.cursor = '';
+  }
+
+  function pointInPolygon(lat, lng, coords){
+    var inside = false;
+    for (var i=0, j=coords.length-1; i<coords.length; j=i++){
+      var yi = coords[i][0], xi = coords[i][1];
+      var yj = coords[j][0], xj = coords[j][1];
+      var intersect = ((yi > lat) !== (yj > lat)) &&
+        (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function placeVenueMarker(lat, lng, labelText){
+    if (venueMarker) map.removeLayer(venueMarker);
+    venueMarker = L.marker([lat,lng], {
+      icon: L.divIcon({ className:'venue-pin', iconSize:[16,16], iconAnchor:[8,15] })
+    }).addTo(map);
+    if (labelText) venueMarker.bindPopup(escapeHtml(labelText)).openPopup();
+
+    var matches = territories.filter(function(t){ return pointInPolygon(lat, lng, t.coords); });
+    var box = document.getElementById('lookupResult');
+    box.className = 'show';
+    if (matches.length === 0){
+      box.classList.add('state-out');
+      box.innerHTML = 'No drawn territory covers this spot yet. Draw one here, or extend an existing boundary.';
+    } else if (matches.length === 1){
+      box.classList.add('state-in');
+      box.innerHTML = 'Falls under <b>' + escapeHtml(matches[0].label) + '</b> &mdash; <code>' + escapeHtml(matches[0].code) + '</code>';
+    } else {
+      box.classList.add('state-multi');
+      box.innerHTML = 'This spot falls inside more than one territory: ' +
+        matches.map(function(m){ return '<b>' + escapeHtml(m.label) + '</b> (<code>' + escapeHtml(m.code) + '</code>)'; }).join(', ') +
+        '. You may want to adjust the overlap.';
+    }
+  }
+
+  /* ============================================================
+     GEOCODE SEARCH (OpenStreetMap Nominatim)
+  ============================================================ */
+  function geocodeSearch(query){
+    query = query.trim();
+    if (!query) return;
+    var resultsBox = document.getElementById('geoResults');
+    resultsBox.innerHTML = '<div class="hint">Searching&hellip;</div>';
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=5&q=' + encodeURIComponent(query);
+    fetch(url, { headers: { 'Accept':'application/json' } })
+      .then(function(res){
+        if (!res.ok) throw new Error('Search failed');
+        return res.json();
+      })
+      .then(function(data){
+        resultsBox.innerHTML = '';
+        if (!data || data.length === 0){
+          resultsBox.innerHTML = '<div class="hint">No matches. Try a fuller address, or drop a pin instead.</div>';
+          return;
+        }
+        data.forEach(function(place){
+          var btn = document.createElement('button');
+          btn.className = 'geo-result';
+          btn.textContent = place.display_name;
+          btn.addEventListener('click', function(){
+            var lat = parseFloat(place.lat), lng = parseFloat(place.lon);
+            map.flyTo([lat,lng], 14, { duration:0.5 });
+            placeVenueMarker(lat, lng, place.display_name);
+            resultsBox.innerHTML = '';
+          });
+          resultsBox.appendChild(btn);
+        });
+      })
+      .catch(function(){
+        resultsBox.innerHTML = '<div class="hint">Search unavailable right now (needs an internet connection). Try dropping a pin instead.</div>';
+      });
+  }
+
+  /* ============================================================
+     MAP CLICK ROUTING
+  ============================================================ */
+  function onMapClick(e){
+    if (mode === 'drawing'){
+      addDrawPoint(e.latlng);
+    } else if (mode === 'editing'){
+      insertVertexNear(e.latlng);
+    } else if (mode === 'venue'){
+      placeVenueMarker(e.latlng.lat, e.latlng.lng, null);
+    }
+  }
+  function onMapDblClick(e){
+    if (mode === 'drawing'){
+      L.DomEvent.stop(e);
+      finishDraw();
+    }
+  }
+  function onKeyDown(e){
+    if (e.key === 'Escape'){
+      if (document.getElementById('modalBackdrop').classList.contains('open')){ closeModal(); return; }
+      if (mode === 'drawing') cancelDraw();
+      else if (editingId) exitEditShape();
+      else if (mode === 'venue') exitVenueMode();
+    } else if (e.key === 'Enter'){
+      if (document.getElementById('modalBackdrop').classList.contains('open')) return;
+      if (mode === 'drawing') finishDraw();
+      else if (editingId) exitEditShape();
+    }
+  }
+
+  function setCursorHint(text){
+    var el = document.getElementById('cursorHint');
+    el.textContent = text;
+    el.classList.add('show');
+  }
+  function hideCursorHint(){
+    document.getElementById('cursorHint').classList.remove('show');
+  }
+
+  /* ============================================================
+     MODAL (create / edit territory metadata)
+  ============================================================ */
+  function buildSwatchRow(){
+    var row = document.getElementById('swatchRow');
+    row.innerHTML = '';
+    PALETTE.forEach(function(c){
+      var sw = document.createElement('div');
+      sw.className = 'swatch-opt' + (c === modalColor ? ' selected' : '');
+      sw.style.background = c;
+      sw.addEventListener('click', function(){ modalColor = c; buildSwatchRow(); });
+      row.appendChild(sw);
+    });
+    var custom = document.createElement('label');
+    custom.className = 'swatch-custom';
+    custom.style.background = PALETTE.indexOf(modalColor) === -1 ? modalColor : 'transparent';
+    custom.innerHTML = '<input type="color" value="' + modalColor + '">';
+    custom.querySelector('input').addEventListener('input', function(e){
+      modalColor = e.target.value;
+      buildSwatchRow();
+    });
+    row.appendChild(custom);
+  }
+
+  function openModal(kind, targetId, newCoords){
+    modalMode = kind;
+    modalTargetId = targetId;
+    document.getElementById('errLabel').classList.remove('show');
+    document.getElementById('errCode').classList.remove('show');
+    if (kind === 'create'){
+      document.getElementById('modalTitle').textContent = 'Name this territory';
+      document.getElementById('modalLabel').value = '';
+      document.getElementById('modalCode').value = '';
+      delete document.getElementById('modalCode').dataset.touched;
+      modalColor = nextColor();
+      modalPendingCoords = newCoords;
+    } else {
+      var t = findTerritory(targetId);
+      document.getElementById('modalTitle').textContent = 'Edit territory';
+      document.getElementById('modalLabel').value = t.label;
+      document.getElementById('modalCode').value = t.code;
+      document.getElementById('modalCode').dataset.touched = '1';
+      modalColor = t.color;
+      modalPendingCoords = null;
+    }
+    buildSwatchRow();
+    document.getElementById('modalBackdrop').classList.add('open');
+    document.getElementById('modalLabel').focus();
+  }
+  var modalPendingCoords = null;
+
+  function closeModal(){
+    document.getElementById('modalBackdrop').classList.remove('open');
+    if (modalMode === 'create' && modalPendingCoords){
+      // user backed out of naming a freshly-drawn shape; discard it
+      modalPendingCoords = null;
+    }
+    modalMode = null;
+    modalTargetId = null;
+  }
+
+  function submitModal(){
+    var label = document.getElementById('modalLabel').value.trim();
+    var code = document.getElementById('modalCode').value.trim();
+    var okLabel = label.length > 0;
+    var okCode = code.length > 0 && !codeExists(code, modalMode === 'edit' ? modalTargetId : null);
+    document.getElementById('errLabel').classList.toggle('show', !okLabel);
+    var errCodeEl = document.getElementById('errCode');
+    if (code.length === 0){
+      errCodeEl.textContent = 'Enter a unique code.';
+      errCodeEl.classList.add('show');
+    } else if (!okCode){
+      errCodeEl.textContent = 'That code is already used by another territory.';
+      errCodeEl.classList.add('show');
+    } else {
+      errCodeEl.classList.remove('show');
+    }
+    if (!okLabel || !okCode) return;
+
+    if (modalMode === 'create'){
+      var t = {
+        id: uid(),
+        code: code,
+        label: label,
+        color: modalColor,
+        coords: modalPendingCoords
+      };
+      territories.push(t);
+      renderTerritoryLayer(t);
+      selectedId = t.id;
+      toast('Territory "' + label + '" saved.');
+    } else {
+      var existing = findTerritory(modalTargetId);
+      existing.label = label;
+      existing.code = code;
+      existing.color = modalColor;
+      renderTerritoryLayer(existing);
+      toast('Territory updated.');
+    }
+    saveState();
+    renderList();
+    document.getElementById('modalBackdrop').classList.remove('open');
+    modalMode = null;
+    modalTargetId = null;
+    modalPendingCoords = null;
+  }
+
+  /* ============================================================
+     DELETE / CLEAR
+  ============================================================ */
+  function deleteTerritory(id){
+    var t = findTerritory(id);
+    if (!t) return;
+    var ok = window.confirm('Delete "' + t.label + '"? This cannot be undone.');
+    if (!ok) return;
+    if (layers[id] && layers[id].polygon) map.removeLayer(layers[id].polygon);
+    delete layers[id];
+    territories = territories.filter(function(x){ return x.id !== id; });
+    if (selectedId === id) selectedId = null;
+    if (editingId === id) exitEditShape();
+    saveState();
+    renderList();
+    toast('Territory deleted.');
+  }
+
+  function clearAll(){
+    if (territories.length === 0) return;
+    var ok = window.confirm('Delete ALL ' + territories.length + ' territories? This cannot be undone. Consider exporting first.');
+    if (!ok) return;
+    territories = [];
+    renderAllLayers();
+    selectedId = null;
+    saveState();
+    renderList();
+    toast('All territories cleared.');
+  }
+
+  /* ============================================================
+     IMPORT / EXPORT
+  ============================================================ */
+  function ringCoords(coords){
+    var ring = coords.map(function(p){ return [p[1], p[0]]; }); // lat,lng -> lng,lat
+    var first = ring[0], last = ring[ring.length-1];
+    if (first[0] !== last[0] || first[1] !== last[1]) ring.push(first);
+    return ring;
+  }
+
+  function exportGeoJSON(){
+    if (territories.length === 0){
+      toast('Nothing to export yet.');
+      return;
+    }
+    var fc = {
+      type: 'FeatureCollection',
+      features: territories.map(function(t){
+        return {
+          type: 'Feature',
+          properties: { locationId: t.code, label: t.label, color: t.color },
+          geometry: { type:'Polygon', coordinates: [ringCoords(t.coords)] }
+        };
+      })
+    };
+    var blob = new Blob([JSON.stringify(fc, null, 2)], { type:'application/geo+json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = 'belladonna-territories-' + stamp + '.geojson';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('Exported ' + territories.length + ' territories.');
+  }
+
+  function importGeoJSON(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var data;
+      try{
+        data = JSON.parse(e.target.result);
+      }catch(err){
+        toast('That file is not valid JSON.');
+        return;
+      }
+      var features = (data && data.type === 'FeatureCollection') ? data.features : (Array.isArray(data) ? data : null);
+      if (!features || !Array.isArray(features)){
+        toast('Could not find territory shapes in that file.');
+        return;
+      }
+      var added = 0, renamed = 0;
+      features.forEach(function(f){
+        if (!f || !f.geometry || f.geometry.type !== 'Polygon') return;
+        var ring = f.geometry.coordinates && f.geometry.coordinates[0];
+        if (!ring || ring.length < 4) return;
+        var coords = ring.slice(0, ring.length-1).map(function(pos){ return [pos[1], pos[0]]; });
+        if (coords.length < 3) return;
+        var props = f.properties || {};
+        var code = String(props.locationId || props.code || slugify(props.label || 'territory') || uid());
+        var label = String(props.label || code);
+        var color = props.color || nextColor();
+        if (codeExists(code, null)){
+          code = code + '-imported';
+          renamed++;
+        }
+        var t = { id: uid(), code: code, label: label, color: color, coords: coords };
+        territories.push(t);
+        renderTerritoryLayer(t);
+        added++;
+      });
+      if (added === 0){
+        toast('No valid territory shapes found in that file.');
+      } else {
+        saveState();
+        renderList();
+        toast('Imported ' + added + ' territor' + (added===1?'y':'ies') + (renamed ? ' (' + renamed + ' renamed to avoid code clashes)' : '') + '.');
+        if (map && Object.keys(layers).length){
+          var group = L.featureGroup(territories.map(function(t){ return layers[t.id].polygon; }));
+          map.flyToBounds(group.getBounds(), { padding:[40,40], duration:0.5 });
+        }
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ============================================================
+     WIRE UP UI
+  ============================================================ */
+  function init(){
+    initMap();
+    territories = loadState();
+    renderAllLayers();
+    renderList();
+
+    document.getElementById('btnNewTerritory').addEventListener('click', startDraw);
+    document.getElementById('btnExport').addEventListener('click', exportGeoJSON);
+    document.getElementById('btnImport').addEventListener('click', function(){
+      document.getElementById('fileImport').click();
+    });
+    document.getElementById('fileImport').addEventListener('change', function(e){
+      var file = e.target.files && e.target.files[0];
+      if (file) importGeoJSON(file);
+      e.target.value = '';
+    });
+    document.getElementById('btnPinMode').addEventListener('click', toggleVenueMode);
+    document.getElementById('btnGeoSearch').addEventListener('click', function(){
+      geocodeSearch(document.getElementById('geoInput').value);
+    });
+    document.getElementById('geoInput').addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); geocodeSearch(this.value); }
+    });
+    document.getElementById('btnClearAll').addEventListener('click', clearAll);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    document.getElementById('modalSave').addEventListener('click', submitModal);
+    document.getElementById('modalBackdrop').addEventListener('mousedown', function(e){
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('modalLabel').addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); submitModal(); }
+    });
+    document.getElementById('modalCode').addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); submitModal(); }
+    });
+    document.getElementById('modalLabel').addEventListener('input', function(){
+      var codeField = document.getElementById('modalCode');
+      if (modalMode === 'create' && !codeField.dataset.touched){
+        codeField.value = slugify(this.value);
+      }
+    });
+    document.getElementById('modalCode').addEventListener('input', function(){
+      this.dataset.touched = '1';
+    });
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
