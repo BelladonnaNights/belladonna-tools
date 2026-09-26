@@ -945,6 +945,7 @@
       </div>
       <div id="lib-type-pills" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;"></div>
       <button class="btn btn-sm btn-ghost" onclick="toggleSortAZ('library')" id="library-az-btn">A–Z</button>
+      <button class="btn btn-sm btn-ghost" onclick="syncAllCategoriesToSpokes()" title="Link/refresh every Trivia or Bingo category with its record in the Trivia Admin or Bingo app">Sync to Trivia/Bingo</button>
       <button class="btn btn-sm" onclick="openAddCategoryModal()">+ Add</button>
     </div>
     <div id="search-results-meta" class="results-meta" style="display:none;"></div>
@@ -1829,6 +1830,10 @@ import {
   query, orderBy, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getDatabase, ref as rtdbRef, get as rtdbGet, set as rtdbSet,
+  update as rtdbUpdate, push as rtdbPush
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // ═══════════════════════════════════════════════
 // FIREBASE INIT
@@ -1839,12 +1844,14 @@ const firebaseConfig = {
   projectId: "belladonna-hq",
   storageBucket: "belladonna-hq.firebasestorage.app",
   messagingSenderId: "1021873183587",
-  appId: "1:1021873183587:web:def283bb7b5ca48e4f9156"
+  appId: "1:1021873183587:web:def283bb7b5ca48e4f9156",
+  databaseURL: "https://belladonna-hq-default-rtdb.firebaseio.com"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const rtdb = getDatabase(app);
 const catsCol = collection(db, 'venueMenuCategories');
 const nightsCol = collection(db, 'venueMenuNights');
 const nightTagsDoc = doc(db, 'venueMenuConfig', 'nightTags');
@@ -1995,6 +2002,80 @@ async function saveCat(cat) {
       : e.message || 'Firestore write failed');
   }
 }
+
+// ═══════════════════════════════════════════════
+// TRIVIA ADMIN / BINGO APP LINK SYNC
+// ─────────────────────────────────────────────
+// A category here can also live as its own native record in Trivia Admin
+// (trivia/categories, RTDB) or the Bingo app (bingo/landing/categories,
+// RTDB) — those apps run their own gameplay off those native records, so
+// this never deletes or replaces them. Instead: the first time a Trivia-
+// or Bingo-typed category is saved here without a link yet, a companion
+// record is created over there and the two are linked (triviaCatId /
+// bingoCatId here, vmCatId on the native record). Every later save here
+// pushes name/image/tags down onto the linked record. Trivia Admin and
+// the Bingo app each carry the matching push-up half on their own end.
+function spokeKindFor(cat) {
+  const t = (Array.isArray(cat.type) ? cat.type.join(',') : String(cat.type || '')).toLowerCase();
+  if (t.includes('bingo')) return 'bingo';
+  if (t.includes('trivia')) return 'trivia';
+  return null;
+}
+async function syncCategoryToSpoke(cat) {
+  const kind = spokeKindFor(cat);
+  if (!kind) return;
+  const image = cat.bannerData || cat.image || cat.miniGameImage || '';
+  const tagsStr = Array.isArray(cat.tags) ? cat.tags.join(', ') : (cat.tags || '');
+  try {
+    if (kind === 'trivia') {
+      if (cat.triviaCatId) {
+        await rtdbUpdate(rtdbRef(rtdb, 'trivia/categories/' + cat.triviaCatId), {
+          name: cat.name, genre: tagsStr, bgImage: image, vmCatId: cat._id, updatedAt: Date.now()
+        });
+      } else {
+        const newRef = rtdbPush(rtdbRef(rtdb, 'trivia/categories'));
+        await rtdbSet(newRef, {
+          name: cat.name, genre: tagsStr, bgImage: image, type: 'trivia',
+          vmCatId: cat._id, createdAt: Date.now(), updatedAt: Date.now()
+        });
+        cat.triviaCatId = newRef.key;
+        await updateDoc(doc(db, 'venueMenuCategories', cat._id), { triviaCatId: newRef.key });
+      }
+    } else if (kind === 'bingo') {
+      const genresArr = tagsStr ? tagsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (cat.bingoCatId) {
+        await rtdbUpdate(rtdbRef(rtdb, 'bingo/landing/categories/' + cat.bingoCatId), {
+          title: cat.name, image, genre: genresArr[0] || '', genres: genresArr, vmCatId: cat._id
+        });
+      } else {
+        const newRef = rtdbPush(rtdbRef(rtdb, 'bingo/landing/categories'));
+        await rtdbSet(newRef, {
+          id: newRef.key, title: cat.name, image, genre: genresArr[0] || '', genres: genresArr,
+          status: 'live', order: 0, vmCatId: cat._id
+        });
+        cat.bingoCatId = newRef.key;
+        await updateDoc(doc(db, 'venueMenuCategories', cat._id), { bingoCatId: newRef.key });
+      }
+    }
+  } catch(e) {
+    console.error('Spoke app sync failed for', cat.name, e);
+  }
+}
+// One-time catch-up for categories that existed before this sync existed —
+// links every eligible category that doesn't have a spoke record yet, and
+// pushes a refresh to ones that do. Safe to run repeatedly.
+async function syncAllCategoriesToSpokes() {
+  const eligible = categories.filter(c => spokeKindFor(c));
+  if (!eligible.length) { toast('No Trivia or Bingo categories to sync.', 'error'); return; }
+  let n = 0;
+  for (const cat of eligible) {
+    await syncCategoryToSpoke(cat);
+    n++;
+  }
+  toast(`Synced ${n} categor${n===1?'y':'ies'} to Trivia Admin / Bingo.`);
+  renderLibrary();
+}
+window.syncAllCategoriesToSpokes = syncAllCategoriesToSpokes;
 
 async function deleteCat(cat) {
   if (cat._id) await deleteDoc(doc(db, 'venueMenuCategories', cat._id));
@@ -2470,7 +2551,13 @@ async function saveCategoryFromModal() {
 
   const isEdit = editingCatIndex >= 0;
   const existing = isEdit ? categories[editingCatIndex] : {};
+  // Spread the existing doc's fields first — saveCat() below does a full
+  // setDoc() overwrite, so any field this modal doesn't know about
+  // (plannerTier, linked, pushedFromPlannerId, triviaCatId, bingoCatId,
+  // pairsWith, timesUsed, lastUsedDate, bingoData…) would otherwise be
+  // silently erased on every ordinary edit from this screen.
   const cat = {
+    ...existing,
     ...(existing._id ? { _id: existing._id } : {}),
     name,
     type: document.getElementById('cat-type').value.trim(),
@@ -2492,6 +2579,7 @@ async function saveCategoryFromModal() {
     if (isEdit) categories[editingCatIndex] = cat;
     else categories.push(cat);
     toast(isEdit ? 'Category updated' : 'Category added');
+    syncCategoryToSpoke(cat); // fire-and-forget — don't block the modal on Trivia Admin/Bingo's own DB
   } catch(e) {
     toast(e.message || 'Save failed — check connection', 'error'); return;
   }
