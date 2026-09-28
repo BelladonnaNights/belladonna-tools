@@ -71,12 +71,13 @@ input[type=date]{color-scheme:dark}
 /* Payment panel (opens inside the card) */
 .ppanel{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);animation:rise .25s both}
 .ppanel .pm{font-family:'Cinzel',serif;font-weight:700;color:var(--gold-light);letter-spacing:.08em;font-size:.95rem;margin-bottom:12px}
-.ppanel .pn{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;font-size:.95rem;word-break:break-all}
+.ppanel .pn{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;font-size:.95rem}
+.ppanel .pn span{min-width:0;overflow-wrap:anywhere}
 .ppanel .note{font-family:'EB Garamond',serif;font-style:italic;color:var(--muted);font-size:1.02rem}
 .ppanel .btn{display:inline-block;margin-top:12px;padding:9px 16px;border-radius:10px;border:1px solid var(--gold-dark);background:transparent;color:var(--gold-light);
   font:700 .75rem 'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
 .ppanel .btn:hover{background:var(--gold);color:var(--black)}
-.ppanel .copy{margin:0;padding:5px 10px;font-size:.68rem}
+.ppanel .copy{margin:0;padding:5px 10px;font-size:.68rem;white-space:nowrap;flex:none}
 
 .msg{grid-column:1/-1;text-align:center;padding:50px 10px;font-family:'EB Garamond',serif;font-style:italic;font-size:1.3rem;color:var(--muted)}
 .foot{text-align:center;font-size:.78rem;color:var(--muted);margin-top:30px}
@@ -212,13 +213,25 @@ function linkFor(p){
   if (p.method === "paypal") { return /^[\w.-]+$/.test(name) ? {url: "https://paypal.me/" + encodeURIComponent(name)} : null; }
   return null;
 }
+/* Phones only hand a link to the Venmo app when it is the public share link (venmo.com/u/name).
+   The web-account address (account.venmo.com/u/name) always opens the website sign-in, so rewrite it. */
+function appFriendly(url){
+  try {
+    const u = new URL(url);
+    if (/(^|\.)venmo\.com$/i.test(u.hostname)) {
+      const m = u.pathname.match(/^\/u\/([\w.-]+)\/?$/);
+      if (m) return "https://venmo.com/u/" + encodeURIComponent(m[1]);
+    }
+  } catch (e) {}
+  return url;
+}
 const iconOf = m => ICONS[m] || ICONS.other;
 const svg = ic => `<svg viewBox="0 0 24 24" aria-hidden="true">${ic.svg}</svg>`;
 
 function panelHTML(h, idx){
   const p = (h.payments || [])[idx]; if (!p) return "";
   const ic = iconOf(p.method), name = String(p.name || "").trim();
-  const lk = safeUrl(p.link) ? {url: safeUrl(p.link)} : linkFor(p);
+  const lk = safeUrl(p.link) ? {url: appFriendly(safeUrl(p.link))} : linkFor(p);
   let body = "";
   if (name) body += `<div class="pn"><span>${esc(name)}</span><button type="button" class="btn copy" data-copy="${esc(name)}">Copy</button></div>`;
   if (p.method === "cash" && !name && !lk) body += `<div class="note">Cash tips are welcome. Find ${esc(h.name)} at the venue.</div>`;
@@ -283,9 +296,14 @@ $("grid").addEventListener("click", e => {
   }
   const b = e.target.closest(".pay button"); if (!b) return;
   const id = b.dataset.host, i = +b.dataset.i;
+  const others = Object.keys(OPEN).filter(k => k !== id && OPEN[k] != null);
+  others.forEach(k => OPEN[k] = null);
   OPEN[id] = OPEN[id] === i ? null : i;
-  const h = HOSTS.find(x => x.id === id), card = b.closest(".card");
-  if (h && card) card.outerHTML = cardHTML(h, 0, false);
+  [id].concat(others).forEach(k => {
+    const h = HOSTS.find(x => x.id === k);
+    const card = [...$("grid").children].find(c => c.dataset && c.dataset.id === k);
+    if (h && card) card.outerHTML = cardHTML(h, 0, false);
+  });
 });
 function fallbackCopy(txt, done){
   try { const t = document.createElement("textarea"); t.value = txt; t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); done(); } catch (e) {}
