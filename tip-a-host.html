@@ -71,7 +71,6 @@ input[type=date]{color-scheme:dark}
 /* Payment panel (opens inside the card) */
 .ppanel{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);animation:rise .25s both}
 .ppanel .pm{font-family:'Cinzel',serif;font-weight:700;color:var(--gold-light);letter-spacing:.08em;font-size:.95rem;margin-bottom:12px}
-.ppanel .qr{display:block;width:100%;max-width:190px;aspect-ratio:1/1;object-fit:contain;margin:0 auto 12px;background:#fff;padding:8px;border-radius:12px}
 .ppanel .pn{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:500;font-size:.95rem;word-break:break-all}
 .ppanel .note{font-family:'EB Garamond',serif;font-style:italic;color:var(--muted);font-size:1.02rem}
 .ppanel .btn{display:inline-block;margin-top:12px;padding:9px 16px;border-radius:10px;border:1px solid var(--gold-dark);background:transparent;color:var(--gold-light);
@@ -191,8 +190,8 @@ const writeCache = d => { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d
 function demoData(){
   return {
     hosts: [
-      {id:"d1", name:"Ahnna",  photo:"", payments:[{method:"venmo",name:"@demo-ahnna",qr:""},{method:"cashapp",name:"$demoahnna",qr:""},{method:"cash",name:"",qr:""}]},
-      {id:"d2", name:"Eddy",   photo:"", payments:[{method:"paypal",name:"demoeddy",qr:""},{method:"zelle",name:"eddy@example.com",qr:""}]},
+      {id:"d1", name:"Ahnna",  photo:"", payments:[{method:"venmo",name:"AhnnaAvenues",link:"https://venmo.com/u/AhnnaAvenues"},{method:"cashapp",name:"$demoahnna",link:""},{method:"cash",name:"",link:""}]},
+      {id:"d2", name:"Eddy",   photo:"", payments:[{method:"paypal",name:"demoeddy",link:""},{method:"zelle",name:"eddy@example.com",link:""}]},
       {id:"d3", name:"Miguel", photo:"", payments:[]}
     ],
     shifts: [
@@ -218,12 +217,12 @@ const svg = ic => `<svg viewBox="0 0 24 24" aria-hidden="true">${ic.svg}</svg>`;
 
 function panelHTML(h, idx){
   const p = (h.payments || [])[idx]; if (!p) return "";
-  const ic = iconOf(p.method), name = String(p.name || "").trim(), qr = safeUrl(p.qr), lk = linkFor(p);
+  const ic = iconOf(p.method), name = String(p.name || "").trim();
+  const lk = safeUrl(p.link) ? {url: safeUrl(p.link)} : linkFor(p);
   let body = "";
-  if (qr) body += `<img class="qr" src="${esc(qr)}" alt="${esc(ic.label)} QR code for ${esc(h.name)}" loading="lazy" onerror="this.style.display='none'">`;
   if (name) body += `<div class="pn"><span>${esc(name)}</span><button type="button" class="btn copy" data-copy="${esc(name)}">Copy</button></div>`;
-  if (p.method === "cash" && !name && !qr) body += `<div class="note">Cash tips are welcome. Find ${esc(h.name)} at the venue.</div>`;
-  if (lk) body += `<a class="btn" href="${esc(lk.url)}" target="_blank" rel="noopener">Open ${esc(ic.label)}</a>`;
+  if (p.method === "cash" && !name && !lk) body += `<div class="note">Cash tips are welcome. Find ${esc(h.name)} at the venue.</div>`;
+  if (lk) body += `<a class="btn" href="${esc(lk.url)}" target="_blank" rel="noopener">${p.method === "other" ? "Open payment link" : "Pay with " + esc(ic.label)}</a>`;
   if (!body) body = `<div class="note">Ask ${esc(h.name)} in person.</div>`;
   return `<div class="ppanel"><div class="pm">${esc(p.method === "other" ? "Tip" : ic.label)}</div>${body}</div>`;
 }
