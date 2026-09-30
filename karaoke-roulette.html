@@ -519,6 +519,45 @@ body::before{
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px;}
 
+/* Secret category picker — blends into left edge of drum */
+.cat-secret-select{
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:18px;
+  opacity:0.0;
+  cursor:pointer;
+  z-index:15;
+  background:transparent;
+  border:none;
+  color:transparent;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.cat-secret-select:hover{
+  opacity:1;
+  width:auto;
+  background:rgba(8,8,6,.97);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  color:var(--text2);
+  font-family:'DM Sans',sans-serif;
+  font-size:.82rem;
+  padding:4px 8px;
+  outline:none;
+  cursor:pointer;
+  left:2px;
+  top:50%;
+  bottom:auto;
+  transform:translateY(-50%);
+  min-width:160px;
+  box-shadow:0 4px 20px rgba(0,0,0,.8);
+}
+.cat-secret-select option{
+  background:#0a0a06;
+  color:var(--text2);
+  padding:4px 8px;
+}
+
 /* Winner slot highlight — shown during the 5s dramatic pause */
 .drum-slot.slot-winner{
   background:linear-gradient(135deg,#3a2e00,#4e3e00,#3a2e00) !important;
@@ -630,9 +669,12 @@ body::before{
     <!-- WHEEL 1 -->
     <div class="wheel-unit">
       <div class="wheel-unit-lbl">Category</div>
-      <div class="drum-shell">
+      <div class="drum-shell" style="position:relative;">
         <div class="bulb-strip" id="b1L"></div>
-        <div class="drum-outer">
+        <div class="drum-outer" style="position:relative;">
+          <select id="catSelect" class="cat-secret-select" onchange="window.secretPickCat(this.value)" title="Select category">
+            <option value="">—</option>
+          </select>
           <div class="drum-clip"><div class="drum" id="drum1"></div></div>
           <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
           <div class="drum-win"></div>
@@ -769,7 +811,6 @@ body::before{
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export HTML
       </button>
-      <button class="gbtn danger" id="clearAllBtn">Clear All</button>
       <button class="gbtn" id="adminDoneBtn">Done</button>
     </div>
   </div>
@@ -1103,6 +1144,9 @@ function buildDrum(n, items) {
   const startY = -Math.floor(VIS / 2) * getSlotH();
   drumY[n] = startY;
   strip.style.transform = `translateY(${startY}px)`;
+
+  // Keep secret category picker in sync
+  if (n === 1) refreshCatSelect();
 }
 
 /* Given the current translateY of strip n, which item index is centred? */
@@ -1187,6 +1231,28 @@ function spinDrum(n, items, cb) {
       strip.style.transform = `translateY(${targetY}px)`;
       animId = null;
       stopBulbs();
+
+      // Reset strip position to prevent accumulated drift causing blank drum.
+      // Find which item is centred, then reposition to show same item in rep 0.
+      // Visually identical — just moves the raw translateY back to a small number.
+      {
+        const sh    = Math.round(getSlotH());
+        const totalSlots = items.length * REPS;
+        // Absolute slot at centre after snap
+        const cPx   = -targetY + Math.floor(VIS / 2) * sh;
+        const absSlot = Math.round(cPx / sh);
+        // Equivalent slot in the first rep: same item, low index
+        const itemIdx = ((absSlot % items.length) + items.length) % items.length;
+        // Place that item at centre using rep 1 (second copy) to keep some buffer
+        const resetSlot = items.length + itemIdx;
+        const resetY    = -(resetSlot * sh - Math.floor(VIS / 2) * sh);
+        // Teleport strip instantly (no transition) then restore
+        strip.style.transition = 'none';
+        strip.style.transform  = `translateY(${resetY}px)`;
+        drumY[n] = resetY;
+        // Force reflow so next spin doesn't see the old transform
+        strip.offsetHeight;
+      }
 
       // Identify the winning slot element and highlight it
       const landed = centredIndex(n, items, slotH);
@@ -1286,6 +1352,38 @@ function flashAllBulbs() {
 /* ═══════════════════════════════════════════════════════
    PHASE MANAGEMENT
    ═══════════════════════════════════════════════════════ */
+/* Populate the secret category picker whenever cats changes */
+function refreshCatSelect() {
+  const sel = document.getElementById('catSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— pick —</option>' +
+    cats.map(c => `<option value="${esc(c)}"${c===cur?' selected':''}>${esc(c)}</option>`).join('');
+}
+
+window.secretPickCat = function(cat) {
+  if (!cat || spinning) return;
+  if (phase === 2) resetPhase2();
+  // Instantly position drum1 to show the chosen category centred, no spin
+  const items = cats;
+  const idx   = items.indexOf(cat);
+  if (idx < 0) return;
+  const strip  = document.getElementById('drum1');
+  const sh     = Math.round(getSlotH());
+  // Use rep 1 so there's buffer around it
+  const slot   = items.length + idx;
+  const newY   = -(slot * sh - Math.floor(VIS / 2) * sh);
+  strip.style.transition = 'none';
+  strip.style.transform  = `translateY(${newY}px)`;
+  strip.offsetHeight;
+  drumY[1] = newY;
+  // Trigger the same callback as a normal spin landing
+  spinning = false;
+  chosenCat = cat;
+  unlockW2();
+  check();
+};
+
 function unlockW2() {
   phase = 2;
   document.getElementById('pd1').className = 'pdot done';
@@ -1385,7 +1483,6 @@ function wireAdminButtons() {
 
   // Footer
   document.getElementById('exportBtn').addEventListener('click', exportHTML);
-  document.getElementById('clearAllBtn').addEventListener('click', adminClearAll);
 }
 
 function openAdminPanel() {
@@ -1641,13 +1738,6 @@ function adminBulkClear() {
   document.getElementById('bulkTA').value = '';
 }
 
-function adminClearAll() {
-  if (!confirm('Clear ALL categories and songs? This cannot be undone.')) return;
-  cats = []; songMap = {}; adminCatSel = null;
-  renderAdminCatList(); renderAdminPane();
-  buildDrum(1, []); resetPhase2();
-  saveData(); check();
-}
 
 /* ═══════════════════════════════════════════════════════
    EXPORT — bake current cats/songMap into the HTML file
@@ -1722,7 +1812,6 @@ window.adminEditSong  = adminEditSong;
 window.selectAdminCat = selectAdminCat;
 window.adminBulkImport= adminBulkImport;
 window.adminBulkClear = adminBulkClear;
-window.adminClearAll  = adminClearAll;
 window.switchTab      = switchTab;
 window.exportHTML     = exportHTML;
 window.pwKey          = pwKey;
