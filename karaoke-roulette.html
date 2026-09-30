@@ -463,6 +463,64 @@ body::before{
 }
 .spin-again-btn:active{transform:translateX(-50%) scale(.97);}
 
+/* Result action buttons shown inside the result card */
+.result-actions{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  margin-top:clamp(16px,2vh,26px);flex-wrap:wrap;
+}
+.result-btn{
+  background:var(--gold-dim);border:1px solid var(--border3);border-radius:40px;
+  color:var(--gold2);font-family:'Cinzel',serif;font-size:clamp(.68rem,.9vw,.84rem);font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;
+  padding:clamp(10px,1.2vh,14px) clamp(22px,2.6vw,36px);
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.result-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+.result-btn:active{transform:scale(.97);}
+.result-btn.secondary{
+  background:transparent;border-color:var(--border2);color:var(--text3);
+}
+.result-btn.secondary:hover{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+
+/* Category filter toggle in admin sidebar */
+.cat-toggle{
+  background:none;border:none;cursor:pointer;
+  width:20px;height:20px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:4px;transition:all .15s;padding:0;
+  color:var(--text3);font-size:.75rem;
+}
+.cat-toggle:hover{color:var(--gold2);}
+.cat-toggle.active{color:var(--gold);}
+.cat-toggle.inactive{color:var(--text3);opacity:.45;}
+
+/* Filter mode banner shown when some cats are hidden */
+.filter-banner{
+  padding:7px 16px;
+  background:rgba(201,168,76,.08);border-bottom:1px solid var(--border);
+  font-family:'DM Sans',sans-serif;font-size:.74rem;color:var(--gold);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  flex-shrink:0;
+}
+.filter-banner button{
+  background:none;border:1px solid var(--border2);border-radius:5px;
+  color:var(--text3);font-family:'Cinzel',serif;font-size:.52rem;
+  letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;cursor:pointer;
+  transition:all .14s;white-space:nowrap;
+}
+.filter-banner button:hover{border-color:var(--border3);color:var(--gold2);}
+.sidebar-head-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px 8px;flex-shrink:0;
+}
+.sidebar-head-row .sidebar-head{padding:0;}
+.sidebar-all-toggle{
+  background:none;border:none;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text3);transition:color .15s;white-space:nowrap;
+}
+.sidebar-all-toggle:hover{color:var(--gold2);}
+
 /* ─── RESULT CARD ──────────────────────────────── */
 .result-reveal{
   position:fixed;
@@ -518,6 +576,47 @@ body::before{
 
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px;}
+
+/* ─── CATEGORY LOCK BAR ────────────────────────── */
+.cat-lock-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:40px;
+  padding:7px 14px 7px 10px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.cat-lock-bar.locked{
+  border-color:var(--border3);
+  box-shadow:0 0 16px rgba(201,168,76,.18);
+}
+.cat-lock-lbl{
+  font-family:'Cinzel',serif;font-size:clamp(.6rem,.8vw,.72rem);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--text3);
+  white-space:nowrap;flex-shrink:0;
+}
+.cat-lock-bar.locked .cat-lock-lbl{color:var(--gold);}
+.cat-lock-select{
+  background:#0a0a06;border:1px solid var(--border2);border-radius:20px;
+  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.84rem;
+  padding:5px 26px 5px 12px;outline:none;cursor:pointer;
+  transition:border-color .18s;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236a6050' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;
+  min-width:140px;max-width:240px;
+}
+.cat-lock-select:focus{border-color:var(--gold);}
+.cat-lock-select option{background:#0a0a06;color:var(--text2);}
+.cat-lock-btn{
+  background:var(--gold-dim);border:1px solid var(--border3);border-radius:20px;
+  color:var(--gold2);font-family:'Cinzel',serif;font-size:clamp(.55rem,.72vw,.68rem);
+  font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:5px 14px;cursor:pointer;transition:all .16s;white-space:nowrap;flex-shrink:0;
+}
+.cat-lock-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+.cat-lock-btn.unlock{
+  background:transparent;border-color:var(--border2);color:var(--text3);
+}
+.cat-lock-btn.unlock:hover{border-color:var(--border3);color:var(--gold2);background:transparent;}
 
 /* Secret category picker — blends into left edge of drum */
 .cat-secret-select{
@@ -615,8 +714,8 @@ body::before{
 </head>
 <body>
 
-<!-- Spin Again — fixed bottom-center -->
-<button class="spin-again-btn" id="spinAgainBtn" onclick="resetGame()">↺ &nbsp; Spin Again</button>
+<!-- Spin Again — kept for JS refs but hidden; result card has inline buttons -->
+<button class="spin-again-btn" id="spinAgainBtn" onclick="resetGame()" style="display:none;"></button>
 
 <!-- ═══ TOP BAR ══════════════════════════════════════ -->
 <div class="top-bar">
@@ -661,6 +760,15 @@ body::before{
     <span>Spin Category</span>
     <div class="pdot" id="pd2"></div>
     <span>Spin Song</span>
+  </div>
+
+  <!-- Category lock bar -->
+  <div class="cat-lock-bar" id="catLockBar">
+    <span class="cat-lock-lbl" id="catLockLbl">Pick Category</span>
+    <select class="cat-lock-select" id="catLockSelect" onchange="window.onCatLockSelect(this.value)">
+      <option value="">— Random —</option>
+    </select>
+    <button class="cat-lock-btn unlock" id="catLockClearBtn" onclick="window.clearCatLock()" style="display:none;">✕ Back to All</button>
   </div>
 
   <!-- Wheels -->
@@ -723,6 +831,10 @@ body::before{
             <div class="result-val" id="rSong">—</div>
           </div>
         </div>
+        <div class="result-actions">
+          <button class="result-btn" onclick="spinSongAgain()">↺ &nbsp; Spin Song Again</button>
+          <button class="result-btn secondary" onclick="resetGame()">New Category</button>
+        </div>
       </div>
     </div>
   </div>
@@ -769,7 +881,13 @@ body::before{
     <div class="admin-body">
       <!-- Sidebar: category list -->
       <div class="admin-sidebar">
-        <div class="sidebar-head">Categories</div>
+        <div class="sidebar-head-row">
+          <div class="sidebar-head">Categories</div>
+          <button class="sidebar-all-toggle" id="allToggleBtn" onclick="window.toggleAllCats()">All / None</button>
+        </div>
+        <div id="filterBanner" class="filter-banner" style="display:none;">
+          <span id="filterBannerText">Some categories hidden</span>
+        </div>
         <div class="cat-list" id="aCatList"></div>
         <div class="sidebar-add">
           <input type="text" id="aCatInput" placeholder="New category…" autocomplete="off"/>
@@ -912,7 +1030,7 @@ function setSyncStatus(state) {
 
 /* Write to Firestore AND keep localStorage as fast cache */
 async function saveData() {
-  const payload = { cats, songMap };
+  const payload = { cats, songMap, activeCats: [...activeCats] };
   // Optimistic local cache
   try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify(payload)); } catch(e) {}
   setSyncStatus('saving');
@@ -936,8 +1054,9 @@ async function loadData() {
         cats = p.cats;
         songMap = p.songMap;
         cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
+        activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
         // Update local cache
-        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap })); } catch(e) {}
+        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats] })); } catch(e) {}
         setSyncStatus('ok');
         return true;
       }
@@ -960,6 +1079,7 @@ function _loadLocal() {
     if (!Array.isArray(p.cats) || !p.songMap) return false;
     cats = p.cats; songMap = p.songMap;
     cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
+    activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
     return true;
   } catch(e) { return false; }
 }
@@ -977,8 +1097,11 @@ function startRealtimeSync() {
     cats    = p.cats;
     songMap = p.songMap;
     cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
+    if (Array.isArray(p.activeCats)) activeCats = new Set(p.activeCats);
+    else activeCats = new Set(cats);
     // Rebuild UI
-    buildDrum(1, cats);
+    buildDrum(1, wheelCats());
+    refreshCatLockSelect();
     if (chosenCat && !cats.includes(chosenCat)) resetPhase2();
     else if (chosenCat) buildDrum(2, songMap[chosenCat] || []);
     if (document.getElementById('adminPanel').classList.contains('open')) {
@@ -986,7 +1109,7 @@ function startRealtimeSync() {
     }
     check();
     setSyncStatus('ok');
-    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap })); } catch(e) {}
+    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats] })); } catch(e) {}
   }, (err) => {
     console.warn('Firestore snapshot error:', err);
     setSyncStatus('offline');
@@ -998,10 +1121,21 @@ function startRealtimeSync() {
    ═══════════════════════════════════════════════════════ */
 let cats    = [];
 let songMap = {};
+let activeCats = new Set(); // cats visible on wheel 1; defaults to all
 let phase   = 1;
 let chosenCat  = null;
+let lockedCat  = null;  // temporary category lock for wheel 1
 let spinning   = false;
 let adminCatSel = null;
+
+/* Helper: cats currently active for wheel 1 */
+function wheelCats() {
+  // If a category is locked, wheel 1 only ever shows that one
+  if (lockedCat) return cats.includes(lockedCat) ? [lockedCat] : cats;
+  // Otherwise respect the active filter
+  if (!activeCats.size || activeCats.size === cats.length) return cats;
+  return cats.filter(c => activeCats.has(c));
+}
 
 /* ═══════════════════════════════════════════════════════
    TICK SOUND ENGINE  (Web Audio API — no files needed)
@@ -1145,8 +1279,8 @@ function buildDrum(n, items) {
   drumY[n] = startY;
   strip.style.transform = `translateY(${startY}px)`;
 
-  // Keep secret category picker in sync
-  if (n === 1) refreshCatSelect();
+  // Keep category pickers in sync
+  if (n === 1) { refreshCatSelect(); refreshCatLockSelect(); }
 }
 
 /* Given the current translateY of strip n, which item index is centred? */
@@ -1286,13 +1420,12 @@ function spinDrum(n, items, cb) {
    ═══════════════════════════════════════════════════════ */
 window.spinWheel = function spinWheel(n) {
   if (spinning) return;
-  const items = n === 1 ? cats : (songMap[chosenCat] || []);
+  const items = n === 1 ? wheelCats() : (songMap[chosenCat] || []);
   if (!items.length || (n === 1 && items.length < 2)) return;
 
   if (n === 1) {
     // Allow respin of wheel 1 at any time — reset phase 2 state cleanly
     document.getElementById('resultReveal').classList.remove('vis');
-    document.getElementById('spinAgainBtn').classList.remove('vis');
     if (phase === 2) resetPhase2();
   }
 
@@ -1361,11 +1494,70 @@ function refreshCatSelect() {
     cats.map(c => `<option value="${esc(c)}"${c===cur?' selected':''}>${esc(c)}</option>`).join('');
 }
 
+/* Populate the lock-bar dropdown with the currently active cats */
+function refreshCatLockSelect() {
+  const sel = document.getElementById('catLockSelect');
+  if (!sel) return;
+  const activelist = [...activeCats].filter(c => cats.includes(c));
+  sel.innerHTML = '<option value="">— Random —</option>' +
+    activelist.map(c => `<option value="${esc(c)}"${c===lockedCat?' selected':''}>${esc(c)}</option>`).join('');
+}
+
+window.onCatLockSelect = function(val) {
+  if (!val) {
+    clearCatLock();
+    return;
+  }
+  lockedCat = val;
+  applyLockUI();
+  // Snap drum 1 to show the chosen category, unlock phase 2
+  if (phase === 2) resetPhase2();
+  const idx = cats.indexOf(lockedCat);
+  if (idx >= 0) {
+    const strip = document.getElementById('drum1');
+    const sh    = Math.round(getSlotH());
+    const slot  = cats.length + idx;
+    const newY  = -(slot * sh - Math.floor(VIS / 2) * sh);
+    strip.style.transition = 'none';
+    strip.style.transform  = `translateY(${newY}px)`;
+    strip.offsetHeight;
+    drumY[1] = newY;
+  }
+  chosenCat = lockedCat;
+  unlockW2();
+  check();
+};
+
+function clearCatLock() {
+  lockedCat = null;
+  document.getElementById('catLockSelect').value = '';
+  applyLockUI();
+  // Reset to normal random mode
+  resetPhase2();
+  buildDrum(1, wheelCats());
+  check();
+}
+
+function applyLockUI() {
+  const bar     = document.getElementById('catLockBar');
+  const lbl     = document.getElementById('catLockLbl');
+  const clearBtn = document.getElementById('catLockClearBtn');
+  if (lockedCat) {
+    bar.classList.add('locked');
+    lbl.textContent = 'Locked';
+    clearBtn.style.display = '';
+  } else {
+    bar.classList.remove('locked');
+    lbl.textContent = 'Pick Category';
+    clearBtn.style.display = 'none';
+  }
+}
+
 window.secretPickCat = function(cat) {
   if (!cat || spinning) return;
   if (phase === 2) resetPhase2();
   // Instantly position drum1 to show the chosen category centred, no spin
-  const items = cats;
+  const items = wheelCats();
   const idx   = items.indexOf(cat);
   if (idx < 0) return;
   const strip  = document.getElementById('drum1');
@@ -1407,8 +1599,30 @@ function resetPhase2() {
   buildDrum(2, []);
 }
 function check() {
-  document.getElementById('sb1').disabled = cats.length < 2 || spinning;
+  const wc = wheelCats();
+  const sb1 = document.getElementById('sb1');
+  if (lockedCat) {
+    sb1.disabled = spinning;
+    sb1.textContent = 'Spin Category Again';
+  } else {
+    sb1.disabled = wc.length < 2 || spinning;
+    sb1.textContent = 'Spin Category';
+  }
   document.getElementById('sb2').disabled = !chosenCat || !(songMap[chosenCat]||[]).length || spinning || phase !== 2;
+  updateFilterBanner();
+}
+function updateFilterBanner() {
+  const banner = document.getElementById('filterBanner');
+  const txt    = document.getElementById('filterBannerText');
+  if (!banner) return;
+  const wc = wheelCats().length;
+  const hidden = cats.length - wc;
+  if (hidden > 0) {
+    banner.style.display = '';
+    txt.textContent = `${wc} of ${cats.length} categories active`;
+  } else {
+    banner.style.display = 'none';
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1420,13 +1634,22 @@ function showResult(cat, song) {
   const el = document.getElementById('resultReveal');
   el.classList.add('vis');
   flashAllBulbs();
-  document.getElementById('spinAgainBtn').classList.add('vis');
+  // Note: spinAgainBtn is hidden now — result card has inline buttons
+}
+function spinSongAgain() {
+  // Close result card, keep category, re-spin wheel 2 only
+  document.getElementById('resultReveal').classList.remove('vis');
+  if (!chosenCat) return;
+  // Re-build wheel 2 fresh then spin
+  buildDrum(2, songMap[chosenCat] || []);
+  check();
+  // Small delay so drum renders before spinning
+  setTimeout(() => window.spinWheel(2), 60);
 }
 function resetGame() {
   document.getElementById('resultReveal').classList.remove('vis');
-  document.getElementById('spinAgainBtn').classList.remove('vis');
   resetPhase2();
-  buildDrum(1, cats);
+  buildDrum(1, wheelCats());
   check();
 }
 
@@ -1553,14 +1776,21 @@ function renderAdminCatList() {
   const el = document.getElementById('aCatList');
   if (!cats.length) {
     el.innerHTML = '<div class="song-empty" style="padding:12px 16px;">No categories yet.</div>';
+    updateFilterBanner();
     return;
   }
-  el.innerHTML = cats.map((c, i) => `
+  el.innerHTML = cats.map((c, i) => {
+    const isActive = activeCats.has(c);
+    return `
     <div class="cat-row${adminCatSel===c?' selected':''}" data-ci="${i}">
+      <button class="cat-toggle ${isActive?'active':'inactive'}" data-tog-ci="${i}" title="${isActive?'Click to hide from wheel':'Click to show on wheel'}">
+        ${isActive ? '●' : '○'}
+      </button>
       <span class="cat-row-name">${esc(c)}</span>
       <span class="cat-count">${(songMap[c]||[]).length}</span>
       <button class="cat-del" data-del-ci="${i}" title="Delete category">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   el.querySelectorAll('.cat-row').forEach(row => {
     row.addEventListener('click', () => {
@@ -1575,6 +1805,47 @@ function renderAdminCatList() {
       if (!isNaN(i)) adminDelCat(cats[i]);
     });
   });
+  el.querySelectorAll('.cat-toggle').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.togCi);
+      if (isNaN(i)) return;
+      const cat = cats[i];
+      if (activeCats.has(cat)) {
+        // Don't allow deactivating the last one
+        if (activeCats.size <= 1) return;
+        activeCats.delete(cat);
+      } else {
+        activeCats.add(cat);
+      }
+      // If locked cat just got deactivated, clear lock
+      if (lockedCat && !activeCats.has(lockedCat)) { lockedCat = null; applyLockUI(); }
+      buildDrum(1, wheelCats());
+      refreshCatLockSelect();
+      check();
+      saveData();
+      renderAdminCatList(); // re-render to update toggle state
+    });
+  });
+  updateFilterBanner();
+}
+
+function toggleAllCats() {
+  const wc = wheelCats().length;
+  if (wc === cats.length) {
+    // All active → deactivate all but keep at least one
+    activeCats = new Set(cats.length ? [cats[0]] : []);
+  } else {
+    // Some/none active → activate all
+    activeCats = new Set(cats);
+  }
+  // If locked cat is no longer in active set, clear lock
+  if (lockedCat && !activeCats.has(lockedCat)) { lockedCat = null; applyLockUI(); }
+  buildDrum(1, wheelCats());
+  refreshCatLockSelect();
+  check();
+  saveData();
+  renderAdminCatList();
 }
 
 function selectAdminCat(cat) {
@@ -1671,22 +1942,27 @@ function adminAddCat() {
   if (!v) { inp.focus(); return; }
   if (cats.includes(v)) { inp.select(); return; } // already exists — highlight
   cats.push(v); songMap[v] = [];
+  activeCats.add(v); // new categories are active by default
   adminCatSel = v; adminTab = 'list';
   inp.value = ''; inp.focus();
   renderAdminCatList(); renderAdminPane();
   // Scroll cat list to bottom so new entry is visible
   const cl = document.getElementById('aCatList');
   cl.scrollTop = cl.scrollHeight;
-  buildDrum(1, cats); saveData(); check();
+  buildDrum(1, wheelCats()); refreshCatLockSelect(); saveData(); check();
 }
 
 function adminDelCat(cat) {
   if (!confirm('Delete category "' + cat + '" and all its songs?')) return;
   cats = cats.filter(c => c !== cat);
   delete songMap[cat];
+  activeCats.delete(cat);
+  if (!activeCats.size && cats.length) activeCats = new Set(cats); // safety
+  if (lockedCat === cat) { lockedCat = null; applyLockUI(); }
   if (adminCatSel === cat) adminCatSel = cats[0] || null;
   renderAdminCatList(); renderAdminPane();
-  buildDrum(1, cats);
+  buildDrum(1, wheelCats());
+  refreshCatLockSelect();
   if (chosenCat === cat) resetPhase2();
   saveData(); check();
 }
@@ -1802,6 +2078,9 @@ function esc(s) {
    EXPOSE to window (required because script is type=module)
    ═══════════════════════════════════════════════════════ */
 window.resetGame      = resetGame;
+window.spinSongAgain  = spinSongAgain;
+window.toggleAllCats  = toggleAllCats;
+window.clearCatLock   = clearCatLock;
 window.toggleAdmin    = toggleAdmin;
 window.toggleFullscreen = toggleFullscreen;
 window.adminAddCat    = adminAddCat;
@@ -1826,11 +2105,13 @@ window.pwCancel       = pwCancel;
   if (!loaded) {
     cats = Object.keys(DATA);
     cats.forEach(c => songMap[c] = [...DATA[c]]);
+    activeCats = new Set(cats);
   }
   mkBulbs('b1L'); mkBulbs('b1R');
   mkBulbs('b2L'); mkBulbs('b2R');
-  buildDrum(1, cats);
+  buildDrum(1, wheelCats());
   buildDrum(2, []);
+  refreshCatLockSelect();
   check();
   startRealtimeSync();
 
@@ -1887,7 +2168,7 @@ function onFsChange() {
   document.documentElement.classList.toggle('fs', isFs);
   // Show FS-only sound button in fullscreen (top bar buttons hidden)
   document.getElementById('fsSoundBtn').style.display = isFs ? '' : 'none';
-  buildDrum(1, cats);
+  buildDrum(1, wheelCats());
   const d2items = chosenCat ? (songMap[chosenCat] || []) : [];
   buildDrum(2, d2items);
   if (phase === 2) {
