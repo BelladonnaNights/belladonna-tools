@@ -1574,8 +1574,18 @@ function wheelCats() {
    ═══════════════════════════════════════════════════════ */
 let _actx = null;
 function getACtx() {
-  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!_actx) {
+    _actx = new (window.AudioContext || window.webkitAudioContext)();
+    // Keep it running — browsers suspend on inactivity; poll every 4s
+    setInterval(() => {
+      if (_actx && _actx.state !== 'running') _actx.resume().catch(()=>{});
+    }, 4000);
+  }
   return _actx;
+}
+// Pre-warm: create the context on first user gesture so it's ready immediately
+function _ensureACtx() {
+  try { const ctx = getACtx(); if (ctx.state !== 'running') ctx.resume().catch(()=>{}); } catch(e) {}
 }
 
 let audioEnabled  = true;   // toggled by the mute button
@@ -2815,10 +2825,7 @@ function updateSessionBtn() {
   if (!btn) return;
   if (sessionActive) {
     btn.classList.add('active');
-    const remaining = countSessionRemaining();
-    label.textContent = remaining !== null
-      ? `Session On · ${remaining} left`
-      : 'Session On';
+    label.textContent = 'Session On';
   } else {
     btn.classList.remove('active');
     label.textContent = 'New Session';
@@ -3085,6 +3092,8 @@ function initTVBroadcast() {
   const ch = getTVChannel();
   if (!ch) return;
   ch.onmessage = handleTVMessage;
+  // Immediately broadcast in case a TV window is already open and waiting
+  broadcastState();
 }
 
 /* Pop out the TV window */
@@ -3171,8 +3180,14 @@ if (_isTVMode) {
       else if (!s.bulbsLit && bulbTmr) stopBulbs();
     };
 
-    // Tell main window we're ready
-    _tvReceive.postMessage({ type: 'ready' });
+    // Tell main window we're ready — retry a few times in case main window
+    // hasn't started listening yet (race between loadData and TV open)
+    let _readyTries = 0;
+    const _pingReady = () => {
+      _tvReceive.postMessage({ type: 'ready' });
+      if (++_readyTries < 8) setTimeout(_pingReady, 400);
+    };
+    _pingReady();
   }
 
   // Double-click anywhere to fullscreen the TV window
@@ -3181,6 +3196,9 @@ if (_isTVMode) {
     else document.exitFullscreen?.();
   });
 }
+
+// Start listening for TV-ready messages immediately (before loadData completes)
+if (!_isTVMode) { initTVBroadcast(); }
 
 /* ═══════════════════════════════════════════════════════
    EXPOSE to window (required because script is type=module)
@@ -3235,7 +3253,7 @@ window.pwCancel       = pwCancel;
   refreshCatLockSelect();
   check();
   startRealtimeSync();
-  initTVBroadcast();
+  initTVBroadcast(); // also called at parse time below for early readiness
 
   // Wire all admin buttons (no inline onclick needed)
   wireAdminButtons();
@@ -3258,15 +3276,9 @@ window.pwCancel       = pwCancel;
   });
 
   // Warm up AudioContext on first interaction (browser autoplay policy)
-  // Create+resume every click so context is never stuck suspended when fanfare fires
-  const _resumeAudio = () => {
-    try {
-      const ctx = getACtx();
-      if (ctx.state !== 'running') ctx.resume().catch(()=>{});
-    } catch(e) {}
-  };
-  document.addEventListener('click', _resumeAudio);
-  document.addEventListener('keydown', _resumeAudio, { passive: true });
+  // Must be called from within a user gesture handler
+  document.addEventListener('click', _ensureACtx);
+  document.addEventListener('keydown', _ensureACtx, { passive: true });
 
   // Keyboard support for PIN prompt
   document.addEventListener('keydown', e => {
