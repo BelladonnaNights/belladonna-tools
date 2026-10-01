@@ -819,6 +819,7 @@ body::before{
 /* ─── TV DISPLAY MODE ─────────────────────────── */
 /* Hide all host controls */
 body.tv-mode .top-bar{display:none!important;}
+body.tv-mode .session-btn{display:none!important;}
 body.tv-mode .cat-lock-bar{display:none!important;}
 body.tv-mode .song-search-wrap{display:none!important;}
 body.tv-mode .spin-btn{display:none!important;}
@@ -1069,10 +1070,6 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 <!-- ═══ TOP BAR ══════════════════════════════════════ -->
 <div class="top-bar">
   <div class="top-bar-left">
-    <button class="session-btn" id="sessionBtn" onclick="window.toggleSession()" title="Start a session — each song can only be picked once until you reset">
-      <span class="session-dot"></span>
-      <span id="sessionBtnLabel">New Session</span>
-    </button>
     <div id="logoImgWrap">
       <img id="logoImg" class="logo-img" src="" alt="Logo"
            onerror="this.style.display='none';document.getElementById('logoPlaceholder').style.display='flex';"
@@ -1110,6 +1107,12 @@ body.tv-mode .cat-headline-bar{display:none!important;}
   <div class="stage-orn">
     <div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line"></div>
   </div>
+
+  <!-- Session button -->
+  <button class="session-btn" id="sessionBtn" onclick="window.toggleSession()" title="Start a session — each song can only be picked once until you reset">
+    <span class="session-dot"></span>
+    <span id="sessionBtnLabel">New Session</span>
+  </button>
 
   <!-- Phase indicator -->
   <div class="phase-bar">
@@ -3068,15 +3071,36 @@ function broadcastState() {
   const reveal = document.getElementById('resultReveal');
   const rCatEl = document.getElementById('rCat');
   const rSongEl = document.getElementById('rSong');
+
+  // Send logical slot index (item index centred) rather than raw pixel Y.
+  // The TV window has different --slot-h and --vis, so it must compute its
+  // own translateY from the slot index using its own CSS values.
+  const d1Items = wheelCats();
+  const d2Items = chosenCat ? (songMap[chosenCat] || []) : [];
+  const sh = Math.round(getSlotH());
+  const vis = getVIS();
+
+  // Logical centre slot (absolute strip index)
+  const d1CentreAbsolute = sh > 0
+    ? Math.round((-drumY[1] + Math.floor(vis / 2) * sh) / sh)
+    : 0;
+  const d2CentreAbsolute = sh > 0
+    ? Math.round((-drumY[2] + Math.floor(vis / 2) * sh) / sh)
+    : 0;
+
+  // Item index within the list
+  const d1ItemIdx = d1Items.length ? ((d1CentreAbsolute % d1Items.length) + d1Items.length) % d1Items.length : 0;
+  const d2ItemIdx = d2Items.length ? ((d2CentreAbsolute % d2Items.length) + d2Items.length) % d2Items.length : 0;
+
   ch.postMessage({
     type: 'state',
     phase,
     chosenCat,
     spinning,
-    drum1Y: drumY[1],
-    drum2Y: drumY[2],
-    drum1Items: wheelCats(),
-    drum2Items: chosenCat ? (songMap[chosenCat] || []) : [],
+    drum1ItemIdx: d1ItemIdx,
+    drum2ItemIdx: d2ItemIdx,
+    drum1Items: d1Items,
+    drum2Items: d2Items,
     resultVis: reveal ? reveal.classList.contains('vis') : false,
     resultCat:  rCatEl  ? rCatEl.textContent  : '',
     resultSong: rSongEl ? rSongEl.textContent : '',
@@ -3162,29 +3186,38 @@ if (_isTVMode) {
       const dlock = document.getElementById('dlock');
       if (dlock) dlock.classList.toggle('hidden', s.phase === 2);
 
-      // Mirror drum1 position
+      // Mirror drum1 position — use item index so TV's own slot-h is respected
       if (s.drum1Items && s.drum1Items.length) {
         const strip1 = document.getElementById('drum1');
         const cur1 = strip1 ? strip1.children.length : 0;
         const need1 = s.drum1Items.length * REPS;
         if (cur1 !== need1) buildDrum(1, s.drum1Items);
         if (strip1) {
+          const sh1   = Math.round(getSlotH());
+          const vis1  = getVIS();
+          // Place item at centre using rep 1 (second copy) for buffer
+          const slot1 = s.drum1Items.length + (s.drum1ItemIdx || 0);
+          const y1    = -(slot1 * sh1 - Math.floor(vis1 / 2) * sh1);
           strip1.style.transition = 'none';
-          strip1.style.transform  = `translateY(${s.drum1Y}px)`;
-          drumY[1] = s.drum1Y;
+          strip1.style.transform  = `translateY(${y1}px)`;
+          drumY[1] = y1;
         }
       }
 
-      // Mirror drum2 position
+      // Mirror drum2 position — use item index so TV's own slot-h is respected
       if (s.drum2Items && s.drum2Items.length) {
         const strip2 = document.getElementById('drum2');
         const cur2 = strip2 ? strip2.children.length : 0;
         const need2 = s.drum2Items.length * REPS;
         if (cur2 !== need2) buildDrum(2, s.drum2Items);
         if (strip2) {
+          const sh2   = Math.round(getSlotH());
+          const vis2  = getVIS();
+          const slot2 = s.drum2Items.length + (s.drum2ItemIdx || 0);
+          const y2    = -(slot2 * sh2 - Math.floor(vis2 / 2) * sh2);
           strip2.style.transition = 'none';
-          strip2.style.transform  = `translateY(${s.drum2Y}px)`;
-          drumY[2] = s.drum2Y;
+          strip2.style.transform  = `translateY(${y2}px)`;
+          drumY[2] = y2;
         }
       }
 
