@@ -54,6 +54,42 @@ body::before{
 .top-bar-left{display:flex;align-items:center;gap:14px;}
 .top-bar-right{display:flex;align-items:center;gap:10px;}
 
+/* Session button */
+.session-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text3);
+  font-family:'Cinzel',serif;
+  font-size:clamp(.58rem,.74vw,.72rem);
+  letter-spacing:.1em;
+  padding:6px 12px;
+  cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+  transition:border-color .2s,color .2s,background .2s,box-shadow .2s;
+  white-space:nowrap;
+}
+.session-btn:hover{border-color:var(--border3);color:var(--text);}
+.session-btn .session-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border3);
+  flex-shrink:0;
+  transition:background .2s,box-shadow .2s;
+}
+.session-btn.active{
+  border-color:#3d9e5f;
+  color:#5dbd82;
+  background:rgba(61,158,95,.08);
+  box-shadow:0 0 0 1px #3d9e5f33;
+}
+.session-btn.active .session-dot{
+  background:#5dbd82;
+  box-shadow:0 0 6px #5dbd82aa;
+}
+.session-btn.active:hover{
+  background:rgba(61,158,95,.15);
+}
+
 /* Logo image slot */
 .logo-img{
   height:clamp(56px,6vh,80px);width:auto;object-fit:contain;
@@ -761,37 +797,95 @@ body::before{
 .tv-btn:hover{border-color:var(--border3);color:var(--gold2);}
 .tv-btn svg{flex-shrink:0;}
 
-/* TV display-only mode (no top bar controls, no admin) */
+/* ─── TV DISPLAY MODE ─────────────────────────── */
+/* Hide all host controls */
 body.tv-mode .top-bar{display:none!important;}
 body.tv-mode .cat-lock-bar{display:none!important;}
 body.tv-mode .song-search-wrap{display:none!important;}
 body.tv-mode .spin-btn{display:none!important;}
 body.tv-mode .result-actions{display:none!important;}
-body.tv-mode .stage{justify-content:center;padding-top:clamp(28px,5vh,60px);}
-/* TV drum sizing — make the drums fill most of the screen */
+body.tv-mode .stage-orn{display:none!important;}
+body.tv-mode .phase-bar{display:none!important;}
+body.tv-mode .filter-banner{display:none!important;}
+body.tv-mode .roll-counter{display:none!important;}
+
+/* Stage fills the entire viewport */
+body.tv-mode .stage{
+  position:fixed;inset:0;
+  max-width:none;
+  width:100vw;height:100vh;
+  overflow:hidden;
+  padding:0;
+  justify-content:center;
+  align-items:center;
+  gap:clamp(8px,1.5vh,18px);
+}
+
+/* Drums sized to fill screen — bulb strips on each side take ~28px each,
+   gap between drums ~4vw, so each drum gets roughly (50vw - 28px - 2vw) */
 body.tv-mode{
   cursor:none;
-  --slot-h:clamp(100px,13vh,148px);
-  --drum-w:clamp(480px,42vw,780px);
+  --slot-h:clamp(90px,14vh,160px);
+  --drum-w:clamp(340px,44vw,860px);
   --vis:6;
 }
+
+/* Bulb strips scale up too */
+body.tv-mode .bulb-strip{width:22px;}
+body.tv-mode .bulb{width:10px;height:10px;}
+
+body.tv-mode .wheels-stage{
+  width:100%;
+  padding:0 clamp(12px,2vw,32px);
+  box-sizing:border-box;
+  gap:clamp(16px,3vw,48px);
+  align-items:center;
+}
+
 body.tv-mode .wheel-unit-lbl{
-  font-size:clamp(1rem,2vw,1.5rem);letter-spacing:.28em;
+  font-size:clamp(1rem,1.8vw,1.6rem);letter-spacing:.3em;
 }
 body.tv-mode .drum-slot{
-  font-size:clamp(1.4rem,2.6vw,2.4rem);
+  font-size:clamp(1.3rem,2.4vw,2.6rem);padding:6px 20px;
 }
 body.tv-mode .result-val{
-  font-size:clamp(2.2rem,5vw,4.5rem);
+  font-size:clamp(2rem,4.5vw,5rem);
 }
 body.tv-mode .result-card{
-  padding:clamp(32px,5vh,60px) clamp(40px,6vw,80px);
+  padding:clamp(28px,5vh,60px) clamp(36px,6vw,80px);
 }
 body.tv-mode .result-eyebrow{
-  font-size:clamp(.9rem,1.5vw,1.3rem);letter-spacing:.3em;
+  font-size:clamp(.9rem,1.4vw,1.4rem);letter-spacing:.3em;
 }
-body.tv-mode .wheels-stage{
-  gap:clamp(24px,5vw,80px);
+
+/* TV corner logo — shown only in tv-mode */
+.tv-corner-logo{
+  display:none;
+}
+body.tv-mode .tv-corner-logo{
+  display:flex;
+  position:fixed;top:clamp(14px,2.5vh,28px);left:clamp(18px,2.5vw,36px);
+  z-index:50;
+  align-items:center;gap:10px;
+  pointer-events:none;
+}
+body.tv-mode .tv-corner-logo .tv-logo-img{
+  height:clamp(32px,4.5vh,56px);width:auto;object-fit:contain;
+}
+body.tv-mode .tv-corner-logo .tv-logo-text-block{
+  display:flex;flex-direction:column;gap:1px;
+}
+body.tv-mode .tv-corner-logo .tv-logo-pub{
+  font-family:'Cinzel',serif;font-size:clamp(.45rem,.7vw,.65rem);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--text3);
+}
+body.tv-mode .tv-corner-logo .tv-logo-pub strong{color:var(--gold2);}
+body.tv-mode .tv-corner-logo .tv-logo-name{
+  font-family:'Cinzel',serif;font-size:clamp(.8rem,1.4vw,1.3rem);
+  letter-spacing:.12em;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;
 }
 
 /* ─── PASSWORD PROMPT ──────────────────────────── */
@@ -899,9 +993,22 @@ body.tv-mode .wheels-stage{
 <!-- Spin Again — kept for JS refs but hidden; result card has inline buttons -->
 <button class="spin-again-btn" id="spinAgainBtn" onclick="resetGame()" style="display:none;"></button>
 
+<!-- ═══ TV CORNER LOGO (fixed, only visible in tv-mode) ════════ -->
+<div class="tv-corner-logo" id="tvCornerLogo">
+  <img id="tvLogoImg" class="tv-logo-img" src="" alt="Logo" style="display:none;">
+  <div class="tv-logo-text-block">
+    <div class="tv-logo-pub"><strong>Belladonna</strong> Games</div>
+    <div class="tv-logo-name">Karaoke Roulette</div>
+  </div>
+</div>
+
 <!-- ═══ TOP BAR ══════════════════════════════════════ -->
 <div class="top-bar">
   <div class="top-bar-left">
+    <button class="session-btn" id="sessionBtn" onclick="window.toggleSession()" title="Start a session — each song can only be picked once until you reset">
+      <span class="session-dot"></span>
+      <span id="sessionBtnLabel">New Session</span>
+    </button>
     <div id="logoImgWrap">
       <img id="logoImg" class="logo-img" src="" alt="Logo"
            onerror="this.style.display='none';document.getElementById('logoPlaceholder').style.display='flex';"
@@ -1152,7 +1259,7 @@ body.tv-mode .wheels-stage{
       </button>
       <button class="gbtn" id="exportBtn" style="display:flex;align-items:center;gap:7px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export HTML
+        Export Song List
       </button>
       <button class="gbtn" id="adminDoneBtn">Done</button>
     </div>
@@ -1231,10 +1338,17 @@ const _db     = getFirestore(_fbApp);
   if (!LOGO_URL) return;
   const img = document.getElementById('logoImg');
   const ph  = document.getElementById('logoPlaceholder');
-  if (!img) return;
-  img.src = LOGO_URL;
-  img.style.display = 'block';
-  if (ph) ph.style.display = 'none';
+  if (img) {
+    img.src = LOGO_URL;
+    img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  }
+  // Also set TV corner logo
+  const tvImg = document.getElementById('tvLogoImg');
+  if (tvImg) {
+    tvImg.src = LOGO_URL;
+    tvImg.style.display = 'block';
+  }
 })();
 const _docRef = doc(_db, 'karaoke', 'roulette');
 
@@ -1358,6 +1472,10 @@ let chosenCat  = null;
 let lockedCat  = null;  // temporary category lock for wheel 1
 let spinning   = false;
 let adminCatSel = null;
+
+// Session mode — in-memory only, resets on page refresh
+let sessionActive = false;
+let sessionPlayed = new Set(); // "Song – Artist" keys already landed on this session
 
 /* Helper: cats currently active for wheel 1 */
 function wheelCats() {
@@ -1749,7 +1867,24 @@ function spinDrum(n, items, cb) {
    ═══════════════════════════════════════════════════════ */
 window.spinWheel = function spinWheel(n) {
   if (spinning) return;
-  const items = n === 1 ? wheelCats() : (songMap[chosenCat] || []);
+
+  let items;
+  if (n === 1) {
+    items = wheelCats();
+  } else {
+    const allSongs = songMap[chosenCat] || [];
+    // In session mode, exclude already-played songs
+    if (sessionActive && sessionPlayed.size > 0) {
+      const avail = allSongs.filter(s => !sessionPlayed.has(s));
+      items = avail.length > 0 ? avail : allSongs; // fall back to all if everything's been played
+      if (avail.length === 0) {
+        if (!confirm(`All songs in "${chosenCat}" have been played this session! Spin from all songs anyway?`)) return;
+      }
+    } else {
+      items = allSongs;
+    }
+  }
+
   if (!items.length || (n === 1 && items.length < 2)) return;
 
   if (n === 1) {
@@ -1969,6 +2104,11 @@ function showResult(cat, song) {
   // Increment roll count before showing (so count reflects this roll)
   incrementRoll(song);
   showRollCount(song);
+  // Track played songs in session mode
+  if (sessionActive) {
+    sessionPlayed.add(song);
+    updateSessionBtn();
+  }
   const el = document.getElementById('resultReveal');
   el.classList.add('vis');
   flashAllBulbs();
@@ -2401,38 +2541,41 @@ function exportHTML() {
   btn.textContent = '⏳ Preparing…';
   btn.disabled = true;
 
-  // Build a clean DATA object literal string from current state
-  const lines = ['const DATA = {'];
+  // Build a human-readable text file: each category as a header, songs listed below
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const lines = [
+    'KARAOKE ROULETTE — SONG LIST',
+    `Exported: ${dateStr}`,
+    `Categories: ${cats.length}`,
+    '',
+    '═'.repeat(60),
+    '',
+  ];
+
   cats.forEach((cat, ci) => {
     const songs = songMap[cat] || [];
-    const escapedCat = cat.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    lines.push(`  '${escapedCat}': [`);
-    songs.forEach(song => {
-      const escapedSong = song.replace(/\\/g,'\\\\').replace(/"/g,'\\"');
-      lines.push(`    "${escapedSong}",`);
-    });
-    lines.push(`  ]${ci < cats.length - 1 ? ',' : ''}`);
+    lines.push(`${cat.toUpperCase()}  (${songs.length} song${songs.length !== 1 ? 's' : ''})`);
+    lines.push('─'.repeat(50));
+    if (songs.length) {
+      songs.forEach((song, si) => lines.push(`  ${String(si + 1).padStart(3, ' ')}.  ${song}`));
+    } else {
+      lines.push('  (no songs)');
+    }
+    if (ci < cats.length - 1) lines.push('');
   });
-  lines.push('};');
-  const newDataBlock = lines.join('\n');
 
-  // Replace the DATA block in the page's own source HTML
-  const html = document.documentElement.outerHTML;
-  // Match from `const DATA = {` to the closing `};` of that block
-  const updated = html.replace(/const DATA = \{[\s\S]*?\};/, newDataBlock);
+  lines.push('');
+  lines.push('═'.repeat(60));
+  const totalSongs = cats.reduce((s, c) => s + (songMap[c] || []).length, 0);
+  lines.push(`Total: ${totalSongs} song${totalSongs !== 1 ? 's' : ''} across ${cats.length} categor${cats.length !== 1 ? 'ies' : 'y'}`);
 
-  if (updated === html) {
-    btn.textContent = '⚠ Export failed — pattern not found';
-    btn.disabled = false;
-    return;
-  }
-
-  // Trigger download
-  const blob = new Blob(['<!DOCTYPE html>\n' + updated], { type: 'text/html' });
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url;
-  a.download = 'karaoke-roulette.html';
+  const slug = `karaoke-song-list-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  a.download = slug + '.txt';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2440,10 +2583,60 @@ function exportHTML() {
 
   btn.innerHTML = '✓ Downloaded!';
   setTimeout(() => {
-    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export — Save to File';
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Song List';
     btn.disabled = false;
   }, 2500);
 }
+
+/* ═══════════════════════════════════════════════════════
+   SESSION MODE
+   ═══════════════════════════════════════════════════════ */
+function updateSessionBtn() {
+  const btn   = document.getElementById('sessionBtn');
+  const label = document.getElementById('sessionBtnLabel');
+  if (!btn) return;
+  if (sessionActive) {
+    btn.classList.add('active');
+    const remaining = countSessionRemaining();
+    label.textContent = remaining !== null
+      ? `Session On · ${remaining} left`
+      : 'Session On';
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'New Session';
+  }
+}
+
+function countSessionRemaining() {
+  // Count unplayed songs across all active cats
+  const wc = wheelCats();
+  if (!wc.length) return null;
+  let total = 0;
+  let played = 0;
+  wc.forEach(cat => {
+    (songMap[cat] || []).forEach(song => {
+      total++;
+      if (sessionPlayed.has(song)) played++;
+    });
+  });
+  return Math.max(0, total - played);
+}
+
+window.toggleSession = function() {
+  if (sessionActive) {
+    // Turning off — ask to confirm if songs have been played
+    if (sessionPlayed.size > 0) {
+      if (!confirm(`End session? ${sessionPlayed.size} song${sessionPlayed.size !== 1 ? 's' : ''} played so far will be cleared.`)) return;
+    }
+    sessionActive = false;
+    sessionPlayed.clear();
+  } else {
+    sessionActive = true;
+    sessionPlayed.clear();
+  }
+  updateSessionBtn();
+  check(); // re-evaluate spin button states
+};
 
 /* ═══════════════════════════════════════════════════════
    UTIL
