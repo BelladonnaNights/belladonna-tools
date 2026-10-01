@@ -142,6 +142,11 @@ const DEMO = /[?&]demo=1/.test(location.search);
 
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const safeUrl = u => /^https:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "";
+/* HQ's roster can carry a host's full name (first + last) for internal matching against the
+   schedule, but only the first name should ever show on this public page. Everything visible
+   below (card title, alt text, aria labels, the "ask in person" notes) goes through this —
+   the full name from Firestore is only ever used, unexposed, to match a host to their shifts. */
+const firstName = n => { n = String(n || "").trim(); return n ? n.split(/\s+/)[0] : n; };
 const pad = n => String(n).padStart(2, "0");
 const isoOffset = off => { const d = new Date(); d.setDate(d.getDate() + off); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
 const todayStr = () => isoOffset(0);
@@ -241,9 +246,9 @@ function panelHTML(h, idx){
   const lk = safeUrl(p.link) ? {url: appFriendly(safeUrl(p.link))} : linkFor(p);
   let body = "";
   if (name) body += `<div class="pn"><span>${esc(name)}</span><button type="button" class="btn copy" data-copy="${esc(name)}">Copy</button></div>`;
-  if (p.method === "cash" && !name && !lk) body += `<div class="note">Cash tips are welcome. Find ${esc(h.name)} at the venue.</div>`;
+  if (p.method === "cash" && !name && !lk) body += `<div class="note">Cash tips are welcome. Find ${esc(firstName(h.name))} at the venue.</div>`;
   if (lk) body += `<a class="btn" href="${esc(lk.url)}" target="_blank" rel="noopener">${p.method === "other" ? "Open payment link" : "Pay with " + esc(ic.label)}</a>`;
-  if (!body) body = `<div class="note">Ask ${esc(h.name)} in person.</div>`;
+  if (!body) body = `<div class="note">Ask ${esc(firstName(h.name))} in person.</div>`;
   return `<div class="ppanel"><div class="pm">${esc(p.method === "other" ? "Tip" : ic.label)}</div>${body}</div>`;
 }
 
@@ -264,16 +269,17 @@ function cardHTML(h, i, animate){
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 2)
       .map(s => `<div class="sh"><b>${prettyDate(s.date)}</b>${s.time ? " · " + esc(timeRange(s.time, s.endTime)) : ""}<div class="v">${esc(s.venue)}</div></div>`).join("");
   }
-  const init = esc(h.name.trim().charAt(0).toUpperCase());
+  const pubName = firstName(h.name);
+  const init = esc(pubName.trim().charAt(0).toUpperCase());
   const ph = safeUrl(h.photo);
-  const photo = ph ? `<img src="${esc(ph)}" alt="${esc(h.name)}" width="150" height="150" loading="lazy" decoding="async" onerror="this.outerHTML='<div>${init}</div>'">` : `<div>${init}</div>`;
+  const photo = ph ? `<img src="${esc(ph)}" alt="${esc(pubName)}" width="150" height="150" loading="lazy" decoding="async" onerror="this.outerHTML='<div>${init}</div>'">` : `<div>${init}</div>`;
   const pays = h.payments || [];
   const icons = pays.length ? pays.map((p, k) => {
     const ic = iconOf(p.method);
-    return `<button type="button" data-host="${esc(h.id)}" data-i="${k}" data-tip="${esc(ic.label)}" aria-label="Tip ${esc(h.name)} with ${esc(ic.label)}" aria-expanded="${OPEN[h.id] === k}">${svg(ic)}</button>`;
+    return `<button type="button" data-host="${esc(h.id)}" data-i="${k}" data-tip="${esc(ic.label)}" aria-label="Tip ${esc(pubName)} with ${esc(ic.label)}" aria-expanded="${OPEN[h.id] === k}">${svg(ic)}</button>`;
   }).join("") : `<div class="nopay">Ask your host in person</div>`;
   const panel = OPEN[h.id] != null ? panelHTML(h, OPEN[h.id]) : "";
-  return `<article class="card${animate ? " rise" : ""}" data-id="${esc(h.id)}"${animate ? ` style="animation-delay:${Math.min(i, 12) * 30}ms"` : ""}><h2 title="${esc(h.name)}">${esc(h.name)}</h2><div class="photo">${photo}</div>${shifts ? `<div class="shifts">${shifts}</div>` : ""}<div class="pay">${icons}</div>${panel}</article>`;
+  return `<article class="card${animate ? " rise" : ""}" data-id="${esc(h.id)}"${animate ? ` style="animation-delay:${Math.min(i, 12) * 30}ms"` : ""}><h2 title="${esc(pubName)}">${esc(pubName)}</h2><div class="photo">${photo}</div>${shifts ? `<div class="shifts">${shifts}</div>` : ""}<div class="pay">${icons}</div>${panel}</article>`;
 }
 function render(){
   const date = $("date").value, venue = $("venue").value;
