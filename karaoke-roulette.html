@@ -1836,7 +1836,7 @@ function centredIndex(n, items, slotH) {
 
 /* Spin drum n; call cb(winnerIndex) when done */
 function spinDrum(n, items, cb) {
-  if (animId) cancelAnimationFrame(animId);
+  if (animId) { clearInterval(animId); animId = null; }
 
   const strip   = document.getElementById('drum' + n);
   const count   = items.length;
@@ -1866,7 +1866,7 @@ function spinDrum(n, items, cb) {
   const startY  = drumY[n];
   const dist    = targetY - startY;   // will be negative (strip moves up)
   const dur     = 4000 + Math.random() * 800;  // 4.0–4.8 s
-  const t0      = performance.now();
+  const t0      = Date.now();
   // Track which slot is centred for tick detection
   let lastSlot  = Math.round((-startY + Math.floor(vis / 2) * slotHInt) / slotHInt);
 
@@ -1883,7 +1883,8 @@ function spinDrum(n, items, cb) {
 
   startBulbs();
 
-  function frame(now) {
+  function frame() {
+    const now = Date.now();
     const t   = Math.min((now - t0) / dur, 1);
     const y   = startY + dist * ease(t);
     drumY[n]  = y;
@@ -1902,8 +1903,10 @@ function spinDrum(n, items, cb) {
     }
 
     if (t < 1) {
-      animId = requestAnimationFrame(frame);
+      // keep going
     } else {
+      clearInterval(animId);
+      animId = null;
       // Hard snap to integer-pixel target — zero drift
       drumY[n] = targetY;
       strip.style.transform = `translateY(${targetY}px)`;
@@ -1955,7 +1958,9 @@ function spinDrum(n, items, cb) {
     }
   }
 
-  animId = requestAnimationFrame(frame);
+  // Use setInterval instead of requestAnimationFrame so animation continues
+  // even when this tab is backgrounded (e.g. user is watching the TV pop-out)
+  animId = setInterval(frame, 16);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1993,7 +1998,7 @@ window.spinWheel = function spinWheel(n) {
   check();
   broadcastState();
   // Kick off live-position broadcast loop so TV mirrors the spinning drum
-  requestAnimationFrame(tvBroadcastLoop);
+  tvBroadcastLoop();
 
   spinDrum(n, items, (winnerIdx) => {
     spinning = false;
@@ -3115,12 +3120,20 @@ window.openTVPopout = function() {
 };
 
 /* Continuously broadcast while spinning so the TV mirrors live drum movement */
+let _tvBroadcastInterval = null;
 function tvBroadcastLoop() {
-  if (!_tvChannel) return;
-  if (spinning || bulbTmr) {
-    broadcastState();
-    requestAnimationFrame(tvBroadcastLoop);
-  }
+  // Use setInterval instead of rAF — rAF pauses when the tab is backgrounded
+  // (which happens when the user is looking at the TV pop-out window)
+  if (_tvBroadcastInterval) return; // already running
+  _tvBroadcastInterval = setInterval(() => {
+    if (spinning || bulbTmr) {
+      broadcastState();
+    } else {
+      broadcastState(); // one final broadcast with settled state
+      clearInterval(_tvBroadcastInterval);
+      _tvBroadcastInterval = null;
+    }
+  }, 16); // ~60fps
 }
 
 /* ─── TV DISPLAY MODE ─────────────────────────── */
