@@ -619,6 +619,19 @@ body::before{
 .result-reveal.vis{
   opacity:1;pointer-events:auto;
 }
+.result-close-btn{
+  position:absolute;top:18px;right:22px;z-index:2;
+  background:none;border:1px solid rgba(201,168,76,.25);
+  color:rgba(201,168,76,.6);
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;line-height:1;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+  padding:0;
+}
+.result-close-btn:hover{
+  border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.08);
+}
 .result-card-wrap{
   position:relative;z-index:1;
   width:90%;max-width:720px;
@@ -1230,6 +1243,7 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 
   <!-- Result overlay -->
   <div class="result-reveal" id="resultReveal">
+    <button class="result-close-btn" onclick="document.getElementById('resultReveal').classList.remove('vis')" aria-label="Close">✕</button>
     <div class="result-card-wrap">
       <div class="result-card">
         <div class="result-eyebrow">Tonight's Performance</div>
@@ -1615,19 +1629,13 @@ function wheelCats() {
    ═══════════════════════════════════════════════════════ */
 let _actx = null;
 function getACtx() {
-  if (!_actx) {
-    _actx = new (window.AudioContext || window.webkitAudioContext)();
-    // Keep it running — browsers suspend on inactivity; poll every 4s
-    setInterval(() => {
-      if (_actx && _actx.state !== 'running') _actx.resume().catch(()=>{});
-    }, 4000);
-  }
+  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
   return _actx;
 }
-// Pre-warm: create the context on first user gesture so it's ready immediately
-function _ensureACtx() {
-  try { const ctx = getACtx(); if (ctx.state !== 'running') ctx.resume().catch(()=>{}); } catch(e) {}
-}
+// Pre-warm: resume AudioContext on first click so ticks are ready immediately
+const _resumeAudio = () => {
+  try { const ctx = getACtx(); if (ctx.state === 'suspended') ctx.resume(); } catch(e) {}
+};
 
 let audioEnabled  = true;   // master — kept for legacy checks
 let tickEnabled   = true;   // spinner drum tick sounds
@@ -3412,8 +3420,7 @@ window.pwCancel       = pwCancel;
 
   // Warm up AudioContext on first interaction (browser autoplay policy)
   // Must be called from within a user gesture handler
-  document.addEventListener('click', _ensureACtx);
-  document.addEventListener('keydown', _ensureACtx, { passive: true });
+  document.addEventListener('click', _resumeAudio);
 
   // Keyboard support for PIN prompt
   document.addEventListener('keydown', e => {
