@@ -676,7 +676,7 @@ body::before{
 .cat-lock-bar.locked .cat-lock-lbl{color:var(--gold);}
 .cat-lock-select{
   background:#0a0a06;border:1px solid var(--border2);border-radius:20px;
-  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.84rem;
+  color:var(--text2);font-family:'EB Garamond',serif;font-size:.92rem;
   padding:5px 26px 5px 12px;outline:none;cursor:pointer;
   transition:border-color .18s;
   -webkit-appearance:none;appearance:none;
@@ -1113,7 +1113,7 @@ body.tv-mode .cat-headline-bar{display:none!important;}
   <div class="top-bar-right">
     <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;">⬤ Loading…</span>
     <div class="sound-menu-wrap" id="soundMenuWrap">
-      <button class="tbbtn" id="audioToggleBtn" onclick="window.toggleSoundMenu()">🔊 Sound</button>
+      <button class="tbbtn" id="audioToggleBtn" onclick="window.toggleSoundMenu()">Sound</button>
       <div class="sound-dropdown" id="soundDropdown">
         <label class="sound-option" id="soundOptTick">
           <span class="sound-check">✓</span> Spinner Sounds
@@ -1129,7 +1129,7 @@ body.tv-mode .cat-headline-bar{display:none!important;}
       TV Screen
     </button>
     <div class="sound-menu-wrap" id="fsSoundMenuWrap" style="display:none;">
-      <button class="tbbtn fs-btn" id="fsSoundBtn" onclick="window.toggleSoundMenu()">🔊 Sound</button>
+      <button class="tbbtn fs-btn" id="fsSoundBtn" onclick="window.toggleSoundMenu()">Sound</button>
     </div>
     <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
   </div>
@@ -3358,7 +3358,7 @@ window.pwCancel       = pwCancel;
     const anyOn = tickEnabled || fanfareEnabled;
     document.querySelectorAll('#audioToggleBtn, #fsSoundBtn').forEach(btn => {
       if (!btn) return;
-      btn.textContent = anyOn ? '🔊 Sound' : '🔇 Sound';
+      btn.textContent = 'Sound';
       btn.style.opacity = anyOn ? '1' : '0.55';
     });
     const optTick    = document.getElementById('soundOptTick');
