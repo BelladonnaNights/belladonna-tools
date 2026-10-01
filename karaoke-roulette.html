@@ -3146,15 +3146,11 @@ function broadcastState() {
   const drum2HasSongs = drum2El && drum2El.children.length > getVIS();
   const d2Items = drum2HasSongs ? (chosenCat ? (songMap[chosenCat] || []) : []) : [];
 
-  // During spin: send fractional slot for smooth live animation on TV.
-  // When settled: send integer item index — TV snaps cleanly to that item
-  // using its own slot height, with zero risk of floating-point drift.
+  // Always send fractional slot position — TV reconstructs Y using its own slot height.
+  // After spin, host resets strip to rep 1 (items.length + itemIdx), so slotF is a
+  // clean integer-ish number. TV formula: y = -(slotF * tvSH - floor(tvVis/2) * tvSH)
   const drum1SlotF = drumYToSlotF(1, d1Items);
   const drum2SlotF = drumYToSlotF(2, d2Items);
-  // Only null out the idx for whichever drum is actively spinning —
-  // the settled drum should always send its integer idx so TV uses offsetTop.
-  const drum1Idx   = (spinningDrum === 1) ? null : centeredItemIdx(1, d1Items);
-  const drum2Idx   = (spinningDrum === 2) ? null : centeredItemIdx(2, d2Items);
 
   ch.postMessage({
     type: 'state',
@@ -3163,8 +3159,6 @@ function broadcastState() {
     spinning,
     drum1SlotF,
     drum2SlotF,
-    drum1Idx,   // integer index when settled; null while spinning
-    drum2Idx,
     drum1Items: d1Items,
     drum2Items: d2Items,
     resultVis: reveal ? reveal.classList.contains('vis') : false,
@@ -3252,53 +3246,32 @@ if (_isTVMode) {
       const dlock = document.getElementById('dlock');
       if (dlock) dlock.classList.toggle('hidden', s.phase === 2);
 
-      // Position a drum strip on the TV.
-      // When settled (itemIdx is integer): find the actual slot element in rep 1
-      //   and use its offsetTop to position the strip — zero math, guaranteed correct.
-      // When spinning (itemIdx null): use slotF for smooth live animation.
-      function positionDrum(n, items, slotF, itemIdx) {
+      // Position a drum strip on the TV using fractional slot position from host.
+      // Host sends slotF = centrePixel / hostSlotH (same math on both ends).
+      // TV reconstructs: y = -(slotF * tvSlotH - floor(tvVis/2) * tvSlotH)
+      // No reflow here — runs 60fps; reflow only happens once in buildDrum above.
+      function positionDrum(n, items, slotF) {
         const stripEl = document.getElementById('drum' + n);
         if (!stripEl) return;
-        // NOTE: no reflow here — this runs 60fps during spins and a forced
-        // reflow every 16ms starves the audio thread (kills tick sounds).
-        // Reflows are done once in the buildDrum rebuild path above.
-        let y;
-        if (itemIdx !== null && itemIdx !== undefined && items && items.length) {
-          // Settled: find the slot element at rep 1, item itemIdx
-          const targetSlotIndex = items.length + itemIdx; // rep 1
-          const slots = stripEl.querySelectorAll('.drum-slot');
-          const targetSlot = slots[targetSlotIndex];
-          if (targetSlot) {
-            // offsetTop = distance from top of strip to top of this slot
-            // We want the slot centered in the clip window
-            const clip = stripEl.parentElement;
-            const clipH = clip ? clip.offsetHeight : getSlotH() * getVIS();
-            const slotH = targetSlot.offsetHeight;
-            y = -(targetSlot.offsetTop - (clipH / 2) + (slotH / 2));
-          } else {
-            // fallback: pure math
-            const sh = getSlotH();
-            const slot = items.length + itemIdx;
-            y = -(slot * sh - Math.floor(getVIS() / 2) * sh);
-          }
-        } else {
-          // Spinning: mirror fractional position using measured slot height
-          const sh  = getSlotH();
-          const vis = getVIS();
-          y = -(slotF * sh - Math.floor(vis / 2) * sh);
-        }
+        const sh  = getSlotH();  // measures from real slot element — accurate after buildDrum reflow
+        const vis = getVIS();
+        const y   = -(slotF * sh - Math.floor(vis / 2) * sh);
         stripEl.style.transition = 'none';
         stripEl.style.transform  = `translateY(${y}px)`;
         drumY[n] = y;
       }
 
-      // Mirror drum1 — build strip if needed, force reflow, then position
+      // Mirror drum1 — build strip if needed (one-time reflow), then position
       if (s.drum1Items && s.drum1Items.length) {
         const strip1 = document.getElementById('drum1');
         const cur1 = strip1 ? strip1.children.length : 0;
         const need1 = s.drum1Items.length * REPS;
-        if (cur1 !== need1) { buildDrum(1, s.drum1Items); strip1 && strip1.offsetHeight; }
-        positionDrum(1, s.drum1Items, s.drum1SlotF || 0, s.drum1Idx);
+        if (cur1 !== need1) {
+          buildDrum(1, s.drum1Items);
+          // Force ONE reflow after build so slot heights are measured correctly
+          if (strip1) void strip1.offsetHeight;
+        }
+        positionDrum(1, s.drum1Items, s.drum1SlotF || 0);
       }
 
       // Mirror drum2 — host sends [] when blank (before Spin Song), songs when spinning
@@ -3306,9 +3279,12 @@ if (_isTVMode) {
       const strip2 = document.getElementById('drum2');
       const cur2  = strip2 ? strip2.children.length : 0;
       const need2 = d2Items.length * REPS;
-      if (cur2 !== need2) { buildDrum(2, d2Items); strip2 && strip2.offsetHeight; }
+      if (cur2 !== need2) {
+        buildDrum(2, d2Items);
+        if (strip2) void strip2.offsetHeight;
+      }
       if (d2Items.length) {
-        positionDrum(2, d2Items, s.drum2SlotF || 0, s.drum2Idx);
+        positionDrum(2, d2Items, s.drum2SlotF || 0);
       }
 
       // Mirror bulbs
@@ -3398,9 +3374,7 @@ window.pwCancel       = pwCancel;
   // Wire all admin buttons (no inline onclick needed)
   wireAdminButtons();
 
-  // Spin buttons — wired in module scope, no onclick= attribute needed
-  document.getElementById('sb1').addEventListener('click', () => spinWheel(1));
-  document.getElementById('sb2').addEventListener('click', () => spinWheel(2));
+  // Spin buttons — already wired via onclick= in HTML; no duplicate listeners needed
 
   // Sound dropdown
   function updateSoundUI() {
