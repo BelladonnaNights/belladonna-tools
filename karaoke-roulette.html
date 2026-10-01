@@ -178,7 +178,7 @@ body::before{
 }
 .admin-modal{
   position:relative;z-index:1;
-  width:min(96vw,1000px);
+  width:min(96vw,1200px);
   max-height:calc(100vh - clamp(24px,6vh,80px));
   margin:clamp(12px,3vh,40px) auto;
   background:var(--surface);
@@ -210,10 +210,29 @@ body::before{
 
 /* ── Category sidebar ── */
 .admin-sidebar{
-  width:220px;flex-shrink:0;
-  border-right:1px solid var(--border);
+  width:var(--admin-sidebar-w,220px);flex-shrink:0;
   display:flex;flex-direction:column;
   overflow:hidden;
+  min-width:140px;max-width:420px;
+}
+
+/* ── Resize handle between sidebar and pane ── */
+.admin-splitter{
+  width:6px;flex-shrink:0;cursor:col-resize;
+  background:transparent;
+  position:relative;z-index:2;
+  transition:background .15s;
+  margin: 0 -1px; /* sit on top of the border */
+}
+.admin-splitter::after{
+  content:'';
+  position:absolute;inset:0 1px;
+  background:var(--border);
+  transition:background .15s;
+}
+.admin-splitter:hover::after,
+.admin-splitter.dragging::after{
+  background:var(--border3);
 }
 .sidebar-head{
   padding:12px 16px 8px;
@@ -788,10 +807,10 @@ body::before{
 
 /* ─── POP-OUT TV BUTTON ───────────────────────── */
 .tv-btn{
-  background:transparent;border:1px solid var(--border);border-radius:8px;
-  color:var(--text3);font-family:'Cinzel',serif;font-size:clamp(.6rem,.78vw,.74rem);
-  letter-spacing:.14em;text-transform:uppercase;
-  padding:9px 16px;cursor:pointer;transition:all .18s;white-space:nowrap;
+  background:transparent;border:1px solid var(--border2);border-radius:8px;
+  color:var(--text3);font-family:'Cinzel',serif;font-size:clamp(.65rem,.85vw,.82rem);
+  letter-spacing:.16em;text-transform:uppercase;
+  padding:9px 18px;cursor:pointer;transition:all .18s;white-space:nowrap;
   display:flex;align-items:center;gap:7px;
 }
 .tv-btn:hover{border-color:var(--border3);color:var(--gold2);}
@@ -1252,6 +1271,8 @@ body.tv-mode .cat-headline-bar{display:none!important;}
           <button class="gbtn sm" id="aCatAddBtn">Add</button>
         </div>
       </div>
+      <!-- Drag handle -->
+      <div class="admin-splitter" id="adminSplitter"></div>
       <!-- Main pane: song editor -->
       <div class="admin-pane" id="adminPane">
         <div class="pane-head" id="paneHead" style="flex-direction:column;align-items:stretch;gap:6px;">
@@ -1565,7 +1586,7 @@ function playTick(velocity) {
   // velocity 0-1: 1 = peak speed, 0 = final slow clacks
   try {
     const ctx = getACtx();
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state !== 'running') { ctx.resume().catch(()=>{}); }
 
     const sr  = ctx.sampleRate;
     // Price is Right big wheel: hard plastic peg strike
@@ -1626,11 +1647,14 @@ function playTick(velocity) {
 }
 
 /* Play the result-reveal fanfare — either a custom URL or the built-in sting */
-function playFanfare() {
+async function playFanfare() {
   if (!audioEnabled) return;
   try {
     const ctx = getACtx();
-    if (ctx.state === 'suspended') ctx.resume();
+    // Always force-resume — browsers auto-suspend after inactivity
+    if (ctx.state !== 'running') {
+      try { await ctx.resume(); } catch(e) {}
+    }
 
     if (customSoundUrl && customSoundUrl.trim()) {
       // Use the custom sound from admin
@@ -2281,6 +2305,37 @@ function wireAdminButtons() {
     renderRollHistory();
   });
 
+  // Sidebar resize splitter
+  (function() {
+    const splitter = document.getElementById('adminSplitter');
+    const sidebar  = document.querySelector('.admin-sidebar');
+    const modal    = document.querySelector('.admin-modal');
+    let dragging = false, startX = 0, startW = 0;
+
+    splitter.addEventListener('mousedown', e => {
+      e.preventDefault();
+      dragging = true;
+      startX = e.clientX;
+      startW = sidebar.getBoundingClientRect().width;
+      splitter.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const modalW = modal.getBoundingClientRect().width;
+      const newW = Math.min(Math.max(startW + (e.clientX - startX), 140), Math.floor(modalW * 0.55));
+      sidebar.style.width = newW + 'px';
+    });
+    document.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      splitter.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+  })();
+
   // Category rename
   const renameInp = document.getElementById('paneCatRename');
   renameInp.addEventListener('blur', () => adminRenameCat(renameInp.value));
@@ -2771,8 +2826,8 @@ function updateSessionBtn() {
 }
 
 function countSessionRemaining() {
-  // Count unplayed songs across all active cats
-  const wc = wheelCats();
+  // Count unplayed songs across all active cats (fall back to all cats if none active)
+  const wc = wheelCats().length ? wheelCats() : cats;
   if (!wc.length) return null;
   let total = 0;
   let played = 0;
@@ -2782,6 +2837,7 @@ function countSessionRemaining() {
       if (sessionPlayed.has(song)) played++;
     });
   });
+  if (total === 0) return null;
   return Math.max(0, total - played);
 }
 
@@ -3202,14 +3258,15 @@ window.pwCancel       = pwCancel;
   });
 
   // Warm up AudioContext on first interaction (browser autoplay policy)
-  // We call resume() every time to handle browsers that auto-suspend it
+  // Create+resume every click so context is never stuck suspended when fanfare fires
   const _resumeAudio = () => {
     try {
       const ctx = getACtx();
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state !== 'running') ctx.resume().catch(()=>{});
     } catch(e) {}
   };
   document.addEventListener('click', _resumeAudio);
+  document.addEventListener('keydown', _resumeAudio, { passive: true });
 
   // Keyboard support for PIN prompt
   document.addEventListener('keydown', e => {
