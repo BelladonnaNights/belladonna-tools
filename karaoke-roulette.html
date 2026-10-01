@@ -3112,15 +3112,20 @@ function getTVChannel() {
   return _tvChannel;
 }
 
-/* Convert raw drumY pixel offset → fractional slot index (float).
-   This is item-count-agnostic and viewport-agnostic — TV reconstructs
-   its own pixel Y from this float using its own slotH. */
+/* Returns the 0-based item index currently centered in drum n */
+function centeredItemIdx(n, items) {
+  const sh = getSlotH();
+  if (!sh || !items || !items.length) return 0;
+  const centrePixel = -drumY[n] + Math.floor(getVIS() / 2) * sh;
+  const absSlot = Math.round(centrePixel / sh);
+  return ((absSlot % items.length) + items.length) % items.length;
+}
+
+/* Returns fractional slot position for smooth live-spin mirroring */
 function drumYToSlotF(n, items) {
   const sh = getSlotH();
   if (!sh || !items || !items.length) return 0;
-  // centrePixel = how far into the strip the centre row sits
   const centrePixel = -drumY[n] + Math.floor(getVIS() / 2) * sh;
-  // divide by slotH to get absolute slot (may be fractional during spin)
   return centrePixel / sh;
 }
 
@@ -3133,17 +3138,17 @@ function broadcastState() {
   const rSongEl = document.getElementById('rSong');
 
   const d1Items = wheelCats();
-  // Only send song list when drum2 is actually showing songs (spinning or done).
-  // In "waiting to spin" state (phase 2, not spinning, no result showing),
-  // send [] so TV also keeps drum2 blank as a surprise.
   const drum2El = document.getElementById('drum2');
-  const drum2HasSongs = drum2El && drum2El.children.length > getVIS(); // more than placeholder slots
+  const drum2HasSongs = drum2El && drum2El.children.length > getVIS();
   const d2Items = drum2HasSongs ? (chosenCat ? (songMap[chosenCat] || []) : []) : [];
 
-  // Send fractional slot position instead of raw pixels — TV rebuilds its own
-  // pixel Y from this using its own slotH, so different window sizes stay in sync.
+  // During spin: send fractional slot for smooth live animation on TV.
+  // When settled: send integer item index — TV snaps cleanly to that item
+  // using its own slot height, with zero risk of floating-point drift.
   const drum1SlotF = drumYToSlotF(1, d1Items);
   const drum2SlotF = drumYToSlotF(2, d2Items);
+  const drum1Idx   = spinning ? null : centeredItemIdx(1, d1Items);
+  const drum2Idx   = spinning ? null : centeredItemIdx(2, d2Items);
 
   ch.postMessage({
     type: 'state',
@@ -3152,6 +3157,8 @@ function broadcastState() {
     spinning,
     drum1SlotF,
     drum2SlotF,
+    drum1Idx,   // integer index when settled; null while spinning
+    drum2Idx,
     drum1Items: d1Items,
     drum2Items: d2Items,
     resultVis: reveal ? reveal.classList.contains('vis') : false,
@@ -3239,29 +3246,36 @@ if (_isTVMode) {
       const dlock = document.getElementById('dlock');
       if (dlock) dlock.classList.toggle('hidden', s.phase === 2);
 
-      // Reconstruct TV pixel Y from fractional slot index.
-      // IMPORTANT: slotFtoY reads getSlotH() fresh each call — must be called
-      // AFTER buildDrum() so real .drum-slot elements exist for measurement.
-      // (Before slots exist, getSlotH() falls back to parsing the CSS clamp()
-      //  string which returns NaN → 72, causing wrong positioning.)
-      const tvVis = getVIS();
-      function slotFtoY(slotF) {
-        const sh = getSlotH(); // read AFTER buildDrum so element exists
-        return -(slotF * sh - Math.floor(tvVis / 2) * sh);
+      // Position a drum strip on the TV.
+      // When settled (drum*Idx is an integer): snap directly to that item index
+      //   using TV's own slot height — no cross-window math, guaranteed correct.
+      // When spinning (drum*Idx is null): use fractional slotF for smooth animation.
+      // Always call AFTER buildDrum so .drum-slot elements exist for getSlotH().
+      function positionDrum(stripEl, items, slotF, itemIdx) {
+        if (!stripEl) return;
+        const sh  = getSlotH(); // reads from real .drum-slot element
+        const vis = getVIS();
+        let y;
+        if (itemIdx !== null && itemIdx !== undefined && items && items.length) {
+          // Settled: place this exact item index in the center using rep 1 (safe buffer)
+          const slot = items.length + itemIdx;
+          y = -(slot * sh - Math.floor(vis / 2) * sh);
+        } else {
+          // Spinning: mirror fractional position
+          y = -(slotF * sh - Math.floor(vis / 2) * sh);
+        }
+        stripEl.style.transition = 'none';
+        stripEl.style.transform  = `translateY(${y}px)`;
+        drumY[stripEl.id === 'drum1' ? 1 : 2] = y;
       }
 
-      // Mirror drum1 position — build first, then position
+      // Mirror drum1 — build strip if needed, then position
       if (s.drum1Items && s.drum1Items.length) {
         const strip1 = document.getElementById('drum1');
         const cur1 = strip1 ? strip1.children.length : 0;
         const need1 = s.drum1Items.length * REPS;
-        if (cur1 !== need1) buildDrum(1, s.drum1Items); // creates .drum-slot elements
-        if (strip1) {
-          const y1 = slotFtoY(s.drum1SlotF || 0); // getSlotH() now reads real element
-          strip1.style.transition = 'none';
-          strip1.style.transform  = `translateY(${y1}px)`;
-          drumY[1] = y1;
-        }
+        if (cur1 !== need1) buildDrum(1, s.drum1Items);
+        positionDrum(strip1, s.drum1Items, s.drum1SlotF || 0, s.drum1Idx);
       }
 
       // Mirror drum2 — host sends [] when blank (before Spin Song), songs when spinning
@@ -3269,13 +3283,9 @@ if (_isTVMode) {
       const d2Items = s.drum2Items || [];
       const cur2  = strip2 ? strip2.children.length : 0;
       const need2 = d2Items.length * REPS;
-      // Rebuild if item count changed (includes transition [] ↔ songs)
-      if (cur2 !== need2) buildDrum(2, d2Items); // creates .drum-slot elements
-      if (strip2 && d2Items.length) {
-        const y2 = slotFtoY(s.drum2SlotF || 0); // getSlotH() now reads real element
-        strip2.style.transition = 'none';
-        strip2.style.transform  = `translateY(${y2}px)`;
-        drumY[2] = y2;
+      if (cur2 !== need2) buildDrum(2, d2Items);
+      if (d2Items.length) {
+        positionDrum(strip2, d2Items, s.drum2SlotF || 0, s.drum2Idx);
       }
 
       // Mirror bulbs
