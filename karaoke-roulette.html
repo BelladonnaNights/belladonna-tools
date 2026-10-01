@@ -958,22 +958,31 @@ body.tv-mode .tv-corner-logo .tv-logo-name{
 /* ─── ROLL COUNTER VIEW ─────────────────────────── */
 .roll-admin-wrap{flex:1;overflow-y:auto;padding:10px 14px;min-height:0;}
 .roll-admin-row{
-  display:flex;align-items:center;gap:10px;
-  padding:7px 10px;border-radius:7px;
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:7px;
   background:var(--surface2);margin-bottom:3px;
   border:1px solid transparent;
   font-family:'DM Sans',sans-serif;font-size:.84rem;
 }
-.roll-admin-name{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.roll-admin-count{
-  font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.08em;
-  color:var(--gold2);flex-shrink:0;min-width:52px;text-align:right;
+.roll-admin-name{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem;}
+.roll-admin-count-input{
+  font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.06em;
+  color:var(--gold2);background:#0a0a06;border:1px solid var(--border2);
+  border-radius:5px;width:52px;text-align:center;padding:3px 4px;
+  outline:none;transition:border-color .15s;
 }
+.roll-admin-count-input:focus{border-color:var(--border3);color:var(--gold);}
 .roll-admin-bar{
-  height:4px;width:80px;background:var(--surface3);border-radius:3px;
+  height:4px;width:60px;background:var(--surface3);border-radius:3px;
   overflow:hidden;flex-shrink:0;
 }
 .roll-admin-bar-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;}
+.roll-admin-reset-btn{
+  background:none;border:1px solid transparent;border-radius:5px;
+  color:var(--text3);font-size:.65rem;padding:2px 6px;cursor:pointer;
+  transition:all .15s;flex-shrink:0;white-space:nowrap;
+}
+.roll-admin-reset-btn:hover{border-color:var(--border2);color:#d9534f;}
 .roll-admin-empty{
   font-size:.76rem;color:var(--text3);font-style:italic;padding:16px;text-align:center;
 }
@@ -983,6 +992,42 @@ body.tv-mode .tv-corner-logo .tv-logo-name{
 }
 .roll-admin-total{font-size:.72rem;color:var(--text3);}
 .roll-admin-total strong{color:var(--text2);}
+
+/* ─── CATEGORY RENAME / HEADLINE (admin pane) ────── */
+.pane-cat-edit{display:none;flex:1;gap:6px;flex-direction:column;min-width:0;}
+.pane-cat-edit.vis{display:flex;}
+.pane-cat-rename{
+  background:#0a0a06;border:1px solid var(--border2);border-radius:7px;
+  color:var(--gold2);font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.08em;
+  padding:5px 10px;outline:none;transition:border-color .2s;width:100%;
+}
+.pane-cat-rename:focus{border-color:var(--border3);color:var(--gold);}
+.pane-cat-headline{
+  background:#0a0a06;border:1px solid var(--border2);border-radius:7px;
+  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.78rem;
+  padding:5px 10px;outline:none;transition:border-color .2s;width:100%;
+}
+.pane-cat-headline:focus{border-color:var(--border3);color:var(--text);}
+.pane-cat-headline::placeholder{color:var(--text3);}
+
+/* ─── CATEGORY HEADLINE DISPLAY (below spinners) ─── */
+.cat-headline-bar{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:0 16px;
+  opacity:0;transform:translateY(-6px);
+  transition:opacity .35s,transform .35s;
+  pointer-events:none;
+}
+.cat-headline-bar.vis{opacity:1;transform:translateY(0);}
+.cat-headline-name{
+  font-family:'Cinzel',serif;font-size:clamp(.75rem,1vw,.9rem);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--gold2);
+}
+.cat-headline-text{
+  font-family:'DM Sans',sans-serif;font-size:clamp(.78rem,1.1vw,.95rem);
+  color:var(--text3);font-style:italic;text-align:center;line-height:1.4;
+}
+body.tv-mode .cat-headline-bar{display:none!important;}
 
 /* Extra admin pane tab style for Rolls */
 .ptab.rolls-tab-btn{}
@@ -1118,6 +1163,12 @@ body.tv-mode .tv-corner-logo .tv-logo-name{
 
   </div>
 
+  <!-- Category headline — laptop view only, hidden in TV mode -->
+  <div class="cat-headline-bar" id="catHeadlineBar">
+    <div class="cat-headline-name" id="catHeadlineName"></div>
+    <div class="cat-headline-text" id="catHeadlineText"></div>
+  </div>
+
   <!-- Result overlay -->
   <div class="result-reveal" id="resultReveal">
     <div class="result-card-wrap">
@@ -1203,11 +1254,18 @@ body.tv-mode .tv-corner-logo .tv-logo-name{
       </div>
       <!-- Main pane: song editor -->
       <div class="admin-pane" id="adminPane">
-        <div class="pane-head" id="paneHead">
-          <span class="pane-cat-name" id="paneCatName">← Select a category</span>
-          <div class="pane-tabs" id="paneTabs" style="display:none;">
-            <button class="ptab active" id="tabList">Song List</button>
-            <button class="ptab" id="tabBulk">Bulk Paste</button>
+        <div class="pane-head" id="paneHead" style="flex-direction:column;align-items:stretch;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pane-cat-name" id="paneCatName">← Select a category</span>
+            <div class="pane-tabs" id="paneTabs" style="display:none;">
+              <button class="ptab active" id="tabList">Song List</button>
+              <button class="ptab" id="tabBulk">Bulk Paste</button>
+            </div>
+          </div>
+          <!-- Rename + headline fields — shown when a category is selected -->
+          <div class="pane-cat-edit" id="paneCatEdit">
+            <input class="pane-cat-rename" id="paneCatRename" type="text" placeholder="Category name…" autocomplete="off"/>
+            <input class="pane-cat-headline" id="paneCatHeadline" type="text" placeholder="Headline (optional) — shown below spinners on laptop view…" autocomplete="off"/>
           </div>
         </div>
         <!-- List tab -->
@@ -1369,9 +1427,9 @@ function setSyncStatus(state) {
 
 /* Write to Firestore AND keep localStorage as fast cache */
 async function saveData() {
-  const payload = { cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl };
+  const payload = { cats, songMap, catMeta, activeCats: [...activeCats], rollCounts, customSoundUrl };
   // Optimistic local cache
-  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
+  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, catMeta, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
   setSyncStatus('saving');
   try {
     await setDoc(_docRef, payload);
@@ -1396,8 +1454,9 @@ async function loadData() {
         activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
         if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
         if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
+        if (p.catMeta && typeof p.catMeta === 'object') catMeta = p.catMeta;
         // Update local cache
-        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
+        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, catMeta, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
         setSyncStatus('ok');
         return true;
       }
@@ -1423,6 +1482,7 @@ function _loadLocal() {
     activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
     if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
     if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
+    if (p.catMeta && typeof p.catMeta === 'object') catMeta = p.catMeta;
     return true;
   } catch(e) { return false; }
 }
@@ -1444,6 +1504,7 @@ function startRealtimeSync() {
     else activeCats = new Set(cats);
     if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
     if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
+    if (p.catMeta && typeof p.catMeta === 'object') catMeta = p.catMeta;
     // Rebuild UI
     buildDrum(1, wheelCats());
     refreshCatLockSelect();
@@ -1454,7 +1515,7 @@ function startRealtimeSync() {
     }
     check();
     setSyncStatus('ok');
-    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
+    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, catMeta, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
   }, (err) => {
     console.warn('Firestore snapshot error:', err);
     setSyncStatus('offline');
@@ -1466,6 +1527,7 @@ function startRealtimeSync() {
    ═══════════════════════════════════════════════════════ */
 let cats    = [];
 let songMap = {};
+let catMeta = {}; // { catName: { headline: string } } — persisted
 let activeCats = new Set(); // cats visible on wheel 1; defaults to all
 let phase   = 1;
 let chosenCat  = null;
@@ -2044,6 +2106,21 @@ window.secretPickCat = function(cat) {
   check();
 };
 
+function updateHeadlineBar() {
+  const bar  = document.getElementById('catHeadlineBar');
+  const name = document.getElementById('catHeadlineName');
+  const text = document.getElementById('catHeadlineText');
+  if (!bar) return;
+  const headline = chosenCat && catMeta[chosenCat] && catMeta[chosenCat].headline;
+  if (headline && chosenCat && phase === 2) {
+    name.textContent = chosenCat;
+    text.textContent = headline;
+    bar.classList.add('vis');
+  } else {
+    bar.classList.remove('vis');
+  }
+}
+
 function unlockW2() {
   phase = 2;
   document.getElementById('pd1').className = 'pdot done';
@@ -2056,6 +2133,8 @@ function unlockW2() {
   document.getElementById('sb2').disabled = !hasSongs;
   // Show song search for this category
   showSongSearch(true);
+  // Show category headline if set
+  updateHeadlineBar();
   broadcastState();
 }
 function resetPhase2() {
@@ -2064,8 +2143,9 @@ function resetPhase2() {
   document.getElementById('pd2').className = 'pdot';
   document.getElementById('dlock').classList.remove('hidden');
   buildDrum(2, []);
-  // Hide song search
+  // Hide song search and headline
   showSongSearch(false);
+  updateHeadlineBar();
   broadcastState();
 }
 function check() {
@@ -2133,7 +2213,7 @@ function resetGame() {
   document.getElementById('resultReveal').classList.remove('vis');
   const rcd = document.getElementById('rollCounterDisplay');
   if (rcd) rcd.style.display = 'none';
-  resetPhase2();
+  resetPhase2(); // already calls updateHeadlineBar
   buildDrum(1, wheelCats());
   check();
 }
@@ -2200,6 +2280,16 @@ function wireAdminButtons() {
     saveData();
     renderRollHistory();
   });
+
+  // Category rename
+  const renameInp = document.getElementById('paneCatRename');
+  renameInp.addEventListener('blur', () => adminRenameCat(renameInp.value));
+  renameInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); renameInp.blur(); } });
+
+  // Category headline
+  const headlineInp = document.getElementById('paneCatHeadline');
+  headlineInp.addEventListener('blur', () => adminSaveHeadline(headlineInp.value));
+  headlineInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); headlineInp.blur(); } });
 
   // Sound URL
   const soundInput = document.getElementById('customSoundInput');
@@ -2379,11 +2469,15 @@ function renderAdminPane() {
   const addRow  = document.getElementById('songAddRow');
   const listP   = document.getElementById('tabListPane');
   const bulkP   = document.getElementById('tabBulkPane');
+  const catEdit = document.getElementById('paneCatEdit');
+  const renameInp = document.getElementById('paneCatRename');
+  const headlineInp = document.getElementById('paneCatHeadline');
 
   if (!adminCatSel) {
     nameEl.textContent = '← Select a category';
     tabs.style.display = 'none';
     addRow.style.display = 'none';
+    catEdit.classList.remove('vis');
     document.getElementById('aSongList').innerHTML =
       '<div class="pane-hint">Select a category on the left, or add one.</div>';
     listP.style.display = 'flex';
@@ -2393,6 +2487,16 @@ function renderAdminPane() {
 
   nameEl.textContent = adminCatSel;
   tabs.style.display = '';
+
+  // Show rename + headline edit fields
+  catEdit.classList.add('vis');
+  // Only populate if user isn't currently typing in them
+  if (document.activeElement !== renameInp) {
+    renameInp.value = adminCatSel;
+  }
+  if (document.activeElement !== headlineInp) {
+    headlineInp.value = (catMeta[adminCatSel] && catMeta[adminCatSel].headline) || '';
+  }
 
   document.getElementById('tabList').classList.toggle('active', adminTab === 'list');
   document.getElementById('tabBulk').classList.toggle('active', adminTab === 'bulk');
@@ -2409,6 +2513,65 @@ function renderAdminPane() {
     // Pre-fill textarea with existing songs
     document.getElementById('bulkTA').value = (songMap[adminCatSel]||[]).join('\n');
   }
+}
+
+function adminRenameCat(newName) {
+  newName = newName.trim();
+  if (!adminCatSel) return;
+  if (!newName) {
+    // Restore input to current name
+    document.getElementById('paneCatRename').value = adminCatSel;
+    return;
+  }
+  if (newName === adminCatSel) return; // no change
+  if (cats.includes(newName)) {
+    alert(`A category named "${newName}" already exists.`);
+    document.getElementById('paneCatRename').value = adminCatSel;
+    return;
+  }
+  const oldName = adminCatSel;
+  // Update cats array
+  const idx = cats.indexOf(oldName);
+  if (idx !== -1) cats[idx] = newName;
+  // Migrate songMap
+  if (songMap[oldName] !== undefined) {
+    songMap[newName] = songMap[oldName];
+    delete songMap[oldName];
+  }
+  // Migrate catMeta
+  if (catMeta[oldName] !== undefined) {
+    catMeta[newName] = catMeta[oldName];
+    delete catMeta[oldName];
+  }
+  // Migrate activeCats
+  if (activeCats.has(oldName)) {
+    activeCats.delete(oldName);
+    activeCats.add(newName);
+  }
+  // Migrate rollCounts
+  if (rollCounts[oldName] !== undefined) {
+    rollCounts[newName] = rollCounts[oldName];
+    delete rollCounts[oldName];
+  }
+  // Update selection
+  adminCatSel = newName;
+  if (lockedCat === oldName) lockedCat = newName;
+  if (chosenCat === oldName) chosenCat = newName;
+  saveData();
+  renderAdminCatList();
+  renderAdminPane();
+  buildDrum(1, wheelCats());
+  check();
+}
+
+function adminSaveHeadline(val) {
+  if (!adminCatSel) return;
+  val = val.trim();
+  catMeta[adminCatSel] = Object.assign({}, catMeta[adminCatSel] || {}, { headline: val });
+  if (!val) delete catMeta[adminCatSel].headline;
+  saveData();
+  // Update live headline bar if this cat is active
+  updateHeadlineBar();
 }
 
 function switchTab(tab) {
@@ -2719,16 +2882,41 @@ function renderRollHistory() {
     return;
   }
 
-  const maxCount = entries[0][1];
+  const maxCount = Math.max(...entries.map(([,v])=>v), 1);
   list.innerHTML = entries.map(([song, count]) => {
-    const pct = maxCount > 0 ? Math.round(count / maxCount * 100) : 0;
+    const pct = Math.round(count / maxCount * 100);
+    const songKey = song.replace(/"/g, '&quot;');
     return `
-    <div class="roll-admin-row">
+    <div class="roll-admin-row" data-song="${songKey}">
       <span class="roll-admin-name" title="${esc(song)}">${esc(song)}</span>
       <div class="roll-admin-bar"><div class="roll-admin-bar-fill" style="width:${pct}%"></div></div>
-      <span class="roll-admin-count">${count}×</span>
+      <input class="roll-admin-count-input" type="number" min="0" value="${count}" data-song="${songKey}" title="Edit roll count">
+      <button class="roll-admin-reset-btn" data-song="${songKey}" title="Reset to 0">Reset</button>
     </div>`;
   }).join('');
+
+  // Wire per-song controls via event delegation on list
+  list.addEventListener('change', e => {
+    const inp = e.target.closest('.roll-admin-count-input');
+    if (!inp) return;
+    const song = inp.dataset.song;
+    const val = Math.max(0, parseInt(inp.value, 10) || 0);
+    inp.value = val;
+    rollCounts[song] = val;
+    if (val === 0) delete rollCounts[song];
+    saveData();
+    // Re-render to update bar widths but keep focus on input
+    renderRollHistory();
+  }, { once: true });
+
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.roll-admin-reset-btn');
+    if (!btn) return;
+    const song = btn.dataset.song;
+    delete rollCounts[song];
+    saveData();
+    renderRollHistory();
+  }, { once: true });
 }
 
 window.switchToRollsTab = openRollsPane;
