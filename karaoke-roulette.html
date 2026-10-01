@@ -1630,7 +1630,7 @@ function _ensureACtx() {
 
 let audioEnabled  = true;   // master — kept for legacy checks
 let tickEnabled   = true;   // spinner drum tick sounds
-let fanfareEnabled= true;   // result reveal fanfare/sound
+let fanfareEnabled= false;  // result reveal fanfare/sound — off by default
 let customSoundUrl = '';    // set in admin; if empty, use generated fanfare
 
 function playTick(velocity) {
@@ -3253,6 +3253,8 @@ if (_isTVMode) {
       function positionDrum(n, items, slotF, itemIdx) {
         const stripEl = document.getElementById('drum' + n);
         if (!stripEl) return;
+        // Force reflow so offsetTop / offsetHeight reflect current layout
+        void stripEl.offsetHeight;
         let y;
         if (itemIdx !== null && itemIdx !== undefined && items && items.length) {
           // Settled: find the slot element at rep 1, item itemIdx
@@ -3260,13 +3262,14 @@ if (_isTVMode) {
           const slots = stripEl.querySelectorAll('.drum-slot');
           const targetSlot = slots[targetSlotIndex];
           if (targetSlot) {
-            // offsetTop gives exact pixel position of this slot in the strip
-            // We want it centered in the clip window
-            const clipH = stripEl.parentElement ? stripEl.parentElement.offsetHeight : getSlotH() * getVIS();
+            // offsetTop = distance from top of strip to top of this slot
+            // We want the slot centered in the clip window
+            const clip = stripEl.parentElement;
+            const clipH = clip ? clip.offsetHeight : getSlotH() * getVIS();
             const slotH = targetSlot.offsetHeight;
             y = -(targetSlot.offsetTop - (clipH / 2) + (slotH / 2));
           } else {
-            // fallback
+            // fallback: pure math
             const sh = getSlotH();
             const slot = items.length + itemIdx;
             y = -(slot * sh - Math.floor(getVIS() / 2) * sh);
@@ -3282,12 +3285,12 @@ if (_isTVMode) {
         drumY[n] = y;
       }
 
-      // Mirror drum1 — build strip if needed, then position
+      // Mirror drum1 — build strip if needed, force reflow, then position
       if (s.drum1Items && s.drum1Items.length) {
         const strip1 = document.getElementById('drum1');
         const cur1 = strip1 ? strip1.children.length : 0;
         const need1 = s.drum1Items.length * REPS;
-        if (cur1 !== need1) buildDrum(1, s.drum1Items);
+        if (cur1 !== need1) { buildDrum(1, s.drum1Items); strip1 && strip1.offsetHeight; }
         positionDrum(1, s.drum1Items, s.drum1SlotF || 0, s.drum1Idx);
       }
 
@@ -3296,7 +3299,7 @@ if (_isTVMode) {
       const strip2 = document.getElementById('drum2');
       const cur2  = strip2 ? strip2.children.length : 0;
       const need2 = d2Items.length * REPS;
-      if (cur2 !== need2) buildDrum(2, d2Items);
+      if (cur2 !== need2) { buildDrum(2, d2Items); strip2 && strip2.offsetHeight; }
       if (d2Items.length) {
         positionDrum(2, d2Items, s.drum2SlotF || 0, s.drum2Idx);
       }
