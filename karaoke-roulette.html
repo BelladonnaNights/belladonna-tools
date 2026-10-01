@@ -1594,6 +1594,7 @@ let phase   = 1;
 let chosenCat  = null;
 let lockedCat  = null;  // temporary category lock for wheel 1
 let spinning   = false;
+let spinningDrum = null; // which drum is currently spinning (1, 2, or null)
 let adminCatSel = null;
 
 // Session mode — in-memory only, resets on page refresh
@@ -2045,6 +2046,7 @@ window.spinWheel = function spinWheel(n) {
   }
 
   spinning = true;
+  spinningDrum = n;
   check();
   broadcastState();
   // Kick off live-position broadcast loop so TV mirrors the spinning drum
@@ -2052,6 +2054,7 @@ window.spinWheel = function spinWheel(n) {
 
   spinDrum(n, items, (winnerIdx) => {
     spinning = false;
+    spinningDrum = null;
     check(); // clear spinning flag on both buttons first
     if (n === 1) {
       chosenCat = items[winnerIdx];
@@ -2190,6 +2193,7 @@ window.secretPickCat = function(cat) {
   drumY[1] = newY;
   // Trigger the same callback as a normal spin landing
   spinning = false;
+  spinningDrum = null;
   chosenCat = cat;
   unlockW2();
   check();
@@ -3147,8 +3151,10 @@ function broadcastState() {
   // using its own slot height, with zero risk of floating-point drift.
   const drum1SlotF = drumYToSlotF(1, d1Items);
   const drum2SlotF = drumYToSlotF(2, d2Items);
-  const drum1Idx   = spinning ? null : centeredItemIdx(1, d1Items);
-  const drum2Idx   = spinning ? null : centeredItemIdx(2, d2Items);
+  // Only null out the idx for whichever drum is actively spinning —
+  // the settled drum should always send its integer idx so TV uses offsetTop.
+  const drum1Idx   = (spinningDrum === 1) ? null : centeredItemIdx(1, d1Items);
+  const drum2Idx   = (spinningDrum === 2) ? null : centeredItemIdx(2, d2Items);
 
   ch.postMessage({
     type: 'state',
@@ -3253,8 +3259,9 @@ if (_isTVMode) {
       function positionDrum(n, items, slotF, itemIdx) {
         const stripEl = document.getElementById('drum' + n);
         if (!stripEl) return;
-        // Force reflow so offsetTop / offsetHeight reflect current layout
-        void stripEl.offsetHeight;
+        // NOTE: no reflow here — this runs 60fps during spins and a forced
+        // reflow every 16ms starves the audio thread (kills tick sounds).
+        // Reflows are done once in the buildDrum rebuild path above.
         let y;
         if (itemIdx !== null && itemIdx !== undefined && items && items.length) {
           // Settled: find the slot element at rep 1, item itemIdx
