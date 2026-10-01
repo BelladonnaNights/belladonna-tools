@@ -1639,11 +1639,7 @@ function playTick(velocity) {
   // velocity 0-1: 1 = peak speed, 0 = final slow clacks
   try {
     const ctx = getACtx();
-    if (ctx.state !== 'running') {
-      // Resume and retry once running — don't drop the tick
-      ctx.resume().then(() => playTick(velocity)).catch(()=>{});
-      return;
-    }
+    if (ctx.state === 'suspended') ctx.resume();
 
     const sr  = ctx.sampleRate;
     // Price is Right big wheel: hard plastic peg strike
