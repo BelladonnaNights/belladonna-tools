@@ -768,7 +768,31 @@ body.tv-mode .song-search-wrap{display:none!important;}
 body.tv-mode .spin-btn{display:none!important;}
 body.tv-mode .result-actions{display:none!important;}
 body.tv-mode .stage{justify-content:center;padding-top:clamp(28px,5vh,60px);}
-body.tv-mode{cursor:none;}
+/* TV drum sizing — make the drums fill most of the screen */
+body.tv-mode{
+  cursor:none;
+  --slot-h:clamp(100px,13vh,148px);
+  --drum-w:clamp(480px,42vw,780px);
+  --vis:6;
+}
+body.tv-mode .wheel-unit-lbl{
+  font-size:clamp(1rem,2vw,1.5rem);letter-spacing:.28em;
+}
+body.tv-mode .drum-slot{
+  font-size:clamp(1.4rem,2.6vw,2.4rem);
+}
+body.tv-mode .result-val{
+  font-size:clamp(2.2rem,5vw,4.5rem);
+}
+body.tv-mode .result-card{
+  padding:clamp(32px,5vh,60px) clamp(40px,6vw,80px);
+}
+body.tv-mode .result-eyebrow{
+  font-size:clamp(.9rem,1.5vw,1.3rem);letter-spacing:.3em;
+}
+body.tv-mode .wheels-stage{
+  gap:clamp(24px,5vw,80px);
+}
 
 /* ─── PASSWORD PROMPT ──────────────────────────── */
 .pw-overlay{
@@ -810,6 +834,64 @@ body.tv-mode{cursor:none;}
   font-size:.72rem;color:var(--danger);font-family:'DM Sans',sans-serif;
   text-align:center;height:16px;transition:opacity .2s;
 }
+
+/* ─── ADMIN SETTINGS PANEL ─────────────────────── */
+.admin-settings{
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  display:flex;flex-direction:column;gap:12px;
+}
+.admin-settings-title{
+  font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:2px;
+}
+.admin-sound-row{display:flex;align-items:center;gap:8px;}
+.admin-sound-row input{
+  flex:1;background:#0a0a06;border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;
+  padding:7px 12px;outline:none;transition:border-color .2s;min-width:0;
+}
+.admin-sound-row input:focus{border-color:var(--gold);}
+.admin-sound-row input::placeholder{color:var(--text3);}
+.admin-sound-test{
+  background:none;border:1px solid var(--border2);border-radius:7px;
+  color:var(--text3);font-size:.78rem;padding:7px 12px;cursor:pointer;
+  white-space:nowrap;transition:all .15s;flex-shrink:0;
+}
+.admin-sound-test:hover{border-color:var(--border3);color:var(--gold2);}
+
+/* ─── ROLL COUNTER VIEW ─────────────────────────── */
+.roll-admin-wrap{flex:1;overflow-y:auto;padding:10px 14px;min-height:0;}
+.roll-admin-row{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 10px;border-radius:7px;
+  background:var(--surface2);margin-bottom:3px;
+  border:1px solid transparent;
+  font-family:'DM Sans',sans-serif;font-size:.84rem;
+}
+.roll-admin-name{flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.roll-admin-count{
+  font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.08em;
+  color:var(--gold2);flex-shrink:0;min-width:52px;text-align:right;
+}
+.roll-admin-bar{
+  height:4px;width:80px;background:var(--surface3);border-radius:3px;
+  overflow:hidden;flex-shrink:0;
+}
+.roll-admin-bar-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .3s;}
+.roll-admin-empty{
+  font-size:.76rem;color:var(--text3);font-style:italic;padding:16px;text-align:center;
+}
+.roll-admin-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:8px;
+}
+.roll-admin-total{font-size:.72rem;color:var(--text3);}
+.roll-admin-total strong{color:var(--text2);}
+
+/* Extra admin pane tab style for Rolls */
+.ptab.rolls-tab-btn{}
 </style>
 </head>
 <body>
@@ -1042,7 +1124,32 @@ body.tv-mode{cursor:none;}
         </div>
       </div>
     </div>
+    <!-- Rolls overlay — shown instead of admin-body when Roll History is open -->
+    <div id="rollsPane" style="display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;">
+      <div class="pane-head" style="justify-content:space-between;">
+        <span class="pane-cat-name">Roll History</span>
+        <button class="ptab active" style="font-size:.54rem;padding:5px 10px;cursor:pointer;" onclick="window.closeRollsPane()">← Back to Editor</button>
+      </div>
+      <div class="roll-admin-wrap" id="rollAdminList"></div>
+      <div class="roll-admin-footer">
+        <div class="roll-admin-total" id="rollAdminTotal"></div>
+        <button class="gbtn danger sm" id="rollResetBtn">Reset All Rolls</button>
+      </div>
+    </div>
+
+    <!-- Sound URL row — shown in settings area above footer -->
+    <div class="admin-settings" id="adminSoundSettings">
+      <div class="admin-settings-title">🔊 Custom Result Sound URL</div>
+      <div class="admin-sound-row">
+        <input type="url" id="customSoundInput" placeholder="https://…/fanfare.mp3  (leave blank for built-in sound)" autocomplete="off"/>
+        <button class="admin-sound-test" id="testSoundBtn">▶ Test</button>
+      </div>
+    </div>
+
     <div class="admin-footer">
+      <button class="gbtn" id="rollHistoryBtn" style="display:flex;align-items:center;gap:7px;">
+        ↺ Roll History
+      </button>
       <button class="gbtn" id="exportBtn" style="display:flex;align-items:center;gap:7px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export HTML
@@ -1148,9 +1255,9 @@ function setSyncStatus(state) {
 
 /* Write to Firestore AND keep localStorage as fast cache */
 async function saveData() {
-  const payload = { cats, songMap, activeCats: [...activeCats], rollCounts };
+  const payload = { cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl };
   // Optimistic local cache
-  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
+  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
   setSyncStatus('saving');
   try {
     await setDoc(_docRef, payload);
@@ -1174,8 +1281,9 @@ async function loadData() {
         cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
         activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
         if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
+        if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
         // Update local cache
-        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
+        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
         setSyncStatus('ok');
         return true;
       }
@@ -1200,6 +1308,7 @@ function _loadLocal() {
     cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
     activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
     if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
+    if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
     return true;
   } catch(e) { return false; }
 }
@@ -1220,6 +1329,7 @@ function startRealtimeSync() {
     if (Array.isArray(p.activeCats)) activeCats = new Set(p.activeCats);
     else activeCats = new Set(cats);
     if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
+    if (typeof p.customSoundUrl === 'string') customSoundUrl = p.customSoundUrl;
     // Rebuild UI
     buildDrum(1, wheelCats());
     refreshCatLockSelect();
@@ -1230,7 +1340,7 @@ function startRealtimeSync() {
     }
     check();
     setSyncStatus('ok');
-    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
+    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts, customSoundUrl })); } catch(e) {}
   }, (err) => {
     console.warn('Firestore snapshot error:', err);
     setSyncStatus('offline');
@@ -1267,7 +1377,8 @@ function getACtx() {
   return _actx;
 }
 
-let audioEnabled = true;  // toggled by the mute button
+let audioEnabled  = true;   // toggled by the mute button
+let customSoundUrl = '';    // set in admin; if empty, use generated fanfare
 
 function playTick(velocity) {
   if (!audioEnabled) return;
@@ -1334,6 +1445,98 @@ function playTick(velocity) {
   } catch(e) { /* silence errors if audio unavailable */ }
 }
 
+/* Play the result-reveal fanfare — either a custom URL or the built-in sting */
+function playFanfare() {
+  if (!audioEnabled) return;
+  try {
+    const ctx = getACtx();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    if (customSoundUrl && customSoundUrl.trim()) {
+      // Use the custom sound from admin
+      fetch(customSoundUrl)
+        .then(r => r.arrayBuffer())
+        .then(buf => ctx.decodeAudioData(buf))
+        .then(decoded => {
+          const src = ctx.createBufferSource();
+          src.buffer = decoded;
+          const g = ctx.createGain();
+          g.gain.value = 0.85;
+          src.connect(g); g.connect(ctx.destination);
+          src.start();
+        })
+        .catch(() => _playBuiltinFanfare(ctx)); // fall back on any error
+      return;
+    }
+    _playBuiltinFanfare(ctx);
+  } catch(e) { /* silent */ }
+}
+
+function _playBuiltinFanfare(ctx) {
+  // Rising triumphant arpeggio: C5 E5 G5 C6 with warm synth brass
+  const sr = ctx.sampleRate;
+  const masterGain = ctx.createGain();
+  masterGain.gain.value = 0.70;
+
+  // Compressor to keep it punchy and clean
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.knee.value = 8;
+  comp.ratio.value = 3; comp.attack.value = 0.003; comp.release.value = 0.2;
+  masterGain.connect(comp); comp.connect(ctx.destination);
+
+  const now = ctx.currentTime;
+  // Notes: C5=523, E5=659, G5=784, C6=1047
+  const notes = [
+    { freq: 523,  t: 0.00, dur: 0.22, vel: 0.85 },
+    { freq: 659,  t: 0.14, dur: 0.22, vel: 0.90 },
+    { freq: 784,  t: 0.28, dur: 0.22, vel: 0.95 },
+    { freq: 1047, t: 0.42, dur: 0.55, vel: 1.00 },
+  ];
+
+  notes.forEach(({ freq, t, dur, vel }) => {
+    const bufLen = Math.ceil(sr * (dur + 0.06));
+    const buf = ctx.createBuffer(1, bufLen, sr);
+    const d   = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const s = i / sr;
+      const env = s < 0.01
+        ? s / 0.01                                          // 10ms attack
+        : s < dur
+          ? 1 - (s - 0.01) / (dur - 0.01) * 0.3           // slight release during note
+          : Math.max(0, 1 - (s - dur) / 0.06);            // 60ms tail off
+      // Warm sawtooth blend
+      const f1 = freq, f2 = freq * 2, f3 = freq * 3;
+      const wave = Math.sin(2 * Math.PI * f1 * s) * 0.6
+                 + Math.sin(2 * Math.PI * f2 * s) * 0.28
+                 + Math.sin(2 * Math.PI * f3 * s) * 0.12;
+      d[i] = wave * env * vel;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.value = 0.50;
+    src.connect(g); g.connect(masterGain);
+    src.start(now + t);
+  });
+
+  // Sparkle shimmer on top (high-freq triangle pulse)
+  const shimLen = Math.ceil(sr * 0.85);
+  const shimBuf = ctx.createBuffer(1, shimLen, sr);
+  const shimD   = shimBuf.getChannelData(0);
+  for (let i = 0; i < shimLen; i++) {
+    const s   = i / sr;
+    const env = s < 0.42 ? 0 : Math.sin(Math.PI * (s - 0.42) / 0.43) * 0.4;
+    shimD[i]  = (Math.random() * 2 - 1) * env;
+  }
+  const shimSrc = ctx.createBufferSource();
+  shimSrc.buffer = shimBuf;
+  const shimBP = ctx.createBiquadFilter();
+  shimBP.type = 'highpass'; shimBP.frequency.value = 5500; shimBP.Q.value = 0.6;
+  const shimG = ctx.createGain(); shimG.gain.value = 0.18;
+  shimSrc.connect(shimBP); shimBP.connect(shimG); shimG.connect(masterGain);
+  shimSrc.start(now);
+}
+
 /* ═══════════════════════════════════════════════════════
    DRUM ENGINE
    ───────────────────────────────────────────────────────
@@ -1345,14 +1548,19 @@ function playTick(velocity) {
    ═══════════════════════════════════════════════════════ */
 
 const REPS   = 12;   // how many full copies of the list we pre-render
-const VIS    = 7;    // visible slots — must match --vis CSS var
 const BULBS  = 11;
+// Visible slots — read from CSS --vis so TV mode (--vis:6) is respected
+function getVIS() {
+  const raw = getComputedStyle(document.body).getPropertyValue('--vis').trim();
+  const n   = parseInt(raw);
+  return isNaN(n) ? 7 : n;
+}
 // Read actual rendered slot height from a real drum-slot element
 function getSlotH() {
   const slot = document.querySelector('.drum-slot');
   if (slot) return slot.getBoundingClientRect().height;
   // Fallback: parse --slot-h CSS var (works when value is plain px)
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--slot-h').trim();
+  const raw = getComputedStyle(document.body).getPropertyValue('--slot-h').trim();
   const px  = parseFloat(raw);
   return isNaN(px) ? 72 : px;
 }
@@ -1373,7 +1581,7 @@ function buildDrum(n, items) {
 
   if (!items || !items.length) {
     // Show placeholder slots
-    for (let i = 0; i < VIS; i++) {
+    for (let i = 0; i < getVIS(); i++) {
       const s = document.createElement('div');
       s.className = 'drum-slot ' + (i % 2 ? 'gd' : 'dk');
       s.style.color = 'var(--text3)';
@@ -1394,9 +1602,9 @@ function buildDrum(n, items) {
   }
 
   // Start the strip so the MIDDLE of the visible window shows items[0]
-  // The centre row index (0-based from top of strip) = Math.floor(VIS/2)
+  // The centre row index (0-based from top of strip) = Math.floor(getVIS()/2)
   // We want strip top to be above the drum-clip by that many rows
-  const startY = -Math.floor(VIS / 2) * getSlotH();
+  const startY = -Math.floor(getVIS() / 2) * getSlotH();
   drumY[n] = startY;
   strip.style.transform = `translateY(${startY}px)`;
 
@@ -1407,7 +1615,7 @@ function buildDrum(n, items) {
 /* Given the current translateY of strip n, which item index is centred? */
 function centredIndex(n, items, slotH) {
   if (!slotH) slotH = getSlotH();
-  const centrePixel  = -drumY[n] + Math.floor(VIS / 2) * slotH;
+  const centrePixel  = -drumY[n] + Math.floor(getVIS() / 2) * slotH;
   const absoluteSlot = Math.round(centrePixel / slotH);
   return ((absoluteSlot % items.length) + items.length) % items.length;
 }
@@ -1419,10 +1627,11 @@ function spinDrum(n, items, cb) {
   const strip   = document.getElementById('drum' + n);
   const count   = items.length;
   const winIdx  = Math.floor(Math.random() * count);
+  const vis     = getVIS();
 
   // Current absolute slot at centre
   const slotH = getSlotH();
-  const centrePixel   = -drumY[n] + Math.floor(VIS / 2) * Math.round(slotH);
+  const centrePixel   = -drumY[n] + Math.floor(vis / 2) * Math.round(slotH);
   const currentSlot   = Math.round(centrePixel / Math.round(slotH));
 
   // Target absolute slot: go forward enough full loops, then land on winIdx
@@ -1438,14 +1647,14 @@ function spinDrum(n, items, cb) {
   // Convert target slot to target translateY
   // Round slotH to nearest integer so accumulated pixel error stays zero
   const slotHInt = Math.round(slotH);
-  const targetY  = -Math.round(targetSlot * slotHInt - Math.floor(VIS / 2) * slotHInt);
+  const targetY  = -Math.round(targetSlot * slotHInt - Math.floor(vis / 2) * slotHInt);
 
   const startY  = drumY[n];
   const dist    = targetY - startY;   // will be negative (strip moves up)
   const dur     = 4000 + Math.random() * 800;  // 4.0–4.8 s
   const t0      = performance.now();
   // Track which slot is centred for tick detection
-  let lastSlot  = Math.round((-startY + Math.floor(VIS / 2) * slotHInt) / slotHInt);
+  let lastSlot  = Math.round((-startY + Math.floor(vis / 2) * slotHInt) / slotHInt);
 
   // Smooth ease: accelerate for first 30%, then decelerate gradually for 70%
   function ease(t) {
@@ -1467,7 +1676,7 @@ function spinDrum(n, items, cb) {
     strip.style.transform = `translateY(${y}px)`;
 
     // Tick on every slot boundary crossing
-    const curSlot = Math.round((-y + Math.floor(VIS / 2) * slotHInt) / slotHInt);
+    const curSlot = Math.round((-y + Math.floor(vis / 2) * slotHInt) / slotHInt);
     if (curSlot !== lastSlot) {
       lastSlot = curSlot;
       // velocity: derivative of ease at t, normalised 0‒1
@@ -1492,15 +1701,14 @@ function spinDrum(n, items, cb) {
       // Visually identical — just moves the raw translateY back to a small number.
       {
         const sh    = Math.round(getSlotH());
-        const totalSlots = items.length * REPS;
         // Absolute slot at centre after snap
-        const cPx   = -targetY + Math.floor(VIS / 2) * sh;
+        const cPx   = -targetY + Math.floor(vis / 2) * sh;
         const absSlot = Math.round(cPx / sh);
         // Equivalent slot in the first rep: same item, low index
         const itemIdx = ((absSlot % items.length) + items.length) % items.length;
         // Place that item at centre using rep 1 (second copy) to keep some buffer
         const resetSlot = items.length + itemIdx;
-        const resetY    = -(resetSlot * sh - Math.floor(VIS / 2) * sh);
+        const resetY    = -(resetSlot * sh - Math.floor(vis / 2) * sh);
         // Teleport strip instantly (no transition) then restore
         strip.style.transition = 'none';
         strip.style.transform  = `translateY(${resetY}px)`;
@@ -1512,7 +1720,7 @@ function spinDrum(n, items, cb) {
       // Identify the winning slot element and highlight it
       const landed = centredIndex(n, items, slotH);
       const slots  = strip.querySelectorAll('.drum-slot');
-      const centreSlotIdx = Math.round((-targetY + Math.floor(VIS / 2) * slotHInt) / slotHInt);
+      const centreSlotIdx = Math.round((-targetY + Math.floor(vis / 2) * slotHInt) / slotHInt);
       const winSlot = slots[centreSlotIdx];
       if (winSlot) {
         winSlot.classList.add('slot-winner');
@@ -1642,7 +1850,7 @@ window.onCatLockSelect = function(val) {
     const strip = document.getElementById('drum1');
     const sh    = Math.round(getSlotH());
     const slot  = cats.length + idx;
-    const newY  = -(slot * sh - Math.floor(VIS / 2) * sh);
+    const newY  = -(slot * sh - Math.floor(getVIS() / 2) * sh);
     strip.style.transition = 'none';
     strip.style.transform  = `translateY(${newY}px)`;
     strip.offsetHeight;
@@ -1689,7 +1897,7 @@ window.secretPickCat = function(cat) {
   const sh     = Math.round(getSlotH());
   // Use rep 1 so there's buffer around it
   const slot   = items.length + idx;
-  const newY   = -(slot * sh - Math.floor(VIS / 2) * sh);
+  const newY   = -(slot * sh - Math.floor(getVIS() / 2) * sh);
   strip.style.transition = 'none';
   strip.style.transform  = `translateY(${newY}px)`;
   strip.offsetHeight;
@@ -1764,6 +1972,7 @@ function showResult(cat, song) {
   const el = document.getElementById('resultReveal');
   el.classList.add('vis');
   flashAllBulbs();
+  playFanfare();
   // Note: spinAgainBtn is hidden now — result card has inline buttons
   broadcastState();
 }
@@ -1842,6 +2051,32 @@ function wireAdminButtons() {
 
   // Footer
   document.getElementById('exportBtn').addEventListener('click', exportHTML);
+
+  // Roll history
+  document.getElementById('rollHistoryBtn').addEventListener('click', openRollsPane);
+  document.getElementById('rollResetBtn').addEventListener('click', () => {
+    if (!confirm('Reset ALL roll counts? This cannot be undone.')) return;
+    rollCounts = {};
+    saveData();
+    renderRollHistory();
+  });
+
+  // Sound URL
+  const soundInput = document.getElementById('customSoundInput');
+  soundInput.value = customSoundUrl || '';
+  soundInput.addEventListener('change', () => {
+    customSoundUrl = soundInput.value.trim();
+    saveData();
+  });
+  soundInput.addEventListener('blur', () => {
+    customSoundUrl = soundInput.value.trim();
+    saveData();
+  });
+  document.getElementById('testSoundBtn').addEventListener('click', () => {
+    // Warm up then play
+    try { getACtx(); } catch(e) {}
+    playFanfare();
+  });
 }
 
 function openAdminPanel() {
@@ -1849,8 +2084,15 @@ function openAdminPanel() {
   const btn = document.getElementById('adminToggleBtn');
   p.classList.add('open');
   btn.textContent = '✕ Close';
+  // Make sure the rolls pane is hidden and admin-body is shown
+  document.getElementById('rollsPane').style.display = 'none';
+  document.getElementById('adminSoundSettings').style.display = '';
+  p.querySelector('.admin-body').style.display = '';
   renderAdminCatList();
   renderAdminPane();
+  // Sync sound URL field with current value
+  const si = document.getElementById('customSoundInput');
+  if (si) si.value = customSoundUrl || '';
   document.getElementById('aCatInput').focus();
 }
 
@@ -2248,6 +2490,57 @@ function showRollCount(song) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   ROLL HISTORY ADMIN
+   ═══════════════════════════════════════════════════════ */
+function openRollsPane() {
+  const adminBody  = document.getElementById('adminPanel').querySelector('.admin-body');
+  const rollsPane  = document.getElementById('rollsPane');
+  const soundSett  = document.getElementById('adminSoundSettings');
+  adminBody.style.display    = 'none';
+  soundSett.style.display    = 'none';
+  rollsPane.style.display    = 'flex';
+  renderRollHistory();
+}
+
+window.closeRollsPane = function() {
+  const adminBody = document.getElementById('adminPanel').querySelector('.admin-body');
+  const rollsPane = document.getElementById('rollsPane');
+  const soundSett = document.getElementById('adminSoundSettings');
+  rollsPane.style.display = 'none';
+  adminBody.style.display = '';
+  soundSett.style.display = '';
+};
+
+function renderRollHistory() {
+  const list  = document.getElementById('rollAdminList');
+  const total = document.getElementById('rollAdminTotal');
+  const entries = Object.entries(rollCounts).sort((a, b) => b[1] - a[1]);
+  const grandTotal = entries.reduce((s, [, v]) => s + v, 0);
+
+  total.innerHTML = entries.length
+    ? `<strong>${entries.length}</strong> song${entries.length===1?'':'s'} · <strong>${grandTotal}</strong> total roll${grandTotal===1?'':'s'}`
+    : '';
+
+  if (!entries.length) {
+    list.innerHTML = '<div class="roll-admin-empty">No rolls yet — start spinning!</div>';
+    return;
+  }
+
+  const maxCount = entries[0][1];
+  list.innerHTML = entries.map(([song, count]) => {
+    const pct = maxCount > 0 ? Math.round(count / maxCount * 100) : 0;
+    return `
+    <div class="roll-admin-row">
+      <span class="roll-admin-name" title="${esc(song)}">${esc(song)}</span>
+      <div class="roll-admin-bar"><div class="roll-admin-bar-fill" style="width:${pct}%"></div></div>
+      <span class="roll-admin-count">${count}×</span>
+    </div>`;
+  }).join('');
+}
+
+window.switchToRollsTab = openRollsPane;
+
+/* ═══════════════════════════════════════════════════════
    SONG SEARCH
    ═══════════════════════════════════════════════════════ */
 function showSongSearch(show) {
@@ -2528,7 +2821,13 @@ window.pwCancel       = pwCancel;
   });
 
   // Warm up AudioContext on first interaction (browser autoplay policy)
-  const _resumeAudio = () => { try { getACtx(); } catch(e) {} document.removeEventListener('click', _resumeAudio); };
+  // We call resume() every time to handle browsers that auto-suspend it
+  const _resumeAudio = () => {
+    try {
+      const ctx = getACtx();
+      if (ctx.state === 'suspended') ctx.resume();
+    } catch(e) {}
+  };
   document.addEventListener('click', _resumeAudio);
 
   // Keyboard support for PIN prompt
@@ -2565,7 +2864,6 @@ function onFsChange() {
   buildDrum(2, d2items);
   if (phase === 2) {
     document.getElementById('dlock').classList.add('hidden');
-    document.getElementById('chosenBadge').classList.add('vis');
   }
 }
 
