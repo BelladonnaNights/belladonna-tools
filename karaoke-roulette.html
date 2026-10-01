@@ -1890,7 +1890,7 @@ function centredIndex(n, items, slotH) {
 
 /* Spin drum n; call cb(winnerIndex) when done */
 function spinDrum(n, items, cb) {
-  if (animId) { clearInterval(animId); animId = null; }
+  if (animId) cancelAnimationFrame(animId);
 
   const strip   = document.getElementById('drum' + n);
   const count   = items.length;
@@ -1920,8 +1920,7 @@ function spinDrum(n, items, cb) {
   const startY  = drumY[n];
   const dist    = targetY - startY;   // will be negative (strip moves up)
   const dur     = 4000 + Math.random() * 800;  // 4.0–4.8 s
-  const t0      = Date.now();
-  let _done     = false;  // guard: completion block runs exactly once
+  const t0      = performance.now();
   // Track which slot is centred for tick detection
   let lastSlot  = Math.round((-startY + Math.floor(vis / 2) * slotHInt) / slotHInt);
 
@@ -1938,8 +1937,7 @@ function spinDrum(n, items, cb) {
 
   startBulbs();
 
-  function frame() {
-    const now = Date.now();
+  function frame(now) {
     const t   = Math.min((now - t0) / dur, 1);
     const y   = startY + dist * ease(t);
     drumY[n]  = y;
@@ -1958,15 +1956,12 @@ function spinDrum(n, items, cb) {
     }
 
     if (t < 1) {
-      // keep going
-    } else if (!_done) {
-      _done = true;
-      clearInterval(animId);
+      animId = requestAnimationFrame(frame);
+    } else {
       animId = null;
       // Hard snap to integer-pixel target — zero drift
       drumY[n] = targetY;
       strip.style.transform = `translateY(${targetY}px)`;
-      animId = null;
       stopBulbs();
 
       // Reset strip position to prevent accumulated drift causing blank drum.
@@ -2014,9 +2009,7 @@ function spinDrum(n, items, cb) {
     }
   }
 
-  // Use setInterval instead of requestAnimationFrame so animation continues
-  // even when this tab is backgrounded (e.g. user is watching the TV pop-out)
-  animId = setInterval(frame, 16);
+  animId = requestAnimationFrame(frame);
 }
 
 /* ═══════════════════════════════════════════════════════
