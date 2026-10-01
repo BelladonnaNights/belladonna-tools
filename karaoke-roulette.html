@@ -3118,7 +3118,12 @@ function broadcastState() {
   const rSongEl = document.getElementById('rSong');
 
   const d1Items = wheelCats();
-  const d2Items = chosenCat ? (songMap[chosenCat] || []) : [];
+  // Only send song list when drum2 is actually showing songs (spinning or done).
+  // In "waiting to spin" state (phase 2, not spinning, no result showing),
+  // send [] so TV also keeps drum2 blank as a surprise.
+  const drum2El = document.getElementById('drum2');
+  const drum2HasSongs = drum2El && drum2El.children.length > getVIS(); // more than placeholder slots
+  const d2Items = drum2HasSongs ? (chosenCat ? (songMap[chosenCat] || []) : []) : [];
   // Send host slot-h so TV can scale raw pixel Y values to its own slot size
   const hostSlotH = getSlotH();
   const hostVis   = getVIS();
@@ -3219,14 +3224,15 @@ if (_isTVMode) {
       const dlock = document.getElementById('dlock');
       if (dlock) dlock.classList.toggle('hidden', s.phase === 2);
 
-      // Scale host pixel Y to TV pixel Y using slot-h ratio.
-      // Host and TV have different --slot-h values, so raw Y from host
-      // must be proportionally scaled before applying to TV drum strip.
-      function scaleY(hostY, hostSH, tvSH) {
-        if (!hostSH || !tvSH) return hostY;
+      // Convert host pixel Y → slot number → TV pixel Y.
+      // drumY encodes position as (slot * slotH), so dividing by hostSlotH
+      // gives the fractional slot, then multiply by tvSlotH to get TV pixels.
+      const tvSH   = getSlotH();
+      const hostSH = s.hostSlotH || tvSH; // fallback: same size
+      function scaleY(hostY) {
+        if (!hostSH) return hostY;
         return (hostY / hostSH) * tvSH;
       }
-      const tvSH = getSlotH();
 
       // Mirror drum1 position
       if (s.drum1Items && s.drum1Items.length) {
@@ -3235,25 +3241,25 @@ if (_isTVMode) {
         const need1 = s.drum1Items.length * REPS;
         if (cur1 !== need1) buildDrum(1, s.drum1Items);
         if (strip1) {
-          const y1 = scaleY(s.drum1Y, s.hostSlotH, tvSH);
+          const y1 = scaleY(s.drum1Y);
           strip1.style.transition = 'none';
           strip1.style.transform  = `translateY(${y1}px)`;
           drumY[1] = y1;
         }
       }
 
-      // Mirror drum2 position
-      if (s.drum2Items && s.drum2Items.length) {
-        const strip2 = document.getElementById('drum2');
-        const cur2 = strip2 ? strip2.children.length : 0;
-        const need2 = s.drum2Items.length * REPS;
-        if (cur2 !== need2) buildDrum(2, s.drum2Items);
-        if (strip2) {
-          const y2 = scaleY(s.drum2Y, s.hostSlotH, tvSH);
-          strip2.style.transition = 'none';
-          strip2.style.transform  = `translateY(${y2}px)`;
-          drumY[2] = y2;
-        }
+      // Mirror drum2 — host sends [] when blank (before Spin Song), songs when spinning
+      const strip2 = document.getElementById('drum2');
+      const d2Items = s.drum2Items || [];
+      const cur2  = strip2 ? strip2.children.length : 0;
+      const need2 = d2Items.length * REPS;
+      // Rebuild if item count changed (includes transition [] ↔ songs)
+      if (cur2 !== need2) buildDrum(2, d2Items);
+      if (strip2 && d2Items.length) {
+        const y2 = scaleY(s.drum2Y);
+        strip2.style.transition = 'none';
+        strip2.style.transform  = `translateY(${y2}px)`;
+        drumY[2] = y2;
       }
 
       // Mirror bulbs
