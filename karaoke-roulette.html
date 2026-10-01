@@ -411,7 +411,7 @@ body::before{
   z-index:20;border-radius:10px;transition:opacity .3s;
 }
 .drum-lock.hidden{opacity:0;pointer-events:none;}
-.lock-lbl{font-family:'Cinzel',serif;font-size:clamp(.72rem,1vw,.9rem);letter-spacing:.18em;text-transform:uppercase;color:var(--text3);text-align:center;line-height:2.4;}
+.lock-lbl{font-family:'Cinzel',serif;font-size:clamp(.72rem,1vw,.9rem);letter-spacing:.18em;text-transform:uppercase;color:var(--text3);text-align:center;line-height:1.8;}
 
 .chosen-badge{
   font-family:'Cinzel',serif;font-size:clamp(.7rem,.95vw,.88rem);letter-spacing:.14em;text-transform:uppercase;
@@ -670,6 +670,106 @@ body::before{
 }
 @keyframes pwShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 
+/* ─── ROLL COUNTER ────────────────────────────── */
+.roll-counter{
+  margin-top:clamp(10px,1.4vh,18px);
+  font-family:'DM Sans',sans-serif;font-size:clamp(.7rem,.88vw,.84rem);
+  color:var(--text3);letter-spacing:.04em;text-align:center;
+}
+.roll-counter strong{
+  color:var(--gold2);font-weight:600;
+}
+.roll-counter-badge{
+  display:inline-block;
+  background:var(--gold-dim);border:1px solid var(--border2);border-radius:20px;
+  padding:3px 14px;margin-top:6px;
+  font-family:'Cinzel',serif;font-size:clamp(.58rem,.72vw,.68rem);
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text3);
+}
+.roll-counter-badge.first-roll{
+  border-color:var(--gold);color:var(--gold2);
+  background:rgba(201,168,76,.15);
+}
+
+/* ─── SONG SEARCH ─────────────────────────────── */
+.song-search-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  width:var(--drum-w);
+  opacity:0;pointer-events:none;
+  transform:translateY(-6px);
+  transition:opacity .3s,transform .3s;
+  margin-top:2px;
+}
+.song-search-wrap.vis{opacity:1;pointer-events:auto;transform:translateY(0);}
+.song-search-inner{
+  width:100%;
+  position:relative;
+  display:flex;align-items:center;
+}
+.song-search-input{
+  width:100%;background:#0a0a06;
+  border:1px solid var(--border2);border-radius:24px;
+  color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.84rem;
+  padding:8px 36px 8px 16px;outline:none;
+  transition:border-color .2s;
+  caret-color:var(--gold);
+}
+.song-search-input:focus{border-color:var(--gold);color:var(--text);}
+.song-search-input::placeholder{color:var(--text3);}
+.song-search-clear{
+  position:absolute;right:12px;
+  background:none;border:none;color:var(--text3);
+  font-size:.9rem;cursor:pointer;
+  line-height:1;padding:2px;
+  display:none;
+  transition:color .14s;
+}
+.song-search-clear:hover{color:var(--gold2);}
+.song-search-lbl{
+  font-family:'Cinzel',serif;font-size:clamp(.55rem,.72vw,.68rem);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--text3);
+  margin-bottom:6px;
+}
+.song-search-results{
+  width:100%;margin-top:4px;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:12px;
+  overflow:hidden;display:none;
+  max-height:220px;overflow-y:auto;
+}
+.ssr-empty{
+  font-size:.78rem;color:var(--text3);font-style:italic;
+  padding:12px 16px;text-align:center;
+}
+.ssr-hit{
+  padding:9px 16px;font-size:.84rem;color:var(--text2);
+  border-bottom:1px solid var(--border);cursor:default;
+  transition:background .12s,color .12s;
+}
+.ssr-hit:last-child{border-bottom:none;}
+.ssr-hit:hover{background:var(--surface3);color:var(--text);}
+.ssr-hit mark{background:none;color:var(--gold2);font-weight:600;}
+
+/* ─── POP-OUT TV BUTTON ───────────────────────── */
+.tv-btn{
+  background:transparent;border:1px solid var(--border);border-radius:8px;
+  color:var(--text3);font-family:'Cinzel',serif;font-size:clamp(.6rem,.78vw,.74rem);
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:9px 16px;cursor:pointer;transition:all .18s;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+}
+.tv-btn:hover{border-color:var(--border3);color:var(--gold2);}
+.tv-btn svg{flex-shrink:0;}
+
+/* TV display-only mode (no top bar controls, no admin) */
+body.tv-mode .top-bar{display:none!important;}
+body.tv-mode .cat-lock-bar{display:none!important;}
+body.tv-mode .song-search-wrap{display:none!important;}
+body.tv-mode .spin-btn{display:none!important;}
+body.tv-mode .result-actions{display:none!important;}
+body.tv-mode .stage{justify-content:center;padding-top:clamp(28px,5vh,60px);}
+body.tv-mode{cursor:none;}
+
 /* ─── PASSWORD PROMPT ──────────────────────────── */
 .pw-overlay{
   position:fixed;inset:0;z-index:300;
@@ -739,6 +839,10 @@ body::before{
     <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;">⬤ Loading…</span>
     <button class="tbbtn audioToggleBtn" id="audioToggleBtn">Sound: On</button>
     <button class="tbbtn" onclick="toggleAdmin()" id="adminToggleBtn">⚙ Admin</button>
+    <button class="tv-btn" id="tvPopBtn" onclick="window.openTVPopout()" title="Pop out a TV display window">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      TV Screen
+    </button>
     <button class="tbbtn fs-btn audioToggleBtn" id="fsSoundBtn" style="display:none;">Sound: On</button>
     <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
   </div>
@@ -796,7 +900,6 @@ body::before{
     <!-- WHEEL 2 -->
     <div class="wheel-unit">
       <div class="wheel-unit-lbl">Song</div>
-      <div class="chosen-badge" id="chosenBadge">—</div>
       <div class="drum-shell">
         <div class="bulb-strip" id="b2L"></div>
         <div class="drum-outer">
@@ -804,13 +907,24 @@ body::before{
           <div class="drum-fade-t"></div><div class="drum-fade-b"></div>
           <div class="drum-win"></div>
           <div class="drum-lock" id="dlock">
-            <div class="lock-lbl">🔒<br>Spin Category<br>First</div>
+            <div class="lock-lbl">Spin Category<br>First</div>
           </div>
         </div>
         <div class="drum-ptr"></div>
         <div class="bulb-strip" id="b2R"></div>
       </div>
       <button class="spin-btn" id="sb2" onclick="window.spinWheel(2)" disabled>Spin Song</button>
+      <!-- Song search — visible after category chosen -->
+      <div class="song-search-wrap" id="songSearchWrap">
+        <div class="song-search-lbl">Search this category's songs</div>
+        <div class="song-search-inner">
+          <input class="song-search-input" id="songSearchInput"
+            placeholder="Type a song name…" autocomplete="off"
+            oninput="window.onSongSearch(this.value)"/>
+          <button class="song-search-clear" id="songSearchClear" onclick="window.clearSongSearch()">✕</button>
+        </div>
+        <div class="song-search-results" id="songSearchResults"></div>
+      </div>
     </div>
 
   </div>
@@ -830,6 +944,10 @@ body::before{
             <div class="result-lbl">Your Song</div>
             <div class="result-val" id="rSong">—</div>
           </div>
+        </div>
+        <div class="roll-counter" id="rollCounterDisplay" style="display:none;">
+          This song has been rolled <strong id="rollCountNum">1</strong> time<span id="rollCountPlural"></span>
+          <div class="roll-counter-badge" id="rollCountBadge"></div>
         </div>
         <div class="result-actions">
           <button class="result-btn" onclick="spinSongAgain()">↺ &nbsp; Spin Song Again</button>
@@ -1030,9 +1148,9 @@ function setSyncStatus(state) {
 
 /* Write to Firestore AND keep localStorage as fast cache */
 async function saveData() {
-  const payload = { cats, songMap, activeCats: [...activeCats] };
+  const payload = { cats, songMap, activeCats: [...activeCats], rollCounts };
   // Optimistic local cache
-  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify(payload)); } catch(e) {}
+  try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
   setSyncStatus('saving');
   try {
     await setDoc(_docRef, payload);
@@ -1055,8 +1173,9 @@ async function loadData() {
         songMap = p.songMap;
         cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
         activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
+        if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
         // Update local cache
-        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats] })); } catch(e) {}
+        try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
         setSyncStatus('ok');
         return true;
       }
@@ -1080,6 +1199,7 @@ function _loadLocal() {
     cats = p.cats; songMap = p.songMap;
     cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
     activeCats = Array.isArray(p.activeCats) ? new Set(p.activeCats) : new Set(cats);
+    if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
     return true;
   } catch(e) { return false; }
 }
@@ -1099,6 +1219,7 @@ function startRealtimeSync() {
     cats.forEach(c => { if (!songMap[c]) songMap[c] = []; });
     if (Array.isArray(p.activeCats)) activeCats = new Set(p.activeCats);
     else activeCats = new Set(cats);
+    if (p.rollCounts && typeof p.rollCounts === 'object') rollCounts = p.rollCounts;
     // Rebuild UI
     buildDrum(1, wheelCats());
     refreshCatLockSelect();
@@ -1109,7 +1230,7 @@ function startRealtimeSync() {
     }
     check();
     setSyncStatus('ok');
-    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats] })); } catch(e) {}
+    try { localStorage.setItem('karaokeRoulette_v1', JSON.stringify({ cats, songMap, activeCats: [...activeCats], rollCounts })); } catch(e) {}
   }, (err) => {
     console.warn('Firestore snapshot error:', err);
     setSyncStatus('offline');
@@ -1399,11 +1520,11 @@ function spinDrum(n, items, cb) {
       }
 
       if (n === 2) {
-        // Wheel 2: 5-second dramatic pause before song popup
+        // Wheel 2: 3-second dramatic pause before song popup
         setTimeout(() => {
           if (winSlot) winSlot.classList.remove('slot-winner');
           cb(landed);
-        }, 5000);
+        }, 3000);
       } else {
         // Wheel 1: instant — category transfers immediately
         if (winSlot) setTimeout(() => winSlot.classList.remove('slot-winner'), 1200);
@@ -1431,6 +1552,9 @@ window.spinWheel = function spinWheel(n) {
 
   spinning = true;
   check();
+  broadcastState();
+  // Kick off live-position broadcast loop so TV mirrors the spinning drum
+  requestAnimationFrame(tvBroadcastLoop);
 
   spinDrum(n, items, (winnerIdx) => {
     spinning = false;
@@ -1442,6 +1566,7 @@ window.spinWheel = function spinWheel(n) {
       showResult(chosenCat, items[winnerIdx]);
       check();
     }
+    broadcastState();
   });
 }
 
@@ -1581,22 +1706,24 @@ function unlockW2() {
   document.getElementById('pd1').className = 'pdot done';
   document.getElementById('pd2').className = 'pdot active';
   buildDrum(2, songMap[chosenCat] || []);
-  const b = document.getElementById('chosenBadge');
-  b.textContent = 'Category: ' + chosenCat;
-  b.classList.add('vis');
   document.getElementById('dlock').classList.add('hidden');
   check();
   // Force-enable sb2 if the category has songs — belt-and-suspenders
   const hasSongs = (songMap[chosenCat] || []).length > 0;
   document.getElementById('sb2').disabled = !hasSongs;
+  // Show song search for this category
+  showSongSearch(true);
+  broadcastState();
 }
 function resetPhase2() {
   phase = 1; chosenCat = null;
   document.getElementById('pd1').className = 'pdot active';
   document.getElementById('pd2').className = 'pdot';
-  document.getElementById('chosenBadge').classList.remove('vis');
   document.getElementById('dlock').classList.remove('hidden');
   buildDrum(2, []);
+  // Hide song search
+  showSongSearch(false);
+  broadcastState();
 }
 function check() {
   const wc = wheelCats();
@@ -1631,23 +1758,32 @@ function updateFilterBanner() {
 function showResult(cat, song) {
   document.getElementById('rCat').textContent = cat;
   document.getElementById('rSong').textContent = song;
+  // Increment roll count before showing (so count reflects this roll)
+  incrementRoll(song);
+  showRollCount(song);
   const el = document.getElementById('resultReveal');
   el.classList.add('vis');
   flashAllBulbs();
   // Note: spinAgainBtn is hidden now — result card has inline buttons
+  broadcastState();
 }
 function spinSongAgain() {
   // Close result card, keep category, re-spin wheel 2 only
   document.getElementById('resultReveal').classList.remove('vis');
+  const rcd = document.getElementById('rollCounterDisplay');
+  if (rcd) rcd.style.display = 'none';
   if (!chosenCat) return;
   // Re-build wheel 2 fresh then spin
   buildDrum(2, songMap[chosenCat] || []);
   check();
+  broadcastState();
   // Small delay so drum renders before spinning
   setTimeout(() => window.spinWheel(2), 60);
 }
 function resetGame() {
   document.getElementById('resultReveal').classList.remove('vis');
+  const rcd = document.getElementById('rollCounterDisplay');
+  if (rcd) rcd.style.display = 'none';
   resetPhase2();
   buildDrum(1, wheelCats());
   check();
@@ -2075,6 +2211,248 @@ function esc(s) {
 }
 
 /* ═══════════════════════════════════════════════════════
+   ROLL COUNTER
+   ═══════════════════════════════════════════════════════ */
+// rollCounts: { "Song Name – Artist": count }  — persisted to Firestore
+let rollCounts = {};
+
+function incrementRoll(song) {
+  if (!song) return;
+  rollCounts[song] = (rollCounts[song] || 0) + 1;
+  saveData(); // persist
+}
+
+function showRollCount(song) {
+  const wrap  = document.getElementById('rollCounterDisplay');
+  const num   = document.getElementById('rollCountNum');
+  const plural = document.getElementById('rollCountPlural');
+  const badge = document.getElementById('rollCountBadge');
+  if (!wrap || !song) return;
+  const count = rollCounts[song] || 1;
+  num.textContent = count;
+  plural.textContent = count === 1 ? '' : 's';
+  if (count === 1) {
+    badge.textContent = '✦ First roll ever!';
+    badge.className = 'roll-counter-badge first-roll';
+  } else if (count === 2) {
+    badge.textContent = 'Second time lucky';
+    badge.className = 'roll-counter-badge';
+  } else if (count <= 5) {
+    badge.textContent = `${count}× rolled`;
+    badge.className = 'roll-counter-badge';
+  } else {
+    badge.textContent = `Popular choice — ${count}× rolled`;
+    badge.className = 'roll-counter-badge';
+  }
+  wrap.style.display = '';
+}
+
+/* ═══════════════════════════════════════════════════════
+   SONG SEARCH
+   ═══════════════════════════════════════════════════════ */
+function showSongSearch(show) {
+  const wrap = document.getElementById('songSearchWrap');
+  if (!wrap) return;
+  if (show) {
+    wrap.classList.add('vis');
+  } else {
+    wrap.classList.remove('vis');
+    clearSongSearch();
+  }
+}
+
+function clearSongSearch() {
+  const inp = document.getElementById('songSearchInput');
+  const res = document.getElementById('songSearchResults');
+  const clr = document.getElementById('songSearchClear');
+  if (inp) { inp.value = ''; }
+  if (res) { res.style.display = 'none'; res.innerHTML = ''; }
+  if (clr) { clr.style.display = 'none'; }
+}
+
+window.clearSongSearch = clearSongSearch;
+
+window.onSongSearch = function(query) {
+  const clr = document.getElementById('songSearchClear');
+  const res = document.getElementById('songSearchResults');
+  if (!res) return;
+  if (clr) clr.style.display = query ? '' : 'none';
+
+  if (!query.trim()) {
+    res.style.display = 'none';
+    res.innerHTML = '';
+    return;
+  }
+
+  const songs = chosenCat ? (songMap[chosenCat] || []) : [];
+  const q = query.toLowerCase();
+  const hits = songs.filter(s => s.toLowerCase().includes(q));
+
+  res.style.display = '';
+  if (!hits.length) {
+    res.innerHTML = '<div class="ssr-empty">No songs match "' + esc(query) + '"</div>';
+    return;
+  }
+  // Highlight matching substring
+  res.innerHTML = hits.map(s => {
+    const lo = s.toLowerCase();
+    const i  = lo.indexOf(q);
+    const pre  = esc(s.slice(0, i));
+    const mid  = esc(s.slice(i, i + q.length));
+    const post = esc(s.slice(i + q.length));
+    return `<div class="ssr-hit">${pre}<mark>${mid}</mark>${post}</div>`;
+  }).join('');
+};
+
+/* ═══════════════════════════════════════════════════════
+   TV POP-OUT  (BroadcastChannel for real-time sync)
+   ═══════════════════════════════════════════════════════ */
+const TV_CHANNEL = 'karaoke-roulette-tv';
+let _tvChannel = null;
+let _tvWin     = null;
+
+/* Returns or creates the BroadcastChannel */
+function getTVChannel() {
+  if (!_tvChannel) {
+    try { _tvChannel = new BroadcastChannel(TV_CHANNEL); } catch(e) {}
+  }
+  return _tvChannel;
+}
+
+/* Broadcast the full current UI state to any open TV window */
+function broadcastState() {
+  const ch = getTVChannel();
+  if (!ch) return;
+  const reveal = document.getElementById('resultReveal');
+  const rCatEl = document.getElementById('rCat');
+  const rSongEl = document.getElementById('rSong');
+  ch.postMessage({
+    type: 'state',
+    phase,
+    chosenCat,
+    spinning,
+    drum1Y: drumY[1],
+    drum2Y: drumY[2],
+    drum1Items: wheelCats(),
+    drum2Items: chosenCat ? (songMap[chosenCat] || []) : [],
+    resultVis: reveal ? reveal.classList.contains('vis') : false,
+    resultCat:  rCatEl  ? rCatEl.textContent  : '',
+    resultSong: rSongEl ? rSongEl.textContent : '',
+    bulbsLit: !!bulbTmr,
+  });
+}
+
+/* Called by TV window on load — sends a full state snapshot */
+function handleTVMessage(evt) {
+  if (!evt.data) return;
+  if (evt.data.type === 'ready') {
+    broadcastState();
+  }
+}
+
+/* Start broadcast listener in main window */
+function initTVBroadcast() {
+  const ch = getTVChannel();
+  if (!ch) return;
+  ch.onmessage = handleTVMessage;
+}
+
+/* Pop out the TV window */
+window.openTVPopout = function() {
+  const url = location.href.split('?')[0] + '?tv=1';
+  const features = [
+    'toolbar=no', 'location=no', 'menubar=no', 'status=no',
+    'scrollbars=no', 'resizable=yes',
+    'width=1280', 'height=720',
+  ].join(',');
+  if (_tvWin && !_tvWin.closed) {
+    _tvWin.focus();
+    return;
+  }
+  _tvWin = window.open(url, 'KaraokeRoulette_TV', features);
+  if (!_tvWin) {
+    alert('Pop-up was blocked! Please allow pop-ups for this page and try again.');
+  }
+};
+
+/* Continuously broadcast while spinning so the TV mirrors live drum movement */
+function tvBroadcastLoop() {
+  if (!_tvChannel) return;
+  if (spinning || bulbTmr) {
+    broadcastState();
+    requestAnimationFrame(tvBroadcastLoop);
+  }
+}
+
+/* ─── TV DISPLAY MODE ─────────────────────────── */
+/* If this window was opened with ?tv=1, run in mirror/display mode */
+const _isTVMode = new URLSearchParams(location.search).get('tv') === '1';
+
+if (_isTVMode) {
+  document.body.classList.add('tv-mode');
+
+  // Receive state from main window and mirror it
+  const _tvReceive = getTVChannel();
+  if (_tvReceive) {
+    _tvReceive.onmessage = function(evt) {
+      if (!evt.data || evt.data.type !== 'state') return;
+      const s = evt.data;
+
+      // Mirror result card
+      const reveal = document.getElementById('resultReveal');
+      const rCat   = document.getElementById('rCat');
+      const rSong  = document.getElementById('rSong');
+      if (rCat)  rCat.textContent  = s.resultCat;
+      if (rSong) rSong.textContent = s.resultSong;
+      if (reveal) reveal.classList.toggle('vis', s.resultVis);
+
+      // Mirror wheel lock state
+      const dlock = document.getElementById('dlock');
+      if (dlock) dlock.classList.toggle('hidden', s.phase === 2);
+
+      // Mirror drum1 position
+      if (s.drum1Items && s.drum1Items.length) {
+        const strip1 = document.getElementById('drum1');
+        const cur1 = strip1 ? strip1.children.length : 0;
+        const need1 = s.drum1Items.length * REPS;
+        if (cur1 !== need1) buildDrum(1, s.drum1Items);
+        if (strip1) {
+          strip1.style.transition = 'none';
+          strip1.style.transform  = `translateY(${s.drum1Y}px)`;
+          drumY[1] = s.drum1Y;
+        }
+      }
+
+      // Mirror drum2 position
+      if (s.drum2Items && s.drum2Items.length) {
+        const strip2 = document.getElementById('drum2');
+        const cur2 = strip2 ? strip2.children.length : 0;
+        const need2 = s.drum2Items.length * REPS;
+        if (cur2 !== need2) buildDrum(2, s.drum2Items);
+        if (strip2) {
+          strip2.style.transition = 'none';
+          strip2.style.transform  = `translateY(${s.drum2Y}px)`;
+          drumY[2] = s.drum2Y;
+        }
+      }
+
+      // Mirror bulbs
+      if (s.bulbsLit && !bulbTmr) startBulbs();
+      else if (!s.bulbsLit && bulbTmr) stopBulbs();
+    };
+
+    // Tell main window we're ready
+    _tvReceive.postMessage({ type: 'ready' });
+  }
+
+  // Double-click anywhere to fullscreen the TV window
+  document.addEventListener('dblclick', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
    EXPOSE to window (required because script is type=module)
    ═══════════════════════════════════════════════════════ */
 window.resetGame      = resetGame;
@@ -2101,6 +2479,19 @@ window.pwCancel       = pwCancel;
    INIT  (async — waits for Firestore before rendering)
    ═══════════════════════════════════════════════════════ */
 (async () => {
+  if (_isTVMode) {
+    // TV display mode — don't load Firestore, just set up drums to receive state
+    mkBulbs('b1L'); mkBulbs('b1R');
+    mkBulbs('b2L'); mkBulbs('b2R');
+    buildDrum(1, []);
+    buildDrum(2, []);
+    // Hide controls already handled by tv-mode CSS
+    // Fullscreen button in TV window
+    document.title = 'Karaoke Roulette — TV';
+    setSyncStatus('ok');
+    return; // skip the rest of INIT
+  }
+
   const loaded = await loadData();
   if (!loaded) {
     cats = Object.keys(DATA);
@@ -2114,6 +2505,7 @@ window.pwCancel       = pwCancel;
   refreshCatLockSelect();
   check();
   startRealtimeSync();
+  initTVBroadcast();
 
   // Wire all admin buttons (no inline onclick needed)
   wireAdminButtons();
