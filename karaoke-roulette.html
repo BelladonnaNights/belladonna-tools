@@ -1639,7 +1639,11 @@ function playTick(velocity) {
   // velocity 0-1: 1 = peak speed, 0 = final slow clacks
   try {
     const ctx = getACtx();
-    if (ctx.state !== 'running') { ctx.resume().catch(()=>{}); }
+    if (ctx.state !== 'running') {
+      // Resume and retry once running — don't drop the tick
+      ctx.resume().then(() => playTick(velocity)).catch(()=>{});
+      return;
+    }
 
     const sr  = ctx.sampleRate;
     // Price is Right big wheel: hard plastic peg strike
@@ -2016,6 +2020,8 @@ function spinDrum(n, items, cb) {
    ═══════════════════════════════════════════════════════ */
 window.spinWheel = function spinWheel(n) {
   if (spinning) return;
+  // Ensure AudioContext is running before spin starts so first ticks aren't dropped
+  try { const ctx = getACtx(); if (ctx.state !== 'running') ctx.resume().catch(()=>{}); } catch(e) {}
 
   let items;
   if (n === 1) {
