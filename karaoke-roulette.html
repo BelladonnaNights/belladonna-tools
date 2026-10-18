@@ -3136,6 +3136,46 @@ function drumYToSlotF(n, items) {
   return centrePixel / sh;
 }
 
+/* After a window resize, slot height changes (it's vh-based).
+   Recalculate each drum's translateY so the same item stays centred.
+   Called from a debounced resize listener on both host and TV. */
+function snapDrumsAfterResize() {
+  if (spinning) return; // mid-spin: the frame loop reads live slotH anyway
+  const newSH = getSlotH();
+  if (!newSH) return;
+  const vis = getVIS();
+
+  function snapDrum(n, items) {
+    if (!items || !items.length) return;
+    const strip = document.getElementById('drum' + n);
+    if (!strip || strip.children.length < items.length) return;
+    // Which item is currently centred? Use the NEW slotH for the calculation
+    // because drumY was already updated to use the new pixel space by the browser
+    // (the strip moves with the layout). Re-derive from what's visible.
+    // We snap to rep 1 of the centred item for clean positioning.
+    const centrePixel = -drumY[n] + Math.floor(vis / 2) * newSH;
+    const absSlot = Math.round(centrePixel / newSH);
+    const itemIdx = ((absSlot % items.length) + items.length) % items.length;
+    const targetSlot = items.length + itemIdx; // rep 1
+    const newY = -(targetSlot * newSH - Math.floor(vis / 2) * newSH);
+    strip.style.transition = 'none';
+    strip.style.transform  = `translateY(${newY}px)`;
+    drumY[n] = newY;
+  }
+
+  snapDrum(1, wheelCats());
+  const drum2El = document.getElementById('drum2');
+  const drum2HasSongs = drum2El && drum2El.children.length > vis;
+  if (drum2HasSongs && chosenCat) snapDrum(2, songMap[chosenCat] || []);
+}
+
+let _resizeDebounce = null;
+function onWindowResize() {
+  clearTimeout(_resizeDebounce);
+  _resizeDebounce = setTimeout(snapDrumsAfterResize, 80);
+}
+window.addEventListener('resize', onWindowResize);
+
 /* Broadcast the full current UI state to any open TV window */
 function broadcastState() {
   const ch = getTVChannel();
@@ -3234,6 +3274,8 @@ const _isTVMode = new URLSearchParams(location.search).get('tv') === '1';
 if (_isTVMode) {
   document.body.classList.add('tv-mode');
 
+  let _tvLastState = null; // last received state, used by resize handler
+
   // Receive state from main window and mirror it
   const _tvReceive = getTVChannel();
   if (_tvReceive) {
@@ -3297,7 +3339,27 @@ if (_isTVMode) {
       // Mirror bulbs
       if (s.bulbsLit && !bulbTmr) startBulbs();
       else if (!s.bulbsLit && bulbTmr) stopBulbs();
+
+      // Cache last state so resize handler can re-apply positions
+      _tvLastState = s;
     };
+
+    // On TV resize, re-apply the last known positions using fresh slot measurements
+    let _tvResizeDebounce = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(_tvResizeDebounce);
+      _tvResizeDebounce = setTimeout(() => {
+        if (!_tvLastState) return;
+        const s = _tvLastState;
+        if (s.drum1Items && s.drum1Items.length) {
+          positionDrum(1, s.drum1Items, s.drum1SlotF || 0);
+        }
+        const d2Items = s.drum2Items || [];
+        if (d2Items.length) {
+          positionDrum(2, d2Items, s.drum2SlotF || 0);
+        }
+      }, 80);
+    });
 
     // Tell main window we're ready — retry a few times in case main window
     // hasn't started listening yet (race between loadData and TV open)
