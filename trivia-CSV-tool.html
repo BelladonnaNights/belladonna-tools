@@ -218,6 +218,56 @@ Difficulty: 1"></textarea>
     </div>
   </div>
 
+  <div class="panel" id="promptPanel">
+    <label>Prompt for your AI &mdash; copy &amp; paste</label>
+    <div class="hint" style="margin:0 0 12px;">Paste this into the AI you write questions with, fill in the bracketed parts, then paste what it gives you into the box above. Labels must start each line (no bullets, numbers or bold), and Difficulty is only 1, 2 or 3. The simple format (<em>Question? Answer: X</em> per line) also works but can't carry difficulty, links or bonus questions.</div>
+    <textarea id="aiPrompt" readonly style="min-height:340px;font-size:14px;">Write trivia questions in exactly this plain-text format, with a blank line between questions:
+
+Question: (the question)
+Answer: (the correct answer)
+Difficulty: (1, 2, or 3 — 1 = easy, 2 = medium, 3 = hard)
+
+For multiple choice, add these four lines after Difficulty. Make the Answer line match the correct option's text exactly:
+Option A: (choice)
+Option B: (choice)
+Option C: (choice)
+Option D: (choice)
+
+Optional lines, only when I ask for them:
+Img URL: (link to an image)
+Sound URL: (link to an audio clip)
+Bonus Question: (a follow-up question)
+Bonus Answer: (its answer)
+
+Strict rules:
+- Every line must start with the label itself. No bullets, no numbering, no dashes, no asterisks, no bold, no markdown, no quotation marks around the label.
+- Every question starts with a line beginning "Question:". Never write "Q1" or "1." before it.
+- One question, answer, and difficulty per block. Each field stays on its own single line.
+- Plain text only. No headings, no commentary, no code block, no intro or closing sentences — just the questions.
+- Difficulty must be only the number 1, 2, or 3.
+- Do not invent image or sound links. Leave those lines out unless I give you the link.
+
+Example:
+
+Question: What outlaw was famously shot and killed by Pat Garrett?
+Answer: Billy the Kid
+Difficulty: 1
+Option A: Jesse James
+Option B: Butch Cassidy
+Option C: Doc Holliday
+Option D: Billy the Kid
+
+Question: What is the name of Indiana Jones's signature weapon?
+Answer: A whip
+Difficulty: 1
+
+Now write [NUMBER] questions about [TOPIC]. Make them [multiple choice / open answer], with a mix of difficulties.</textarea>
+    <div class="row">
+      <button onclick="copyPrompt()">Copy Prompt</button>
+      <span id="copyStatus" style="font-family:'EB Garamond',serif;font-size:14px;color:var(--gold-dim);"></span>
+    </div>
+  </div>
+
   <div class="panel" id="previewPanel" style="display:none;">
     <label>Preview <span class="count-badge" id="countBadge">0</span></label>
     <div class="table-scroll">
@@ -475,6 +525,15 @@ function csvEscape(val){
     val = '"' + val.replace(/"/g, '""') + '"';
   }
   return val;
+}
+
+function copyPrompt(){
+  const t = document.getElementById('aiPrompt');
+  const s = document.getElementById('copyStatus');
+  const done = () => { s.textContent = 'Copied!'; setTimeout(() => s.textContent = '', 2000); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t.value).then(done).catch(() => { t.select(); document.execCommand('copy'); done(); });
+  } else { t.select(); document.execCommand('copy'); done(); }
 }
 
 function downloadCSV(){
