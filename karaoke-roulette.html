@@ -873,18 +873,19 @@ body.tv-mode .stage{
   max-width:none;
   width:100vw;height:100vh;
   overflow:hidden;
-  padding:0;
+  padding:clamp(8px,1.5vh,20px) 0 clamp(8px,1.5vh,20px);
   justify-content:center;
   align-items:center;
-  gap:clamp(8px,1.5vh,18px);
+  gap:clamp(4px,1vh,12px);
 }
 
 /* Drums sized to fill screen — bulb strips on each side take ~28px each,
    gap between drums ~4vw, so each drum gets roughly (50vw - 28px - 2vw) */
 body.tv-mode{
   cursor:none;
-  --slot-h:clamp(80px,11vh,130px);
-  --drum-w:clamp(380px,44vw,860px);
+  /* slot-h auto-fits: 7 slots + ~120px for labels/gaps/logo must fill 100vh */
+  --slot-h:clamp(60px,calc((100vh - 140px) / 7),130px);
+  --drum-w:clamp(320px,42vw,780px);
   --vis:7;
 }
 
@@ -1830,7 +1831,7 @@ function getSlotH() {
   // If CSS var is a clamp() expression, parseFloat returns NaN — use sensible default
   if (!isNaN(px)) return px;
   // TV mode uses larger slots; host uses smaller
-  return document.body.classList.contains('tv-mode') ? 100 : 60;
+  return document.body.classList.contains('tv-mode') ? Math.floor((window.innerHeight - 140) / 7) : 60;
 }
 
 // Per-drum state: current translateY of the strip (negative = scrolled down)
