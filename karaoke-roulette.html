@@ -1840,6 +1840,7 @@ let   animId = null;
 
 /* Build the DOM strip for drum n using items[] */
 function buildDrum(n, items) {
+  pinSlotH(); // ensure --slot-h is an integer px value before measuring
   drumY[n] = 0;
   const strip = document.getElementById('drum' + n);
   strip.innerHTML = '';
@@ -3170,12 +3171,26 @@ function snapDrumsAfterResize() {
   if (drum2HasSongs && chosenCat) snapDrum(2, songMap[chosenCat] || []);
 }
 
+/* Pin --slot-h to an integer pixel value so drum math never drifts.
+   Reads the CSS computed value (which may be fractional) and rounds it,
+   then writes it back as an explicit px value on body inline style.
+   Called on load, on resize, and before buildDrum. */
+function pinSlotH() {
+  // Read from body (inherits from :root or body.tv-mode class)
+  const raw = parseFloat(getComputedStyle(document.body).getPropertyValue('--slot-h'));
+  if (!isNaN(raw) && raw > 0) {
+    document.body.style.setProperty('--slot-h', Math.round(raw) + 'px');
+  }
+}
+
 let _resizeDebounce = null;
 function onWindowResize() {
   clearTimeout(_resizeDebounce);
-  _resizeDebounce = setTimeout(snapDrumsAfterResize, 80);
+  _resizeDebounce = setTimeout(() => { pinSlotH(); snapDrumsAfterResize(); }, 80);
 }
 window.addEventListener('resize', onWindowResize);
+// Pin on initial load too
+setTimeout(pinSlotH, 50);
 
 /* Broadcast the full current UI state to any open TV window */
 function broadcastState() {
