@@ -1090,6 +1090,210 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 
 /* Extra admin pane tab style for Rolls */
 .ptab.rolls-tab-btn{}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE — PORTRAIT  (≤ 600px wide)
+   Drums stack vertically; one drum visible at a time via tabs
+   ═══════════════════════════════════════════════════════ */
+@media (max-width:600px){
+  :root{
+    --slot-h:clamp(48px,10vw,64px);
+    --drum-w:calc(100vw - 32px);
+    --vis:5;
+  }
+
+  body{ overflow-x:hidden; }
+
+  /* ── Top bar ── */
+  .top-bar{
+    padding:12px 14px 0;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .top-bar-left{ gap:8px; }
+  .top-bar-right{ gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .logo-img,.logo-img-placeholder{ height:clamp(36px,8vw,48px); }
+  .logo-text-block .logo-pub{ font-size:.45rem; }
+  .logo-text-block .logo-name{ font-size:clamp(.9rem,4.5vw,1.3rem); }
+
+  /* Hide sub-title on tiny screens */
+  .logo-sub{ display:none; }
+
+  /* Shrink top-bar buttons */
+  .session-btn,
+  .top-bar-right button{
+    font-size:.52rem;
+    padding:5px 9px;
+    letter-spacing:.06em;
+  }
+
+  /* ── Stage ── */
+  .stage{
+    padding:10px 14px 18px;
+    gap:10px;
+  }
+  .stage-orn{ display:none; }
+
+  /* ── Phase / step dots ── */
+  .phase-bar{
+    font-size:.62rem;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .pdot{ width:9px; height:9px; }
+
+  /* ── New session + pick-category row ── */
+  .session-btn{ font-size:.55rem; }
+
+  /* Category filter bar */
+  .cat-lock-bar{
+    padding:5px 10px 5px 8px;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .cat-lock-lbl{ font-size:.55rem; }
+  .cat-lock-select{ font-size:.8rem; max-width:calc(100vw - 100px); }
+
+  /* ── Wheels: stack vertically ── */
+  .wheels-stage{
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    width:100%;
+  }
+  .wheel-unit{ width:100%; align-items:center; }
+  .wheel-unit-lbl{ font-size:.75rem; letter-spacing:.2em; }
+
+  /* Drum itself full width — override the var(--drum-w) fixed widths */
+  .drum-outer,
+  .drum-slot,
+  .song-search-wrap{ width:100%; }
+  .drum-slot{ font-size:clamp(.9rem,3.8vw,1.1rem); padding:4px 12px; }
+
+  /* Bulb strips: hide on mobile to save horizontal space */
+  .bulb-strip{ display:none; }
+
+  /* ── Spin buttons ── */
+  .spin-btn{
+    width:calc(100vw - 32px);
+    font-size:.75rem;
+    padding:12px 20px;
+    letter-spacing:.15em;
+  }
+
+  /* ── Song search ── */
+  .song-search-wrap{ width:calc(100vw - 32px); }
+
+  /* ── Roll counter ── */
+  .roll-counter{ font-size:.68rem; }
+
+  /* ── Result card ── */
+  .result-card-wrap{ width:96%; }
+  .result-card{
+    padding:20px 18px;
+    border-radius:14px;
+  }
+  .result-cols{ flex-direction:column; gap:14px; }
+  .result-vsep{ width:60%; height:1px; }
+  .result-val{ font-size:clamp(1.6rem,7vw,2.4rem); }
+  .result-eyebrow{ font-size:.7rem; letter-spacing:.18em; }
+  .result-actions{ flex-direction:column; gap:8px; width:100%; }
+  .result-actions button{ width:100%; }
+
+  /* ── Filter banner ── */
+  .filter-banner{ font-size:.7rem; flex-wrap:wrap; gap:4px; }
+
+  /* ── Admin panel (just readable) ── */
+  .admin-panel{ font-size:.8rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE — LANDSCAPE  (≤ 900px wide AND short viewport)
+   Side-by-side drums but shorter slots
+   ═══════════════════════════════════════════════════════ */
+@media (max-width:900px) and (max-height:500px){
+  :root{
+    --slot-h:clamp(38px,8vh,52px);
+    --drum-w:clamp(200px,38vw,380px);
+    --vis:5;
+  }
+
+  body{ overflow-x:hidden; }
+
+  .top-bar{
+    padding:6px 14px 0;
+    gap:6px;
+  }
+  .logo-img,.logo-img-placeholder{ height:32px; }
+  .logo-text-block .logo-pub{ display:none; }
+  .logo-text-block .logo-name{ font-size:.9rem; }
+  .logo-sub{ display:none; }
+
+  /* Collapse top-right to just icons / tiny labels */
+  .session-btn,
+  .top-bar-right button{
+    font-size:.48rem;
+    padding:4px 7px;
+  }
+
+  .stage{
+    padding:4px 12px 8px;
+    gap:6px;
+    overflow-y:auto;
+  }
+  .stage-orn{ display:none; }
+  .phase-bar{ font-size:.58rem; gap:6px; }
+  .pdot{ width:8px; height:8px; }
+
+  /* Drums side by side, shorter */
+  .wheels-stage{
+    gap:clamp(8px,2vw,20px);
+    align-items:flex-start;
+  }
+  .wheel-unit-lbl{ font-size:.68rem; letter-spacing:.15em; }
+  .drum-slot{ font-size:clamp(.75rem,2vw,1rem); padding:2px 10px; }
+  .bulb-strip{ display:none; }
+
+  .spin-btn{
+    font-size:.65rem;
+    padding:8px 14px;
+    letter-spacing:.12em;
+  }
+
+  .roll-counter{ font-size:.6rem; margin-top:4px; }
+  .song-search-wrap{ margin-top:0; }
+  .song-search-input{ padding:5px 30px 5px 12px; font-size:.78rem; }
+
+  /* Result card compact */
+  .result-card{ padding:14px 16px; border-radius:12px; }
+  .result-val{ font-size:clamp(1.4rem,4vw,2rem); }
+  .result-eyebrow{ font-size:.65rem; margin-bottom:8px; }
+  .result-vsep{ width:1px; height:40px; }
+  .result-actions{ gap:6px; }
+  .result-actions button{ padding:7px 14px; font-size:.68rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLET — PORTRAIT  (601px–900px wide)
+   Side-by-side but with slightly reduced sizes
+   ═══════════════════════════════════════════════════════ */
+@media (min-width:601px) and (max-width:900px) and (min-height:501px){
+  :root{
+    --slot-h:clamp(52px,6.5vh,72px);
+    --drum-w:clamp(220px,38vw,380px);
+    --vis:7;
+  }
+  .top-bar{ padding:14px 20px 0; }
+  .logo-img,.logo-img-placeholder{ height:clamp(44px,6vh,58px); }
+  .stage{ padding:12px 20px 20px; gap:12px; }
+  .wheel-unit-lbl{ font-size:.8rem; }
+  .drum-slot{ font-size:clamp(.85rem,2.2vw,1.1rem); }
+  .bulb-strip{ display:none; }
+  .spin-btn{ font-size:.7rem; padding:10px 18px; }
+  .result-val{ font-size:clamp(1.6rem,3vw,2.6rem); }
+}
 </style>
 </head>
 <body>
