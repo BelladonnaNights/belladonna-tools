@@ -1158,19 +1158,11 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 /* Extra admin pane tab style for Rolls */
 .ptab.rolls-tab-btn{}
 
-/* ═══════════════════════════════════════════════════════
-   NARROW WINDOW — hamburger nav kicks in  (≤ 700px wide)
-   ═══════════════════════════════════════════════════════ */
-@media (max-width:700px){
-  /* show the hamburger, hide inline nav */
-  .hamburger-btn{ display:flex; }
-  .nav-menu{ display:none; }
-  /* when JS adds nav-dropdown class it becomes a dropdown */
-  .nav-menu.nav-dropdown{ display:none; }
-  .nav-menu.nav-dropdown.open{ display:flex; }
-  /* sync status always visible inline */
-  .sync-status-inline{ display:inline!important; }
-}
+/* hamburger visibility controlled entirely by JS class on top-bar */
+.top-bar.nav-collapsed .hamburger-btn{ display:flex; }
+.top-bar.nav-collapsed .nav-menu{ display:none; }
+.top-bar.nav-collapsed .nav-menu.nav-dropdown{ display:none; }
+.top-bar.nav-collapsed .nav-menu.nav-dropdown.open{ display:flex; }
 
 /* ═══════════════════════════════════════════════════════
    MOBILE — PORTRAIT  (≤ 600px wide)
@@ -3748,14 +3740,51 @@ document.addEventListener('click', function(e) {
     btn.setAttribute('aria-expanded', 'false');
   }
 });
-// When window grows back above 700px, reset nav-menu to normal inline mode
-window.addEventListener('resize', function() {
-  const menu = document.getElementById('navMenu');
-  if (!menu) return;
-  if (window.innerWidth > 700) {
-    menu.classList.remove('nav-dropdown', 'open');
+// Use ResizeObserver on the top bar to detect actual overflow — more reliable
+// than a fixed pixel breakpoint because the window may be any size.
+(function() {
+  function checkNavOverflow() {
+    const bar   = document.querySelector('.top-bar');
+    const left  = document.querySelector('.top-bar-left');
+    const right = document.querySelector('.top-bar-right');
+    const menu  = document.getElementById('navMenu');
+    if (!bar || !left || !right || !menu) return;
+
+    // Temporarily show nav-menu inline to measure its natural width
+    const wasCollapsed = bar.classList.contains('nav-collapsed');
+    if (wasCollapsed) {
+      bar.classList.remove('nav-collapsed');
+      menu.classList.remove('nav-dropdown', 'open');
+    }
+
+    // Does the right side overflow the bar?
+    const barW   = bar.getBoundingClientRect().width;
+    const leftW  = left.getBoundingClientRect().width;
+    const rightW = right.getBoundingClientRect().width;
+    const gap    = 16; // minimum breathing room
+    const overflows = leftW + rightW + gap > barW;
+
+    if (overflows) {
+      bar.classList.add('nav-collapsed');
+      menu.classList.add('nav-dropdown');
+    } else {
+      bar.classList.remove('nav-collapsed');
+      menu.classList.remove('nav-dropdown', 'open');
+    }
   }
-});
+
+  // Run once after DOM is ready, then watch for bar size changes
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      checkNavOverflow();
+      new ResizeObserver(checkNavOverflow).observe(document.querySelector('.top-bar') || document.body);
+    });
+  } else {
+    checkNavOverflow();
+    const target = document.querySelector('.top-bar') || document.body;
+    new ResizeObserver(checkNavOverflow).observe(target);
+  }
+})();
 window.toggleNavMenu = toggleNavMenu;
 window.resetGame      = resetGame;
 window.spinSongAgain  = spinSongAgain;
