@@ -1428,8 +1428,7 @@ body.tv-mode .cat-headline-bar{display:none!important;}
       <div class="sound-menu-wrap" id="fsSoundMenuWrap" style="display:none;">
         <button class="tbbtn fs-btn" id="fsSoundBtn" onclick="window.toggleSoundMenu()">Sound</button>
       </div>
-      <button class="tbbtn fs-btn" id="midBtn" onclick="window.openMidScreen()" title="Mid-Screen — open in a chrome-free window">⧉ Mid-Screen</button>
-      <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
+<button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
     </div>
   </div>
 </div>
@@ -3550,31 +3549,6 @@ window.openTVPopout = function() {
   }
   _tvWin = window.open(url, 'KaraokeRoulette_TV', features);
   if (!_tvWin) {
-    alert('Pop-up was blocked! Please allow pop-ups for this page and try again.');
-  }
-};
-
-/* ─── MID-SCREEN POPUP ───────────────────────────────── */
-let _midWin = null;
-window.openMidScreen = function() {
-  if (_midWin && !_midWin.closed) {
-    _midWin.focus();
-    return;
-  }
-  // Size popup to current window dimensions, positioned where the window is
-  const w = window.outerWidth;
-  const h = window.outerHeight;
-  const x = window.screenX || window.screenLeft || 0;
-  const y = window.screenY || window.screenTop  || 0;
-  const url = location.href.split('?')[0];
-  const features = [
-    'toolbar=no', 'location=no', 'menubar=no', 'status=no',
-    'scrollbars=no', 'resizable=yes',
-    `width=${w}`, `height=${h}`,
-    `left=${x}`, `top=${y}`,
-  ].join(',');
-  _midWin = window.open(url, 'KaraokeRoulette_Mid', features);
-  if (!_midWin) {
     alert('Pop-up was blocked! Please allow pop-ups for this page and try again.');
   }
 };
