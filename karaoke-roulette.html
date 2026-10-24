@@ -620,10 +620,10 @@ body::before{
   opacity:1;pointer-events:auto;
 }
 .result-close-btn{
-  position:absolute;top:18px;right:22px;z-index:2;
+  position:absolute;top:14px;right:16px;z-index:3;
   background:none;border:1px solid rgba(201,168,76,.25);
   color:rgba(201,168,76,.6);
-  width:32px;height:32px;border-radius:50%;
+  width:30px;height:30px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:.85rem;line-height:1;cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;
@@ -1448,9 +1448,9 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 
   <!-- Result overlay -->
   <div class="result-reveal" id="resultReveal">
-    <button class="result-close-btn" onclick="document.getElementById('resultReveal').classList.remove('vis')" aria-label="Close">✕</button>
     <div class="result-card-wrap">
       <div class="result-card">
+        <button class="result-close-btn" onclick="document.getElementById('resultReveal').classList.remove('vis')" aria-label="Close">✕</button>
         <div class="result-eyebrow">Tonight's Performance</div>
         <div class="result-cols">
           <div class="result-row">
