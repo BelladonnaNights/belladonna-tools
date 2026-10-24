@@ -670,6 +670,73 @@ body::before{
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px;}
 
+/* ─── HAMBURGER NAV ────────────────────────────── */
+.hamburger-btn{
+  display:none;
+  background:transparent;border:1px solid var(--border2);border-radius:8px;
+  color:var(--text2);width:38px;height:38px;
+  align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  transition:border-color .18s,color .18s;
+  padding:0;
+}
+.hamburger-btn:hover{border-color:var(--border3);color:var(--gold2);}
+.hamburger-btn svg{display:block;}
+
+.nav-menu{display:flex;align-items:center;gap:10px;}
+
+/* dropdown state used when hamburger is active */
+.nav-menu.nav-dropdown{
+  display:none;
+  position:absolute;top:calc(100% + 8px);right:0;
+  flex-direction:column;align-items:stretch;gap:0;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  padding:6px 0;
+  min-width:170px;
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+  z-index:500;
+}
+.nav-menu.nav-dropdown.open{display:flex;}
+
+/* items inside dropdown look like menu rows */
+.nav-menu.nav-dropdown > *{
+  border-radius:0!important;
+  border:none!important;
+  justify-content:flex-start;
+  padding:10px 18px!important;
+  font-size:.8rem!important;
+  letter-spacing:.1em!important;
+  white-space:nowrap;
+  width:100%;
+}
+.nav-menu.nav-dropdown > *:hover{
+  background:rgba(201,168,76,.07);
+}
+/* sound sub-wrap inside dropdown */
+.nav-menu.nav-dropdown .sound-menu-wrap{
+  width:100%;
+  position:static;
+}
+.nav-menu.nav-dropdown .sound-dropdown{
+  position:static;
+  display:none;
+  box-shadow:none;
+  border:none;
+  border-top:1px solid var(--border);
+  border-radius:0;
+  padding:4px 0;
+  min-width:unset;
+}
+.nav-menu.nav-dropdown .sound-dropdown.open{display:block;}
+/* sync status in dropdown */
+.nav-menu.nav-dropdown #syncStatus{
+  padding:8px 18px!important;
+  font-size:.65rem!important;
+  border-bottom:1px solid var(--border);
+  display:block!important;
+  width:100%;
+}
+
 /* ─── CATEGORY LOCK BAR ────────────────────────── */
 .cat-lock-bar{
   display:flex;align-items:center;gap:10px;
@@ -1092,6 +1159,20 @@ body.tv-mode .cat-headline-bar{display:none!important;}
 .ptab.rolls-tab-btn{}
 
 /* ═══════════════════════════════════════════════════════
+   NARROW WINDOW — hamburger nav kicks in  (≤ 700px wide)
+   ═══════════════════════════════════════════════════════ */
+@media (max-width:700px){
+  /* show the hamburger, hide inline nav */
+  .hamburger-btn{ display:flex; }
+  .nav-menu{ display:none; }
+  /* when JS adds nav-dropdown class it becomes a dropdown */
+  .nav-menu.nav-dropdown{ display:none; }
+  .nav-menu.nav-dropdown.open{ display:flex; }
+  /* sync status always visible inline */
+  .sync-status-inline{ display:inline!important; }
+}
+
+/* ═══════════════════════════════════════════════════════
    MOBILE — PORTRAIT  (≤ 600px wide)
    Drums stack vertically; one drum visible at a time via tabs
    ═══════════════════════════════════════════════════════ */
@@ -1328,28 +1409,36 @@ body.tv-mode .cat-headline-bar{display:none!important;}
     <div class="logo-divider"></div>
     <div class="logo-sub-text">Spin Your Fate<br>Claim Your Stage</div>
   </div>
-  <div class="top-bar-right">
-    <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;">⬤ Loading…</span>
-    <div class="sound-menu-wrap" id="soundMenuWrap">
-      <button class="tbbtn" id="audioToggleBtn" onclick="window.toggleSoundMenu()">Sound</button>
-      <div class="sound-dropdown" id="soundDropdown">
-        <label class="sound-option" id="soundOptTick">
-          <span class="sound-check">✓</span> Spinner Sounds
-        </label>
-        <label class="sound-option" id="soundOptFanfare">
-          <span class="sound-check">✓</span> Result Sound
-        </label>
-      </div>
-    </div>
-    <button class="tbbtn" onclick="toggleAdmin()" id="adminToggleBtn">⚙ Admin</button>
-    <button class="tv-btn" id="tvPopBtn" onclick="window.openTVPopout()" title="Pop out a TV display window">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-      TV Screen
+  <div class="top-bar-right" style="position:relative;">
+    <span id="syncStatus" style="font-family:'DM Sans',sans-serif;font-size:.65rem;letter-spacing:.06em;color:#c9a84c;opacity:.8;white-space:nowrap;" class="sync-status-inline">⬤ Loading…</span>
+    <!-- hamburger button — shown only when window is narrow -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu" onclick="toggleNavMenu()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
-    <div class="sound-menu-wrap" id="fsSoundMenuWrap" style="display:none;">
-      <button class="tbbtn fs-btn" id="fsSoundBtn" onclick="window.toggleSoundMenu()">Sound</button>
+    <!-- nav-menu: inline row normally, dropdown when hamburger is active -->
+    <div class="nav-menu" id="navMenu">
+      <div class="sound-menu-wrap" id="soundMenuWrap">
+        <button class="tbbtn" id="audioToggleBtn" onclick="window.toggleSoundMenu()">Sound</button>
+        <div class="sound-dropdown" id="soundDropdown">
+          <label class="sound-option" id="soundOptTick">
+            <span class="sound-check">✓</span> Spinner Sounds
+          </label>
+          <label class="sound-option" id="soundOptFanfare">
+            <span class="sound-check">✓</span> Result Sound
+          </label>
+        </div>
+      </div>
+      <button class="tbbtn" onclick="toggleAdmin()" id="adminToggleBtn">⚙ Admin</button>
+      <button class="tv-btn" id="tvPopBtn" onclick="window.openTVPopout()" title="Pop out a TV display window">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        TV Screen
+      </button>
+      <div class="sound-menu-wrap" id="fsSoundMenuWrap" style="display:none;">
+        <button class="tbbtn fs-btn" id="fsSoundBtn" onclick="window.toggleSoundMenu()">Sound</button>
+      </div>
+      <button class="tbbtn fs-btn" id="midBtn" onclick="window.openMidScreen()" title="Mid-Screen — open in a chrome-free window">⧉ Mid-Screen</button>
+      <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
     </div>
-    <button class="tbbtn fs-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen (or double-click anywhere)">⛶ Fullscreen</button>
   </div>
 </div>
 
@@ -3473,6 +3562,31 @@ window.openTVPopout = function() {
   }
 };
 
+/* ─── MID-SCREEN POPUP ───────────────────────────────── */
+let _midWin = null;
+window.openMidScreen = function() {
+  if (_midWin && !_midWin.closed) {
+    _midWin.focus();
+    return;
+  }
+  // Size popup to current window dimensions, positioned where the window is
+  const w = window.outerWidth;
+  const h = window.outerHeight;
+  const x = window.screenX || window.screenLeft || 0;
+  const y = window.screenY || window.screenTop  || 0;
+  const url = location.href.split('?')[0];
+  const features = [
+    'toolbar=no', 'location=no', 'menubar=no', 'status=no',
+    'scrollbars=no', 'resizable=yes',
+    `width=${w}`, `height=${h}`,
+    `left=${x}`, `top=${y}`,
+  ].join(',');
+  _midWin = window.open(url, 'KaraokeRoulette_Mid', features);
+  if (!_midWin) {
+    alert('Pop-up was blocked! Please allow pop-ups for this page and try again.');
+  }
+};
+
 /* Continuously broadcast while spinning so the TV mirrors live drum movement */
 let _tvBroadcastInterval = null;
 function tvBroadcastLoop() {
@@ -3611,6 +3725,38 @@ window.toggleSoundMenu = function() {
   const dd = document.getElementById('soundDropdown');
   if (dd) dd.classList.toggle('open');
 };
+
+/* ─── HAMBURGER NAV MENU ─────────────────────────────── */
+function toggleNavMenu() {
+  const menu = document.getElementById('navMenu');
+  const btn  = document.getElementById('hamburgerBtn');
+  if (!menu) return;
+  // On first open, switch nav-menu to dropdown mode
+  if (!menu.classList.contains('nav-dropdown')) {
+    menu.classList.add('nav-dropdown');
+  }
+  menu.classList.toggle('open');
+  btn.setAttribute('aria-expanded', menu.classList.contains('open'));
+}
+// Close nav menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('navMenu');
+  const btn  = document.getElementById('hamburgerBtn');
+  if (!menu || !menu.classList.contains('open')) return;
+  if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+});
+// When window grows back above 700px, reset nav-menu to normal inline mode
+window.addEventListener('resize', function() {
+  const menu = document.getElementById('navMenu');
+  if (!menu) return;
+  if (window.innerWidth > 700) {
+    menu.classList.remove('nav-dropdown', 'open');
+  }
+});
+window.toggleNavMenu = toggleNavMenu;
 window.resetGame      = resetGame;
 window.spinSongAgain  = spinSongAgain;
 window.toggleAllCats  = toggleAllCats;
