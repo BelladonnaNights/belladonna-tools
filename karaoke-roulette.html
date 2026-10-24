@@ -2191,11 +2191,14 @@ function spinDrum(n, items, cb) {
         strip.offsetHeight;
       }
 
-      // Identify the winning slot element and highlight it
-      const landed = centredIndex(n, items, slotH);
+      // Identify the winning slot element and highlight it.
+      // winIdx is what we aimed for — use it directly, no re-measurement drift.
+      // After the reset, the strip was placed at rep 1 so the centred slot is
+      // DOM index (items.length + winIdx).
+      const landed = winIdx;
       const slots  = strip.querySelectorAll('.drum-slot');
-      const centreSlotIdx = Math.round((-targetY + Math.floor(vis / 2) * slotHInt) / slotHInt);
-      const winSlot = slots[centreSlotIdx];
+      const winSlotDomIdx = items.length + winIdx;
+      const winSlot = slots[winSlotDomIdx];
       if (winSlot) {
         winSlot.classList.add('slot-winner');
         winSlot.style.transition = 'background .25s ease, color .25s ease, transform .25s ease';
