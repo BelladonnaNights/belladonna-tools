@@ -122,7 +122,17 @@ Difficulty: 1
 Now write [NUMBER] questions about [TOPIC]: about [#] regular, [#] true/false, and [#] multiple choice, with a mix of difficulties 1 to 3.</textarea>
     <div class="row">
       <button onclick="copyPrompt()">Copy Prompt</button>
+      <button class="secondary" id="savePromptBtn" onclick="savePrompt(true)" disabled>Save Prompt</button>
+      <button class="secondary" onclick="resetPrompt()">Reset To Original</button>
       <span id="copyStatus" style="font-size:0.8rem;color:var(--text2);"></span>
+    </div>
+    <div id="saveStatus" class="hint" style="margin-top:0.6rem;">Checking your sign-in&hellip;</div>
+    <div id="signin" style="display:none;margin-top:0.9rem;max-width:380px;">
+      <label for="lid">Email, username or host ID</label>
+      <input id="lid" type="text" autocomplete="username" autocapitalize="none" style="display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:0.7rem 0.9rem;font-family:inherit;font-size:0.9rem;outline:none;margin-bottom:0.7rem;">
+      <label for="lpw">Password</label>
+      <input id="lpw" type="password" autocomplete="current-password" style="display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:0.7rem 0.9rem;font-family:inherit;font-size:0.9rem;outline:none;" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="row"><button onclick="doLogin()" id="lbtn">Sign In To Save</button><span id="lmsg" style="font-size:0.8rem;color:var(--text2);"></span></div>
     </div>
   </div>
 
@@ -151,7 +161,56 @@ Now write [NUMBER] questions about [TOPIC]: about [#] regular, [#] true/false, a
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script>
+/* ── Saved prompt: your edits to the AI prompt save to your Belladonna account (Firestore triviaConfig/csv-prompt) ── */
+const DEFAULT_PROMPT = document.getElementById('aiPrompt').value;
+let fbDb = null, fbUser = null, savedPrompt = DEFAULT_PROMPT, saveTimer = null;
+try {
+  firebase.initializeApp({apiKey:"AIzaSyCIfAE1JGHsUGzzVH2pz1Vyj5b5OhA0tDQ",authDomain:"belladonna-hq.firebaseapp.com",databaseURL:"https://belladonna-hq-default-rtdb.firebaseio.com",projectId:"belladonna-hq",storageBucket:"belladonna-hq.firebasestorage.app",messagingSenderId:"1021873183587",appId:"1:1021873183587:web:def283bb7b5ca48e4f9156"});
+  fbDb = firebase.firestore();
+} catch (e) { console.warn(e); }
+function setSaveMsg(t, err){ const e = document.getElementById('saveStatus'); e.textContent = t; e.style.color = err ? 'var(--red)' : ''; }
+function promptDoc(){ return fbDb.collection('triviaConfig').doc('csv-prompt'); }
+async function savePrompt(showMsg){
+  if (!fbUser) { document.getElementById('signin').style.display = 'block'; setSaveMsg('Sign in to save your prompt.', true); return; }
+  const v = document.getElementById('aiPrompt').value;
+  if (v === savedPrompt) { if (showMsg) setSaveMsg('Saved.'); return; }
+  try {
+    await promptDoc().set({ text: (v.trim() === DEFAULT_PROMPT.trim() ? '' : v), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    savedPrompt = v; setSaveMsg('Saved to your account.');
+  } catch (e) { setSaveMsg('Could not save: ' + (e && e.message || e), true); }
+}
+function resetPrompt(){ if (!confirm('Put the original prompt back? Your edited version will be replaced.')) return; document.getElementById('aiPrompt').value = DEFAULT_PROMPT; savePrompt(true); }
+document.getElementById('aiPrompt').addEventListener('input', () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => savePrompt(false), 1200); });
+document.getElementById('aiPrompt').addEventListener('blur', () => { clearTimeout(saveTimer); savePrompt(false); });
+function resolveEmail(v){
+  v = (v || '').trim(); if (!v) return Promise.resolve(null);
+  if (v.indexOf('@') >= 0) return Promise.resolve(v);
+  return fbDb.collection('loginLookup').doc(v.toLowerCase()).get().then(d => d.exists ? d.data().email : null);
+}
+function doLogin(){
+  const id = document.getElementById('lid').value, pw = document.getElementById('lpw').value, m = document.getElementById('lmsg'), b = document.getElementById('lbtn');
+  if (!id.trim() || !pw) { m.textContent = 'Enter your login and password.'; return; }
+  b.disabled = true; m.textContent = 'Signing in\u2026';
+  resolveEmail(id).then(email => { if (!email) throw new Error('We could not find an account matching that.'); return firebase.auth().signInWithEmailAndPassword(email, pw); })
+    .catch(e => { b.disabled = false; m.textContent = (e && e.code && /wrong-password|invalid-credential|user-not-found/.test(e.code)) ? 'That login or password is not right.' : (e && e.message || 'Could not sign in.'); });
+}
+if (fbDb) firebase.auth().onAuthStateChanged(async u => {
+  fbUser = u || null;
+  const btn = document.getElementById('savePromptBtn');
+  if (!u) { btn.disabled = true; document.getElementById('signin').style.display = 'block'; setSaveMsg('Sign in once and your prompt edits will save to your account.'); return; }
+  btn.disabled = false; document.getElementById('signin').style.display = 'none';
+  try {
+    const d = await promptDoc().get(), t = d.exists ? (d.data().text || '') : '';
+    if (t) { document.getElementById('aiPrompt').value = t; savedPrompt = t; } else { savedPrompt = DEFAULT_PROMPT; }
+    setSaveMsg('Your prompt saves automatically when you edit it.');
+  } catch (e) { setSaveMsg('Could not load your saved prompt: ' + (e && e.message || e), true); }
+});
+else document.getElementById('saveStatus').textContent = 'Saving is unavailable right now.';
+
 let parsedRows = [];
 
 // Detects inline multiple-choice options like "A) ... B) ... C) ... D) ..."
