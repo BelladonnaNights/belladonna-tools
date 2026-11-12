@@ -214,9 +214,9 @@ else document.getElementById('saveStatus').textContent = 'Saving is unavailable 
 
 let parsedRows = [];
 
-// Never let a stray "/" ride along at the end of any field (links keep theirs — a trailing / can be part of a web address)
+// Never let a stray "/" ride along at the end of any field (links keep a trailing / — it can be part of a web address)
 function stripEndSlash(v){
-  return String(v == null ? '' : v).replace(/[\s\/]*\/\s*$/, '').trim();
+  return String(v == null ? '' : v).replace(/[\s\\\/]*[\\\/]\s*$/, '').trim();
 }
 function cleanRow(r){
   Object.keys(r).forEach(k => { if (k !== 'img' && k !== 'sound') r[k] = stripEndSlash(r[k]); });
@@ -390,7 +390,8 @@ function parseLabeledBlocks(raw, errors){
 }
 
 function parseInput(){
-  const raw = document.getElementById('input').value;
+  // ChatGPT puts a backslash at the end of every line (a markdown line-break) — drop it before reading anything
+  const raw = document.getElementById('input').value.split(/\r?\n/).map(l => l.replace(/[ \t]*\\+[ \t]*$/, '')).join('\n');
   const errors = [];
 
   parsedRows = isLabeledFormat(raw)
