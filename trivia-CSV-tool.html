@@ -104,6 +104,7 @@ Strict rules:
 - Plain text only. No headings, no commentary, no code block, no intro or closing sentences — just the questions.
 - Difficulty must be only the number 1, 2, or 3.
 - Do not invent image or sound links. Leave those lines out unless I give you the link.
+- Never put a slash (/) at the end of any line or answer. A slash is only allowed in the middle of a word or name, like AC/DC.
 
 Example:
 
@@ -212,6 +213,15 @@ if (fbDb) firebase.auth().onAuthStateChanged(async u => {
 else document.getElementById('saveStatus').textContent = 'Saving is unavailable right now.';
 
 let parsedRows = [];
+
+// Never let a stray "/" ride along at the end of any field (links keep theirs — a trailing / can be part of a web address)
+function stripEndSlash(v){
+  return String(v == null ? '' : v).replace(/[\s\/]*\/\s*$/, '').trim();
+}
+function cleanRow(r){
+  Object.keys(r).forEach(k => { if (k !== 'img' && k !== 'sound') r[k] = stripEndSlash(r[k]); });
+  return r;
+}
 
 // Detects inline multiple-choice options like "A) ... B) ... C) ... D) ..."
 // "A. ..." "(A) ..." or "Option A: ..." — in order, and strips them out of
@@ -387,6 +397,7 @@ function parseInput(){
     ? parseLabeledBlocks(raw, errors)
     : parseLegacyFormat(raw, errors);
 
+  parsedRows = parsedRows.map(cleanRow);
   renderPreview();
 
   const statusEl = document.getElementById('status');
